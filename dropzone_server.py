@@ -1,16 +1,22 @@
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
+from http.cookies import SimpleCookie
 import os
 import cgi
 import time
 import json
+import sqlite3
 import subprocess
-from urllib.parse import unquote, urlsplit
+import traceback
+from urllib.parse import unquote, urlsplit, parse_qs
+
+import metis_db as db
 
 VAULT_DIR = '/home/ubuntu/vp'
 NEET_PG_DIR = '/home/ubuntu/vp/NEET_PG'
 DROPZONE = '/home/ubuntu/vp/NEET_PG/Dropzone'
 DASHBOARD_FILE = '/home/ubuntu/vp/NEET_PG/athena_dashboard.html'
 METRICS_FILE = '/home/ubuntu/vp/NEET_PG/study_metrics.json'
+SESSION_COOKIE = 'metis_session'
 
 # NEET_PG/ is the effective webroot (dashboard, PWA manifest, service worker
 # all live there). VAULT_DIR is a fallback for the METIS report link, which
@@ -28,36 +34,101 @@ CONTENT_TYPES = {
     '.svg': 'image/svg+xml',
 }
 
+
 class SimpleUploadHandler(BaseHTTPRequestHandler):
+    # ---------------------------------------------------------- helpers ----
+
+    def send_json(self, obj, status=200, set_cookie=None):
+        body = json.dumps(obj).encode()
+        self.send_response(status)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Credentials', 'true')
+        if set_cookie:
+            self.send_header('Set-Cookie', set_cookie)
+        self.end_headers()
+        self.wfile.write(body)
+
+    def read_json_body(self):
+        length = int(self.headers.get('Content-Length', 0))
+        if length == 0:
+            return {}
+        return json.loads(self.rfile.read(length))
+
+    def get_session_token(self):
+        header = self.headers.get('Cookie')
+        if not header:
+            return None
+        cookie = SimpleCookie()
+        cookie.load(header)
+        morsel = cookie.get(SESSION_COOKIE)
+        return morsel.value if morsel else None
+
+    def get_current_user(self):
+        return db.get_user_from_session(self.get_session_token())
+
+    def session_cookie_header(self, token):
+        return f'{SESSION_COOKIE}={token}; Path=/; Max-Age=2592000; HttpOnly; SameSite=Lax'
+
+    CLEAR_COOKIE = f'{SESSION_COOKIE}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax'
+
+    # -------------------------------------------------------------- HEAD ---
+
     def do_HEAD(self):
         self.send_response(200)
         self.send_header('Content-Type', 'text/html')
         self.end_headers()
 
-    def do_GET(self):
-        if self.path == '/metrics':
-            try:
-                subprocess.run(['python3', '/home/ubuntu/vp/NEET_PG/athena_metrics.py'], capture_output=True)
-                with open(METRICS_FILE, 'r') as f:
-                    content = f.read()
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.end_headers()
-                self.wfile.write(content.encode())
-                return
-            except Exception as e:
-                self.send_response(500)
-                self.end_headers()
-                self.wfile.write(str(e).encode())
-                return
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.send_header('Access-Control-Allow-Credentials', 'true')
+        self.end_headers()
 
+    # --------------------------------------------------------------- GET ---
+
+    def do_GET(self):
+        parsed = urlsplit(self.path)
+        path = unquote(parsed.path)
+        query = parse_qs(parsed.query)
+
+        if path == '/metrics':
+            self.handle_athena_metrics()
+            return
+
+        if path.startswith('/api/metis/'):
+            try:
+                self.handle_metis_get(path, query)
+            except Exception as e:
+                traceback.print_exc()
+                self.send_json({'error': str(e)}, status=500)
+            return
+
+        self.serve_static(path)
+
+    def handle_athena_metrics(self):
+        try:
+            subprocess.run(['python3', '/home/ubuntu/vp/NEET_PG/athena_metrics.py'], capture_output=True)
+            with open(METRICS_FILE, 'r') as f:
+                content = f.read()
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(content.encode())
+        except Exception as e:
+            self.send_response(500)
+            self.end_headers()
+            self.wfile.write(str(e).encode())
+
+    def serve_static(self, path):
         # Static file router: serve any file that actually exists by its real
         # name (dashboard, PWA manifest, service worker, JSON data), so links
         # between the Athena/METIS pages resolve instead of always falling
         # back to the Athena dashboard.
-        req_path = unquote(urlsplit(self.path).path)
-        rel_path = req_path.lstrip('/')
+        rel_path = path.lstrip('/')
 
         if not rel_path:
             file_path = DASHBOARD_FILE
@@ -83,46 +154,156 @@ class SimpleUploadHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b'Not found.')
 
-    def do_POST(self):
-        if self.path == '/session':
-            try:
-                length = int(self.headers.get('Content-Length', 0))
-                body = self.rfile.read(length)
-                session = json.loads(body)
-
-                with open(METRICS_FILE, 'r') as f:
-                    metrics = json.load(f)
-
-                today = time.strftime('%Y-%m-%d')
-                log = metrics['daily_logs'].setdefault(today, {
-                    'date': today,
-                    'questions_completed': 0,
-                    'subject_breakdown': {},
-                    'topic_breakdown': {},
-                    'topic_mastery': {},
-                    'sessions': [],
-                    'active_hours': 0.0,
-                    'speed_q_per_hour': 0.0,
-                    'endurance_score': 0
-                })
-                log.setdefault('sessions', []).append(session)
-
-                with open(METRICS_FILE, 'w') as f:
-                    json.dump(metrics, f, indent=2)
-
-                subprocess.run(['python3', '/home/ubuntu/vp/NEET_PG/athena_metrics.py'], capture_output=True)
-
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.end_headers()
-                self.wfile.write(b'{"ok": true}')
-            except Exception as e:
-                self.send_response(500)
-                self.end_headers()
-                self.wfile.write(str(e).encode())
+    def handle_metis_get(self, path, query):
+        if path == '/api/metis/me':
+            user = self.get_current_user()
+            self.send_json({'user': user})
             return
 
+        user = self.get_current_user()
+        if not user:
+            self.send_json({'error': 'Not authenticated'}, status=401)
+            return
+
+        if path == '/api/metis/decks':
+            self.send_json({'decks': db.list_decks_with_counts(user['id'])})
+            return
+
+        if path == '/api/metis/cards':
+            deck_id = int(query['deck_id'][0]) if 'deck_id' in query else None
+            search = query.get('search', [None])[0]
+            tag = query.get('tag', [None])[0]
+            self.send_json({'cards': db.list_cards(user['id'], deck_id=deck_id, search=search, tag=tag)})
+            return
+
+        if path == '/api/metis/queue':
+            deck_id = int(query['deck_id'][0]) if 'deck_id' in query else None
+            limit = int(query.get('limit', [20])[0])
+            self.send_json({'cards': db.get_due_queue(user['id'], deck_id=deck_id, limit=limit)})
+            return
+
+        if path == '/api/metis/preview':
+            card_id = query.get('card_id', [None])[0]
+            if not card_id:
+                self.send_json({'error': 'card_id required'}, status=400)
+                return
+            self.send_json({'intervals': db.preview_intervals(user['id'], card_id)})
+            return
+
+        if path == '/api/metis/stats':
+            self.send_json(db.get_stats(user['id']))
+            return
+
+        self.send_json({'error': 'Not found'}, status=404)
+
+    # -------------------------------------------------------------- POST ---
+
+    def do_POST(self):
+        parsed = urlsplit(self.path)
+        path = unquote(parsed.path)
+
+        if path == '/session':
+            self.handle_athena_session()
+            return
+
+        if path.startswith('/api/metis/'):
+            try:
+                self.handle_metis_post(path)
+            except sqlite3.IntegrityError:
+                self.send_json({'error': 'Username already taken'}, status=409)
+            except ValueError as e:
+                self.send_json({'error': str(e)}, status=400)
+            except Exception as e:
+                traceback.print_exc()
+                self.send_json({'error': str(e)}, status=500)
+            return
+
+        self.handle_dropzone_upload()
+
+    def handle_athena_session(self):
+        try:
+            session = self.read_json_body()
+
+            with open(METRICS_FILE, 'r') as f:
+                metrics = json.load(f)
+
+            today = time.strftime('%Y-%m-%d')
+            log = metrics['daily_logs'].setdefault(today, {
+                'date': today,
+                'questions_completed': 0,
+                'subject_breakdown': {},
+                'topic_breakdown': {},
+                'topic_mastery': {},
+                'sessions': [],
+                'active_hours': 0.0,
+                'speed_q_per_hour': 0.0,
+                'endurance_score': 0
+            })
+            log.setdefault('sessions', []).append(session)
+
+            with open(METRICS_FILE, 'w') as f:
+                json.dump(metrics, f, indent=2)
+
+            subprocess.run(['python3', '/home/ubuntu/vp/NEET_PG/athena_metrics.py'], capture_output=True)
+            self.send_json({'ok': True})
+        except Exception as e:
+            self.send_response(500)
+            self.end_headers()
+            self.wfile.write(str(e).encode())
+
+    def handle_metis_post(self, path):
+        body = self.read_json_body()
+
+        if path == '/api/metis/register':
+            username = (body.get('username') or '').strip()
+            user_id = db.create_user(username, body.get('password') or '')
+            token = db.create_session(user_id)
+            self.send_json({'user': {'id': user_id, 'username': username}},
+                            set_cookie=self.session_cookie_header(token))
+            return
+
+        if path == '/api/metis/login':
+            username = (body.get('username') or '').strip()
+            user_id = db.verify_user(username, body.get('password') or '')
+            if not user_id:
+                self.send_json({'error': 'Invalid username or password'}, status=401)
+                return
+            token = db.create_session(user_id)
+            self.send_json({'user': {'id': user_id, 'username': username}},
+                            set_cookie=self.session_cookie_header(token))
+            return
+
+        if path == '/api/metis/logout':
+            token = self.get_session_token()
+            if token:
+                db.delete_session(token)
+            self.send_json({'ok': True}, set_cookie=self.CLEAR_COOKIE)
+            return
+
+        # Everything past this point requires an authenticated user.
+        user = self.get_current_user()
+        if not user:
+            self.send_json({'error': 'Not authenticated'}, status=401)
+            return
+
+        if path == '/api/metis/review':
+            result = db.apply_review(user['id'], body['card_id'], body['rating'], body.get('duration_ms'))
+            self.send_json(result)
+            return
+
+        if path == '/api/metis/undo':
+            ok = db.undo_last_review(user['id'])
+            self.send_json({'ok': ok})
+            return
+
+        if path == '/api/metis/cards':
+            card_id = db.create_card(body['subject'], body['topic'], body['front'], body['back'], body.get('tags', []))
+            self.send_json({'id': card_id})
+            return
+
+        self.send_json({'error': 'Not found'}, status=404)
+
+    def handle_dropzone_upload(self):
         try:
             form = cgi.FieldStorage(
                 fp=self.rfile,
@@ -140,7 +321,7 @@ class SimpleUploadHandler(BaseHTTPRequestHandler):
                     save_path = os.path.join(DROPZONE, safe_fn)
                     with open(save_path, 'wb') as f:
                         f.write(fileitem.file.read())
-                    
+
                     subprocess.run(['python3', '/home/ubuntu/vp/NEET_PG/athena_metrics.py'], capture_output=True)
 
                     self.send_response(200)
@@ -155,9 +336,50 @@ class SimpleUploadHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(f'Internal Server Error: {str(e)}\n'.encode())
 
+    # --------------------------------------------------------- PUT/DELETE --
+
+    def do_PUT(self):
+        parsed = urlsplit(self.path)
+        path = unquote(parsed.path)
+        try:
+            if path.startswith('/api/metis/cards/'):
+                user = self.get_current_user()
+                if not user:
+                    self.send_json({'error': 'Not authenticated'}, status=401)
+                    return
+                card_id = path.rsplit('/', 1)[-1]
+                body = self.read_json_body()
+                ok = db.update_card(card_id, front=body.get('front'), back=body.get('back'), tags=body.get('tags'))
+                self.send_json({'ok': ok}, status=200 if ok else 404)
+                return
+            self.send_json({'error': 'Not found'}, status=404)
+        except Exception as e:
+            traceback.print_exc()
+            self.send_json({'error': str(e)}, status=500)
+
+    def do_DELETE(self):
+        parsed = urlsplit(self.path)
+        path = unquote(parsed.path)
+        try:
+            if path.startswith('/api/metis/cards/'):
+                user = self.get_current_user()
+                if not user:
+                    self.send_json({'error': 'Not authenticated'}, status=401)
+                    return
+                card_id = path.rsplit('/', 1)[-1]
+                db.delete_card(card_id)
+                self.send_json({'ok': True})
+                return
+            self.send_json({'error': 'Not found'}, status=404)
+        except Exception as e:
+            traceback.print_exc()
+            self.send_json({'error': str(e)}, status=500)
+
+
 if __name__ == '__main__':
     os.makedirs(DROPZONE, exist_ok=True)
+    db.init_db()
     server_address = ('0.0.0.0', 8085)
-    httpd = HTTPServer(server_address, SimpleUploadHandler)
+    httpd = ThreadingHTTPServer(server_address, SimpleUploadHandler)
     print("Starting ATHENA Dropzone & Dashboard Server on port 8085...")
     httpd.serve_forever()
