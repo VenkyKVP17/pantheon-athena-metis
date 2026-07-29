@@ -221,9 +221,11 @@ What type of synovial joint permits uniaxial movement (only flexion and extensio
 **Hinge joint**.
 <!-- QBank ID: Q4171028 -->
 
-Name three classic examples of hinge joints in the body.
+Name the four structural types of epiphyses with their classic anatomical examples.
 ?
-1. Elbow joint
-2. Interphalangeal joints (digits)
-3. Ankle (talocrural) joint
-<!-- QBank ID: Q4171028 -->
+- **Pressure Epiphysis:** Articular, weight-bearing ends (e.g., Head of femur, Head of humerus, Lower end of radius).
+- **Traction Epiphysis:** Non-articular, tendon attachment pulled by muscle (e.g., Greater/Lesser trochanters of femur, Tubercle of humerus).
+- **Atavistic Epiphysis:** Phylogenetically independent bone annexed to neighbour (e.g., Coracoid process of scapula).
+- **Aberrant Epiphysis:** Epiphysis in unusual location (e.g., Head of 1st metacarpal).
+<!-- QBank ID: Q8841729 -->
+

@@ -8,6 +8,8 @@ import sqlite3
 import subprocess
 import traceback
 from urllib.parse import unquote, urlsplit, parse_qs
+import datetime
+import glob
 
 import metis_db as db
 
@@ -33,6 +35,29 @@ CONTENT_TYPES = {
     '.png': 'image/png',
     '.svg': 'image/svg+xml',
 }
+
+VALID_QUESTION_TYPES = {
+    'Clinical_Vignette', 'Except_Negative', 'Multi_Statement_Evaluation', 'Simple_Direct_Recall'
+}
+
+
+def companion_path_for(screenshot_file):
+    """The companion for foo_1234.png is foo_1234.meta.json (same stem)."""
+    stem = os.path.splitext(screenshot_file)[0]
+    return os.path.join(DROPZONE, stem + '.meta.json')
+
+
+def list_companions():
+    out = []
+    for path in sorted(glob.glob(os.path.join(DROPZONE, '*.meta.json'))):
+        try:
+            with open(path, 'r') as f:
+                comp = json.load(f)
+            if comp.get('companion_type') == 'qbank_completion':
+                out.append(comp)
+        except Exception:
+            continue
+    return out
 
 
 class SimpleUploadHandler(BaseHTTPRequestHandler):
@@ -101,6 +126,14 @@ class SimpleUploadHandler(BaseHTTPRequestHandler):
         if path.startswith('/api/metis/'):
             try:
                 self.handle_metis_get(path, query)
+            except Exception as e:
+                traceback.print_exc()
+                self.send_json({'error': str(e)}, status=500)
+            return
+
+        if path == '/api/dropzone/companions':
+            try:
+                self.send_json({'companions': list_companions()})
             except Exception as e:
                 traceback.print_exc()
                 self.send_json({'error': str(e)}, status=500)
@@ -317,10 +350,27 @@ class SimpleUploadHandler(BaseHTTPRequestHandler):
                 if fileitem.filename:
                     fn = os.path.basename(fileitem.filename)
                     name, ext = os.path.splitext(fn)
-                    safe_fn = f"{name}_{int(time.time())}{ext}"
+                    ts = int(time.time())
+                    safe_fn = f"{name}_{ts}{ext}"
                     save_path = os.path.join(DROPZONE, safe_fn)
                     with open(save_path, 'wb') as f:
                         f.write(fileitem.file.read())
+
+                    now = datetime.datetime.now().astimezone().isoformat()
+                    companion = {
+                        'companion_type': 'qbank_completion',
+                        'screenshot_file': safe_fn,
+                        'uploaded_at': now,
+                        'completed_at': now,
+                        'question_type': None,
+                        'correct': None,
+                        'subject': None,
+                        'topic': None,
+                        'notes': None,
+                    }
+                    companion_path = os.path.join(DROPZONE, f"{name}_{ts}.meta.json")
+                    with open(companion_path, 'w') as f:
+                        json.dump(companion, f, indent=2)
 
                     subprocess.run(['python3', '/home/ubuntu/vp/NEET_PG/athena_metrics.py'], capture_output=True)
 
@@ -342,6 +392,28 @@ class SimpleUploadHandler(BaseHTTPRequestHandler):
         parsed = urlsplit(self.path)
         path = unquote(parsed.path)
         try:
+            if path.startswith('/api/dropzone/companion/'):
+                screenshot_file = path.rsplit('/', 1)[-1]
+                cpath = companion_path_for(screenshot_file)
+                if not os.path.isfile(cpath):
+                    self.send_json({'error': 'Companion not found'}, status=404)
+                    return
+                with open(cpath, 'r') as f:
+                    comp = json.load(f)
+                body = self.read_json_body()
+                if 'question_type' in body:
+                    if body['question_type'] is not None and body['question_type'] not in VALID_QUESTION_TYPES:
+                        self.send_json({'error': f'question_type must be one of {sorted(VALID_QUESTION_TYPES)}'}, status=400)
+                        return
+                    comp['question_type'] = body['question_type']
+                for field in ('correct', 'subject', 'topic', 'notes'):
+                    if field in body:
+                        comp[field] = body[field]
+                with open(cpath, 'w') as f:
+                    json.dump(comp, f, indent=2)
+                self.send_json({'ok': True, 'companion': comp})
+                return
+
             if path.startswith('/api/metis/cards/'):
                 user = self.get_current_user()
                 if not user:

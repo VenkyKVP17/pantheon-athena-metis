@@ -703,6 +703,18 @@
         <div class="subject-matrix-grid" id="matrixGrid"></div>
       </div>
 
+      <!-- QUESTION TYPE BREAKDOWN -->
+      <div class="card two-third-card">
+        <div class="section-title">🧩 Question Type Breakdown <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">— bank distribution now, real accuracy once Dropzone shots are tagged</span></div>
+        <div class="topic-grid" id="questionTypeGrid"></div>
+      </div>
+
+      <!-- DROPZONE ACTIVITY -->
+      <div class="card one-third-card">
+        <div class="section-title">📸 Dropzone Activity</div>
+        <div id="dropzoneStats" style="font-size: 13px; color: var(--text-secondary); line-height: 1.7;"></div>
+      </div>
+
       <!-- ATHENA STATS & INSIGHTS (data-driven) -->
       <div class="card oracle-card">
         <div class="oracle-header">
@@ -930,6 +942,52 @@
       }).join('');
     }
 
+    function renderQuestionTypes(dist, perf) {
+      const el = document.getElementById('questionTypeGrid');
+      if (!dist || !dist.total) { el.innerHTML = '<div style="font-size:12px;color:var(--text-muted);">No QBank questions to classify yet.</div>'; return; }
+      const accByType = (perf && perf.accuracy_by_type) || {};
+      el.innerHTML = Object.entries(dist.by_type).map(([key, count]) => {
+        const label = dist.by_type_labels[key] || key;
+        const pctOfBank = dist.total ? Math.round(count / dist.total * 100) : 0;
+        const acc = accByType[key];
+        const tagged = acc && acc.accuracy_pct !== null && acc.accuracy_pct !== undefined;
+        const barPct = tagged ? acc.accuracy_pct : pctOfBank;
+        const color = !tagged ? '#94a3b8' : barPct >= 70 ? '#34d399' : barPct >= 40 ? '#fbbf24' : '#f43f5e';
+        const badge = tagged
+          ? `${acc.accuracy_pct}% accuracy (${acc.correct}/${acc.attempts} tagged)`
+          : `${pctOfBank}% of bank • not tagged yet`;
+        return `
+          <div class="topic-row">
+            <div class="topic-meta">
+              <span class="topic-name">${label} (${count} Qs)</span>
+              <span class="topic-badge" style="background:${color}33;border-color:${color}66;color:${color};">${badge}</span>
+            </div>
+            <div class="topic-progress-bar">
+              <div class="topic-progress-fill" style="width: ${barPct}%; background: ${color};"></div>
+            </div>
+          </div>`;
+      }).join('') + (dist.image_based_count
+        ? `<div style="font-size:11px;color:var(--text-muted);margin-top:4px;">🖼️ ${dist.image_based_count} of ${dist.total} questions (${Math.round(dist.image_based_count/dist.total*100)}%) are image-based (ECG/X-ray/spotter) across all types above.</div>`
+        : '');
+    }
+
+    function renderDropzoneStats(perf) {
+      const el = document.getElementById('dropzoneStats');
+      if (!perf) { el.innerHTML = ''; return; }
+      if (!perf.total_logged) {
+        el.innerHTML = 'No screenshots logged yet. Drop a completed-question screenshot to start building pace + accuracy data.';
+        return;
+      }
+      const recent = perf.completions.slice(-5).reverse();
+      const rows = recent.map(c => {
+        const time = c.completed_at ? new Date(c.completed_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '—';
+        const tag = c.question_type ? c.question_type.replace(/_/g, ' ') : 'untagged';
+        const mark = c.correct === true ? '✅' : c.correct === false ? '❌' : '';
+        return `<div>${time} · ${tag} ${mark}</div>`;
+      }).join('');
+      el.innerHTML = `<div style="margin-bottom:8px;"><strong>${perf.total_logged}</strong> logged · <strong>${perf.tagged_count}</strong> tagged</div>${rows}`;
+    }
+
     function renderTopicGrid(topicMastery) {
       const el = document.getElementById('topicGrid');
       if (!topicMastery) { el.innerHTML = ''; return; }
@@ -1027,6 +1085,8 @@
           }
           renderMatrix(d.syllabus_insights && d.syllabus_insights.subjects);
           renderOracle(d.syllabus_insights, log);
+          renderQuestionTypes(d.question_type_distribution, d.dropzone_performance);
+          renderDropzoneStats(d.dropzone_performance);
         }
       } catch (e) {
         console.log('Metrics active');

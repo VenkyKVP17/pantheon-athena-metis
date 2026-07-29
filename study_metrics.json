@@ -25,9 +25,9 @@
   "daily_logs": {
     "2026-07-29": {
       "date": "2026-07-29",
-      "questions_completed": 104,
+      "questions_completed": 105,
       "subject_breakdown": {
-        "Anatomy": 33,
+        "Anatomy": 34,
         "Surgery": 1,
         "Medicine": 70
       },
@@ -39,11 +39,11 @@
         }
       ],
       "active_hours": 1.62,
-      "speed_q_per_hour": 64.3,
+      "speed_q_per_hour": 64.9,
       "endurance_score": 44,
       "topic_breakdown": {
         "Anatomy: Upper_Limb": 10,
-        "Anatomy: General_Anatomy": 23,
+        "Anatomy: General_Anatomy": 24,
         "Surgery: Head_and_Neck": 1,
         "Medicine: Cardiology": 29,
         "Medicine: Arrhythmias": 41
@@ -55,8 +55,8 @@
           "status": "Needs Focus"
         },
         "Anatomy: General_Anatomy": {
-          "count": 23,
-          "mastery_percent": 46.0,
+          "count": 24,
+          "mastery_percent": 48.0,
           "status": "Solid"
         },
         "Surgery: Head_and_Neck": {
@@ -1345,7 +1345,7 @@
         ],
         "topics_covered_count": 1,
         "coverage_pct": 10.0,
-        "questions_solved": 33,
+        "questions_solved": 34,
         "unmatched_topic_folders": [
           "General_Anatomy"
         ],
@@ -1513,5 +1513,47 @@
         ]
       }
     ]
+  },
+  "question_type_distribution": {
+    "total": 105,
+    "by_type": {
+      "Clinical_Vignette": 39,
+      "Except_Negative": 21,
+      "Multi_Statement_Evaluation": 15,
+      "Simple_Direct_Recall": 30
+    },
+    "by_type_labels": {
+      "Clinical_Vignette": "Clinical Vignette",
+      "Except_Negative": "Except / Negative (\"all EXCEPT\", \"which is NOT\")",
+      "Multi_Statement_Evaluation": "Multi-Statement Evaluation (\"which are true/correct\")",
+      "Simple_Direct_Recall": "Simple / Direct Recall"
+    },
+    "by_subject_type": {
+      "Anatomy": {
+        "Clinical_Vignette": 5,
+        "Except_Negative": 7,
+        "Multi_Statement_Evaluation": 5,
+        "Simple_Direct_Recall": 17
+      },
+      "Surgery": {
+        "Clinical_Vignette": 1,
+        "Except_Negative": 0,
+        "Multi_Statement_Evaluation": 0,
+        "Simple_Direct_Recall": 0
+      },
+      "Medicine": {
+        "Clinical_Vignette": 33,
+        "Except_Negative": 14,
+        "Multi_Statement_Evaluation": 10,
+        "Simple_Direct_Recall": 13
+      }
+    },
+    "image_based_count": 8
+  },
+  "dropzone_performance": {
+    "total_logged": 0,
+    "tagged_count": 0,
+    "accuracy_by_type": {},
+    "completions": []
   }
 }

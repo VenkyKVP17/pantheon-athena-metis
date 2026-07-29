@@ -450,3 +450,24 @@ The elbow is the classic teaching example of a hinge joint, where the trochlea o
 Other hinge joints in the standard list are the interphalangeal joints of the digits and the ankle (talocrural) joint. The defining feature of a hinge is uniaxial motion enforced by interlocking bony prominences.
 
 **Take Home Message:** When a single curved arrow set marks movement in one plane only, think uniaxial: the elbow, the interphalangeal joints and the ankle are the hinge joints to recall.
+
+---
+
+## Q24. Epiphysis Classification (Weight-Bearing vs Traction)
+**Question ID:** Q8841729
+**Question:** A medical student is reviewing bone development and classification of epiphyses. Which type of epiphysis is found at the weight-transmitting articular ends of long bones (such as the femoral head and humeral head) and takes part in joint formation?
+- A) Traction epiphysis
+- B) Pressure epiphysis
+- C) Atavistic epiphysis
+- D) Aberrant epiphysis
+
+**Answer:** B) Pressure epiphysis
+
+**Explanation:**
+- **Pressure Epiphysis:** Located at weight-bearing / weight-transmitting articular ends of long bones. It takes part in joint formation (e.g., Head of femur, Head of humerus, Lower end of radius).
+- **Traction Epiphysis:** Non-articular bony projection pulled by muscle tendons. Does NOT take part in joint formation (e.g., Greater & Lesser trochanters of femur, Tubercle of humerus, Mastoid process).
+- **Atavistic Epiphysis:** Phylogenetically independent bone in lower animals that has fused with another bone in humans (e.g., Coracoid process of scapula).
+- **Aberrant Epiphysis:** Epiphysis occurring at an abnormal position (e.g., head of 1st metacarpal).
+
+**Take Home Message:** Weight-bearing articular ends form pressure epiphyses; muscle/tendon pull creates traction epiphyses.
+

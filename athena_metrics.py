@@ -3,8 +3,12 @@ import os
 import re
 import json
 import datetime
+import glob
+
+from question_classifier import classify_question, TYPE_LABELS
 
 QBANK_DIR = '/home/ubuntu/vp/NEET_PG/QBank'
+DROPZONE_DIR = '/home/ubuntu/vp/NEET_PG/Dropzone'
 METRICS_FILE = '/home/ubuntu/vp/NEET_PG/study_metrics.json'
 REFERENCE_FILE = '/home/ubuntu/vp/NEET_PG/subject_topics_reference.json'
 
@@ -55,6 +59,94 @@ def scan_qbank_detailed():
                     }
 
     return total_questions, subject_counts, topic_counts, topic_mastery
+
+def scan_qbank_question_types():
+    """Classifies every QBank question stem by archetype (Except/Negative,
+    Multi-Statement Evaluation, Clinical Vignette, Simple/Direct Recall) plus
+    an image-based flag. This is a distribution over the question BANK
+    (what you're exposed to), not accuracy -- QBank stores canonical Q&A,
+    not your attempt history. Accuracy-by-type comes from Dropzone companions."""
+    type_counts = {t: 0 for t in TYPE_LABELS}
+    type_by_subject = {}
+    image_based_count = 0
+    total = 0
+
+    if not os.path.exists(QBANK_DIR):
+        return {"total": 0, "by_type": type_counts, "by_subject_type": {}, "image_based_count": 0}
+
+    for path in glob.glob(os.path.join(QBANK_DIR, '**', '*.md'), recursive=True):
+        rel_path = os.path.relpath(path, QBANK_DIR)
+        subject = rel_path.split(os.sep)[0]
+        with open(path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        for m in re.finditer(r'\*\*Question:\*\*\s*(.+)', content):
+            stem = m.group(1).strip()
+            qtype, is_image = classify_question(stem)
+            type_counts[qtype] = type_counts.get(qtype, 0) + 1
+            type_by_subject.setdefault(subject, {t: 0 for t in TYPE_LABELS})
+            type_by_subject[subject][qtype] += 1
+            total += 1
+            if is_image:
+                image_based_count += 1
+
+    return {
+        "total": total,
+        "by_type": type_counts,
+        "by_type_labels": TYPE_LABELS,
+        "by_subject_type": type_by_subject,
+        "image_based_count": image_based_count,
+    }
+
+def scan_dropzone_companions():
+    """Reads companion .json sidecars written alongside each Dropzone
+    screenshot (timestamp of completion + question_type/correct once tagged).
+    Powers real accuracy-by-question-type once screenshots get tagged --
+    this is the "which type is actually costing me marks" signal, distinct
+    from the QBank distribution above."""
+    result = {
+        "total_logged": 0,
+        "tagged_count": 0,
+        "accuracy_by_type": {},
+        "completions": [],
+    }
+    if not os.path.exists(DROPZONE_DIR):
+        return result
+
+    type_totals = {}
+    for path in sorted(glob.glob(os.path.join(DROPZONE_DIR, '*.meta.json'))):
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                comp = json.load(f)
+        except Exception:
+            continue
+        # Dropzone also receives unrelated screenshot-monitoring companions
+        # from other tooling -- only count our own question-completion ones.
+        if comp.get('companion_type') != 'qbank_completion':
+            continue
+        result["total_logged"] += 1
+        result["completions"].append({
+            "file": comp.get("screenshot_file"),
+            "completed_at": comp.get("completed_at"),
+            "question_type": comp.get("question_type"),
+            "correct": comp.get("correct"),
+        })
+        qtype = comp.get("question_type")
+        correct = comp.get("correct")
+        if qtype and correct is not None:
+            result["tagged_count"] += 1
+            bucket = type_totals.setdefault(qtype, {"attempts": 0, "correct": 0})
+            bucket["attempts"] += 1
+            if correct:
+                bucket["correct"] += 1
+
+    for qtype, b in type_totals.items():
+        result["accuracy_by_type"][qtype] = {
+            "attempts": b["attempts"],
+            "correct": b["correct"],
+            "accuracy_pct": round(b["correct"] / b["attempts"] * 100, 1) if b["attempts"] else None,
+        }
+
+    return result
 
 def load_reference():
     if not os.path.exists(REFERENCE_FILE):
@@ -198,6 +290,8 @@ def update_daily_metrics():
 
     metrics["daily_logs"][today] = log
     metrics["syllabus_insights"] = compute_syllabus_insights(subject_counts, topic_counts, load_reference())
+    metrics["question_type_distribution"] = scan_qbank_question_types()
+    metrics["dropzone_performance"] = scan_dropzone_companions()
 
     with open(METRICS_FILE, 'w') as f:
         json.dump(metrics, f, indent=2)
