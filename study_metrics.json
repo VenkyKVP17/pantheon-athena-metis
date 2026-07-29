@@ -76,6 +76,55 @@
         }
       },
       "concentration_score": null
+    },
+    "2026-07-30": {
+      "date": "2026-07-30",
+      "questions_completed": 0,
+      "subject_breakdown": {
+        "Anatomy": 34,
+        "Surgery": 1,
+        "Medicine": 70
+      },
+      "topic_breakdown": {
+        "Anatomy: Upper_Limb": 10,
+        "Anatomy: General_Anatomy": 24,
+        "Surgery: Head_and_Neck": 1,
+        "Medicine: Cardiology": 29,
+        "Medicine: Arrhythmias": 41
+      },
+      "topic_mastery": {
+        "Anatomy: Upper_Limb": {
+          "count": 10,
+          "mastery_percent": 20.0,
+          "status": "Needs Focus"
+        },
+        "Anatomy: General_Anatomy": {
+          "count": 24,
+          "mastery_percent": 48.0,
+          "status": "Solid"
+        },
+        "Surgery: Head_and_Neck": {
+          "count": 1,
+          "mastery_percent": 2.0,
+          "status": "Needs Focus"
+        },
+        "Medicine: Cardiology": {
+          "count": 29,
+          "mastery_percent": 58.0,
+          "status": "Solid"
+        },
+        "Medicine: Arrhythmias": {
+          "count": 41,
+          "mastery_percent": 82.0,
+          "status": "High Mastery"
+        }
+      },
+      "sessions": [],
+      "active_hours": 0,
+      "speed_q_per_hour": 0,
+      "endurance_score": 0,
+      "concentration_score": null,
+      "cumulative_total": 105
     }
   },
   "flashcard_metrics": {

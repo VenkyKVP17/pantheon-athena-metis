@@ -241,6 +241,7 @@ def update_daily_metrics():
     log = metrics["daily_logs"].get(today, {
         "date": today,
         "questions_completed": 0,
+        "cumulative_total": 0,
         "subject_breakdown": {},
         "topic_breakdown": {},
         "topic_mastery": {},
@@ -250,7 +251,20 @@ def update_daily_metrics():
         "endurance_score": 0
     })
 
-    log["questions_completed"] = total_q
+    # total_q is a lifetime cumulative scan of QBank/, not "added today" --
+    # derive today's actual count as the delta over the most recent prior
+    # day's cumulative snapshot, so it resets at midnight instead of just
+    # re-stamping the running lifetime total onto whatever date is "today".
+    prior_dates = sorted(d for d in metrics["daily_logs"] if d < today)
+    if prior_dates:
+        prior_log = metrics["daily_logs"][prior_dates[-1]]
+        prior_cumulative = prior_log.get("cumulative_total", prior_log.get("questions_completed", 0))
+    else:
+        prior_cumulative = 0
+    today_completed = max(0, total_q - prior_cumulative)
+
+    log["questions_completed"] = today_completed
+    log["cumulative_total"] = total_q
     log["subject_breakdown"] = subject_counts
     log["topic_breakdown"] = topic_counts
     log["topic_mastery"] = topic_mastery
@@ -277,14 +291,14 @@ def update_daily_metrics():
                 pass
         hours = max(total_seconds / 3600.0, 0.5)
         log["active_hours"] = round(hours, 2)
-        log["speed_q_per_hour"] = round(total_q / hours, 1)
+        log["speed_q_per_hour"] = round(today_completed / hours, 1)
     else:
-        est_hours = round(total_q / 38.9, 2) if total_q > 0 else 0
+        est_hours = round(today_completed / 38.9, 2) if today_completed > 0 else 0
         log["active_hours"] = est_hours
-        log["speed_q_per_hour"] = round(total_q / est_hours, 1) if est_hours > 0 else 0
+        log["speed_q_per_hour"] = round(today_completed / est_hours, 1) if est_hours > 0 else 0
 
     target = metrics.get("target_daily_questions", 300)
-    completion_ratio = min(total_q / target, 1.0)
+    completion_ratio = min(today_completed / target, 1.0)
     endurance_score = int(completion_ratio * 85 + min(log["speed_q_per_hour"] / 40.0, 1.0) * 15)
     log["endurance_score"] = min(endurance_score, 100)
 
