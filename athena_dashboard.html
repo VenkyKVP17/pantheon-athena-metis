@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PANTHEON | ATHENA NEET PG Analytics & Mastery Control Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 0%, #0f172a 0%, #090d16 60%, #030712 100%);
+      --card-bg: rgba(15, 23, 42, 0.75);
+      --card-border: rgba(56, 189, 248, 0.2);
+      --gold-border: rgba(251, 191, 36, 0.3);
+      --cyan-glow: #00f2fe;
+      --cyan-accent: #38bdf8;
+      --gold-accent: #fbbf24;
+      --purple-accent: #c084fc;
+      --emerald-accent: #34d399;
+      --rose-accent: #f43f5e;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-secondary: #cbd5e1;
+      --inset-soft: rgba(3, 7, 18, 0.4);
+      --inset-strong: rgba(3, 7, 18, 0.7);
+    }
+
+    :root[data-theme="light"] {
+      --bg-gradient: radial-gradient(circle at 50% 0%, #f8fafc 0%, #eef2f7 55%, #e2e8f0 100%);
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --card-border: rgba(15, 23, 42, 0.12);
+      --gold-border: rgba(180, 83, 9, 0.35);
+      --cyan-glow: #0284c7;
+      --cyan-accent: #0369a1;
+      --gold-accent: #b45309;
+      --purple-accent: #7e22ce;
+      --emerald-accent: #047857;
+      --rose-accent: #be123c;
+      --text-main: #0f172a;
+      --text-muted: #52606d;
+      --text-secondary: #334155;
+      --inset-soft: rgba(15, 23, 42, 0.05);
+      --inset-strong: rgba(15, 23, 42, 0.07);
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme="dark"]) {
+        --bg-gradient: radial-gradient(circle at 50% 0%, #f8fafc 0%, #eef2f7 55%, #e2e8f0 100%);
+        --card-bg: rgba(255, 255, 255, 0.85);
+        --card-border: rgba(15, 23, 42, 0.12);
+        --gold-border: rgba(180, 83, 9, 0.35);
+        --cyan-glow: #0284c7;
+        --cyan-accent: #0369a1;
+        --gold-accent: #b45309;
+        --purple-accent: #7e22ce;
+        --emerald-accent: #047857;
+        --rose-accent: #be123c;
+        --text-main: #0f172a;
+        --text-muted: #52606d;
+        --text-secondary: #334155;
+        --inset-soft: rgba(15, 23, 42, 0.05);
+        --inset-strong: rgba(15, 23, 42, 0.07);
+      }
+    }
+
+    .theme-toggle {
+      background: var(--inset-soft);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--cyan-accent);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* PANTHEON HEADER */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 24px 36px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #00f2fe, #a855f7, #fbbf24);
+    }
+
+    .pantheon-brand {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .pantheon-icon {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, #00f2fe 0%, #3b82f6 50%, #a855f7 100%);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      box-shadow: 0 0 30px rgba(0, 242, 254, 0.5);
+    }
+
+    .pantheon-title h1 {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      background: linear-gradient(90deg, var(--text-main) 0%, var(--cyan-accent) 50%, var(--gold-accent) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .pantheon-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pantheon-tag {
+      background: rgba(251, 191, 36, 0.15);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      color: var(--gold-accent);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .exam-countdown-box {
+      text-align: right;
+    }
+
+    .countdown-number {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--cyan-glow);
+      text-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+    }
+
+    /* GRID & CARDS */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .card-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .card-val {
+      font-size: 38px;
+      font-weight: 900;
+      color: var(--text-main);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    /* TARGET PROGRESS BANNER */
+    .banner-card {
+      grid-column: span 4;
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.12) 0%, rgba(168, 85, 247, 0.12) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .banner-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 16px;
+    }
+
+    .target-val {
+      font-size: 32px;
+      font-weight: 900;
+      color: var(--cyan-glow);
+    }
+
+    .main-bar-container {
+      width: 100%;
+      height: 22px;
+      background: var(--inset-strong);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+      position: relative;
+    }
+
+    .main-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00f2fe 0%, #3b82f6 40%, #a855f7 80%, #fbbf24 100%);
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.6);
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .banner-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* TOPIC MASTERY & STRENGTH SECTION */
+    .two-third-card {
+      grid-column: span 3;
+    }
+
+    .one-third-card {
+      grid-column: span 1;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .topic-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .topic-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: var(--inset-soft);
+      padding: 12px 16px;
+      border-radius: 14px;
+      border: 1px solid var(--card-border);
+    }
+
+    .topic-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .topic-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .topic-badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .status-high {
+      background: rgba(52, 211, 153, 0.2);
+      border: 1px solid rgba(52, 211, 153, 0.4);
+      color: var(--emerald-accent);
+    }
+
+    .status-solid {
+      background: rgba(192, 132, 252, 0.2);
+      border: 1px solid rgba(192, 132, 252, 0.4);
+      color: var(--purple-accent);
+    }
+
+    .status-focus {
+      background: rgba(251, 191, 36, 0.2);
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      color: var(--gold-accent);
+    }
+
+    .topic-progress-bar {
+      height: 10px;
+      background: var(--inset-strong);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .topic-progress-fill {
+      height: 100%;
+      border-radius: 6px;
+    }
+
+    /* 19 SUBJECT MATRIX GRID */
+    .subject-matrix-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .matrix-cell {
+      padding: 8px 10px;
+      background: var(--inset-soft);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .matrix-cell.active {
+      border-color: rgba(56, 189, 248, 0.4);
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--cyan-accent);
+    }
+
+    /* ATHENA ORACLE RECOMMENDATION CARD */
+    .oracle-card {
+      grid-column: span 4;
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(14, 165, 233, 0.1) 100%);
+      border: 1px solid var(--gold-border);
+      padding: 24px;
+      border-radius: 20px;
+    }
+
+    .oracle-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .oracle-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--gold-accent);
+    }
+
+    .oracle-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* TIMER */
+    .timer-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 44px;
+      font-weight: 800;
+      color: var(--gold-accent);
+      text-align: center;
+      margin: 16px 0;
+      text-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+    }
+
+    .btn-timer {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(90deg, #00f2fe 0%, #3b82f6 100%);
+      border: none;
+      border-radius: 12px;
+      color: #030712;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    .btn-timer:hover {
+      transform: scale(1.02);
+    }
+
+    .btn-timer:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-timer-secondary {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      background: transparent;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-timer-secondary:hover {
+      border-color: var(--cyan-accent);
+      color: var(--text-main);
+    }
+
+    .pomo-input {
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      background: var(--inset-strong);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      color: var(--text-main);
+      font-size: 12px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .pomo-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .pomo-input:focus {
+      outline: none;
+      border-color: rgba(56, 189, 248, 0.5);
+    }
+
+    .pomo-mode-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+
+    .pomo-mode-btn {
+      flex: 1;
+      padding: 6px 4px;
+      background: var(--inset-soft);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .pomo-mode-btn.active {
+      border-color: rgba(56, 189, 248, 0.5);
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--cyan-accent);
+    }
+
+    .pomo-mode-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .focus-readout {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--emerald-accent);
+      margin-bottom: 10px;
+      transition: color 0.2s ease;
+    }
+
+    .focus-readout.warn {
+      color: var(--gold-accent);
+    }
+
+    .focus-readout.bad {
+      color: var(--rose-accent);
+    }
+
+    .session-log-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 4px 0;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .session-log-item a {
+      color: var(--cyan-accent);
+      text-decoration: none;
+    }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+      font-size: 12px;
+      margin-top: 10px;
+    }
+  </style>
+  <script>
+    // Applied before paint to avoid a flash of the wrong theme.
+    (function () {
+      var saved = localStorage.getItem('athena_theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+    })();
+  </script>
+</head>
+<body>
+  <div class="container">
+
+    <!-- PANTHEON HEADER -->
+    <header>
+      <div class="pantheon-brand">
+        <div class="pantheon-icon">🦉</div>
+        <div class="pantheon-title">
+          <h1>ATHENA ANALYTICS & MASTERY CONTROL</h1>
+          <div class="pantheon-subtitle">
+            <span>Governed by ZEUS ⚡ & ATHENA 🦉</span>
+            <span class="pantheon-tag">NEET PG 300 Qs/DAY GOAL</span>
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <a href="metis_dashboard.html" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(56, 189, 248, 0.2)); border: 1px solid var(--purple-accent); color: var(--text-main); padding: 10px 18px; border-radius: 14px; text-decoration: none; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; box-shadow: 0 0 15px rgba(168, 85, 247, 0.3); transition: all 0.3s ease;">
+          <span>🦉 METIS Flashcards PWA</span>
+        </a>
+        <div class="exam-countdown-box">
+          <div style="font-size: 11px; font-weight: 700; color: var(--gold-accent); margin-bottom: 2px;">NEET PG TARGET DATE</div>
+          <div class="countdown-number" id="countdownNumber">AUG 30, 2026</div>
+        </div>
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark theme">🌙</button>
+      </div>
+    </header>
+
+    <div class="dashboard-grid">
+
+      <!-- DAILY TARGET PROGRESS BANNER -->
+      <div class="card banner-card">
+        <div class="banner-header">
+          <div>
+            <div class="card-label">Daily Target Progress</div>
+            <div style="font-size: 14px; color: var(--text-muted);">Pacing towards 300 questions today</div>
+          </div>
+          <div class="target-val" id="targetVal">104 / 300 Qs</div>
+        </div>
+        <div class="main-bar-container">
+          <div class="main-bar-fill" id="mainBarFill" style="width: 34.7%;"></div>
+        </div>
+        <div class="banner-meta">
+          <span id="percentMeta">34.7% Completed</span>
+          <span id="remainingMeta">196 Questions Remaining Today</span>
+        </div>
+      </div>
+
+      <!-- METIS FLASHCARDS GOVERNOR CARD -->
+      <div class="card" style="grid-column: span 2; border-color: rgba(168, 85, 247, 0.3); background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 15, 45, 0.8) 100%);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div class="card-label" style="color: var(--purple-accent);">METIS Flashcard Governor</div>
+            <div style="font-size: 16px; font-weight: 800; color: var(--text-main); margin-top: 2px;">Spaced Repetition & Anki PWA</div>
+          </div>
+          <a href="metis_dashboard.html" style="background: rgba(168, 85, 247, 0.2); border: 1px solid var(--purple-accent); color: var(--text-main); padding: 6px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; text-decoration: none;">Launch METIS PWA &rarr;</a>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px;">
+          <div style="background: var(--inset-strong); padding: 10px; border-radius: 12px; border: 1px solid var(--card-border); text-align: center;">
+            <div style="font-size: 10px; color: var(--text-muted); font-weight: 700;">CARDS DUE</div>
+            <div style="font-size: 20px; font-weight: 900; font-family: 'JetBrains Mono'; color: var(--gold-accent);" id="athenaMetisDue">145</div>
+          </div>
+          <div style="background: var(--inset-strong); padding: 10px; border-radius: 12px; border: 1px solid var(--card-border); text-align: center;">
+            <div style="font-size: 10px; color: var(--text-muted); font-weight: 700;">MASTERED</div>
+            <div style="font-size: 20px; font-weight: 900; font-family: 'JetBrains Mono'; color: var(--emerald-accent);" id="athenaMetisMastered">0</div>
+          </div>
+          <div style="background: var(--inset-strong); padding: 10px; border-radius: 12px; border: 1px solid var(--card-border); text-align: center;">
+            <div style="font-size: 10px; color: var(--text-muted); font-weight: 700;">RETENTION RATE</div>
+            <div style="font-size: 20px; font-weight: 900; font-family: 'JetBrains Mono'; color: var(--cyan-accent);" id="athenaMetisRetention">88.5%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- METRIC 1: QUESTIONS SOLVED -->
+      <div class="card">
+        <div class="card-label">Questions Solved <span>📊</span></div>
+        <div class="card-val" id="valQuestions">104</div>
+        <div style="font-size: 12px; color: var(--text-muted);">Logged into Vault</div>
+      </div>
+
+      <!-- METRIC 2: ACTIVE HOURS -->
+      <div class="card">
+        <div class="card-label">Active Study Time <span>⏱️</span></div>
+        <div class="card-val" id="valHours">1.62 hrs</div>
+        <div style="font-size: 12px; color: var(--text-muted);">Total Focus Time</div>
+      </div>
+
+      <!-- METRIC 3: SOLVING SPEED -->
+      <div class="card">
+        <div class="card-label">Solving Speed <span>⚡</span></div>
+        <div class="card-val" id="valSpeed">64.3 Q/hr</div>
+        <div style="font-size: 12px; color: var(--emerald-accent); font-weight: 700;">🔥 High Sprint Speed</div>
+      </div>
+
+      <!-- METRIC 4: ENDURANCE SCORE -->
+      <div class="card">
+        <div class="card-label">Endurance Rating <span>🎯</span></div>
+        <div class="card-val" id="valEndurance">44 / 100</div>
+        <div style="font-size: 12px; color: var(--gold-accent); font-weight: 700;">In Progress</div>
+      </div>
+
+      <!-- METRIC 5: CONCENTRATION SCORE -->
+      <div class="card">
+        <div class="card-label">Concentration <span>🧠</span></div>
+        <div class="card-val" id="valConcentration">—</div>
+        <div style="font-size: 12px; color: var(--text-muted);" id="valConcentrationMeta">No pomodoro sessions logged yet</div>
+      </div>
+
+      <!-- TOPIC MASTERY & STRENGTH INDICATORS (2/3 WIDTH) -->
+      <div class="card two-third-card">
+        <div class="section-title">
+          <span>🎯 Topic-Based Strength & Mastery Indicators</span>
+        </div>
+        <div class="topic-grid" id="topicGrid"></div>
+      </div>
+
+      <!-- POMODORO FOCUS TIMER (1/3 WIDTH) -->
+      <div class="card one-third-card" style="text-align: center;">
+        <div class="section-title" style="justify-content: center;">🍅 Pomodoro Focus Block</div>
+        <input type="text" id="taskInput" class="pomo-input" placeholder="What are you doing? e.g. Cardiology QBank">
+        <input type="url" id="linkInput" class="pomo-input" placeholder="Paste QBank link (optional)">
+        <div class="pomo-mode-row" id="modeRow">
+          <button class="pomo-mode-btn active" data-mins="25" data-type="focus" onclick="setMode(25,'focus',this)">25m Focus</button>
+          <button class="pomo-mode-btn" data-mins="50" data-type="focus" onclick="setMode(50,'focus',this)">50m Block</button>
+          <button class="pomo-mode-btn" data-mins="5" data-type="break" onclick="setMode(5,'break',this)">5m Break</button>
+        </div>
+        <div class="timer-val" id="timerVal">25:00</div>
+        <div class="focus-readout" id="focusReadout">🟢 Concentration: 100% · 0 tab switches</div>
+        <button class="btn-timer" id="btnTimer" onclick="toggleTimer()">START FOCUS BLOCK</button>
+        <button class="btn-timer-secondary" id="btnReset" onclick="resetTimer()">Stop &amp; Log Session</button>
+        <div id="sessionLog" style="font-size: 11px; color: var(--text-muted); margin-top: 12px; text-align: left; max-height: 110px; overflow-y: auto;"></div>
+      </div>
+
+      <!-- 19 NEET PG SUBJECT MATRIX -->
+      <div class="card two-third-card">
+        <div class="section-title">📚 High-Yield 19 NEET PG Subjects Matrix <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">— coverage % vs researched topic taxonomy</span></div>
+        <div class="subject-matrix-grid" id="matrixGrid"></div>
+      </div>
+
+      <!-- ATHENA STATS & INSIGHTS (data-driven) -->
+      <div class="card oracle-card">
+        <div class="oracle-header">
+          <span style="font-size: 24px;">🧠</span>
+          <span class="oracle-title">ATHENA STATS & INSIGHTS — where you actually stand</span>
+        </div>
+        <div class="oracle-text" id="oracleText">Loading real stats from your QBank + session logs&hellip;</div>
+      </div>
+
+    </div>
+
+    <footer>
+      <div>🟢 Telemetry Live | Serviced by ATHENA & Pantheon Engine</div>
+      <div id="syncTime">Last Refreshed: Just now</div>
+    </footer>
+  </div>
+
+  <script>
+    // ---- Theme ----
+    function effectiveTheme() {
+      const explicit = document.documentElement.getAttribute('data-theme');
+      if (explicit) return explicit;
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    }
+
+    function updateThemeButton() {
+      const btn = document.getElementById('themeToggle');
+      if (btn) btn.innerText = effectiveTheme() === 'light' ? '☀️' : '🌙';
+    }
+
+    function toggleTheme() {
+      const next = effectiveTheme() === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('athena_theme', next);
+      updateThemeButton();
+    }
+
+    updateThemeButton();
+
+    // ---- Pomodoro state ----
+    let plannedMinutes = 25;
+    let sessionType = 'focus';
+    let remainingSec = plannedMinutes * 60;
+    let timerInt = null;
+    let running = false;
+    let sessionStartISO = null;
+
+    // ---- Concentration tracking (Page Visibility API) ----
+    let tabSwitches = 0;
+    let blurSeconds = 0;
+    let blurredAt = null;
+
+    document.addEventListener('visibilitychange', () => {
+      if (!running) return;
+      if (document.hidden) {
+        tabSwitches++;
+        blurredAt = Date.now();
+      } else if (blurredAt) {
+        blurSeconds += Math.round((Date.now() - blurredAt) / 1000);
+        blurredAt = null;
+      }
+      updateFocusReadout();
+    });
+
+    function concentrationScore() {
+      return Math.max(0, 100 - tabSwitches * 5 - Math.floor(blurSeconds / 10));
+    }
+
+    function updateFocusReadout() {
+      const el = document.getElementById('focusReadout');
+      const score = concentrationScore();
+      el.className = 'focus-readout' + (score < 50 ? ' bad' : score < 80 ? ' warn' : '');
+      const dot = score < 50 ? '🔴' : score < 80 ? '🟡' : '🟢';
+      el.innerText = `${dot} Concentration: ${score}% · ${tabSwitches} tab switch${tabSwitches === 1 ? '' : 'es'}`;
+    }
+
+    function renderTimer() {
+      const m = String(Math.floor(remainingSec / 60)).padStart(2, '0');
+      const s = String(remainingSec % 60).padStart(2, '0');
+      document.getElementById('timerVal').innerText = `${m}:${s}`;
+    }
+
+    function setMode(mins, type, btn) {
+      if (running) return;
+      plannedMinutes = mins;
+      sessionType = type;
+      remainingSec = mins * 60;
+      document.querySelectorAll('.pomo-mode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('btnTimer').innerText = type === 'break' ? 'START BREAK' : 'START FOCUS BLOCK';
+      renderTimer();
+    }
+
+    function toggleTimer() {
+      const btn = document.getElementById('btnTimer');
+      document.querySelectorAll('.pomo-mode-btn').forEach(b => b.disabled = !running ? true : false);
+
+      if (!running) {
+        running = true;
+        if (!sessionStartISO) sessionStartISO = new Date().toISOString();
+        btn.innerText = 'PAUSE';
+        btn.style.background = 'linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%)';
+        timerInt = setInterval(() => {
+          remainingSec--;
+          renderTimer();
+          if (remainingSec <= 0) {
+            clearInterval(timerInt);
+            running = false;
+            beep();
+            logSession(true);
+            btn.innerText = sessionType === 'break' ? 'START FOCUS BLOCK' : 'START BREAK';
+            btn.style.background = 'linear-gradient(90deg, #00f2fe 0%, #3b82f6 100%)';
+            document.querySelectorAll('.pomo-mode-btn').forEach(b => b.disabled = false);
+            // Auto-flip between focus/break for the next block; user still clicks start.
+            const nextType = sessionType === 'break' ? 'focus' : 'break';
+            const nextMins = nextType === 'break' ? 5 : 25;
+            const nextBtn = document.querySelector(`.pomo-mode-btn[data-type="${nextType}"]`);
+            if (nextBtn) setMode(nextMins, nextType, nextBtn);
+          }
+        }, 1000);
+      } else {
+        running = false;
+        clearInterval(timerInt);
+        btn.innerText = 'RESUME';
+        btn.style.background = 'linear-gradient(90deg, #00f2fe 0%, #3b82f6 100%)';
+        document.querySelectorAll('.pomo-mode-btn').forEach(b => b.disabled = false);
+      }
+    }
+
+    function resetTimer() {
+      if (sessionStartISO && (running || remainingSec < plannedMinutes * 60)) {
+        logSession(false);
+      }
+      clearInterval(timerInt);
+      running = false;
+      remainingSec = plannedMinutes * 60;
+      sessionStartISO = null;
+      tabSwitches = 0;
+      blurSeconds = 0;
+      blurredAt = null;
+      renderTimer();
+      updateFocusReadout();
+      const btn = document.getElementById('btnTimer');
+      btn.innerText = sessionType === 'break' ? 'START BREAK' : 'START FOCUS BLOCK';
+      btn.style.background = 'linear-gradient(90deg, #00f2fe 0%, #3b82f6 100%)';
+      document.querySelectorAll('.pomo-mode-btn').forEach(b => b.disabled = false);
+    }
+
+    function beep() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 880;
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.4);
+      } catch (e) { /* audio not available */ }
+    }
+
+    async function logSession(completed) {
+      const payload = {
+        task: document.getElementById('taskInput').value.trim() || '(untitled session)',
+        link: document.getElementById('linkInput').value.trim(),
+        session_type: sessionType,
+        planned_minutes: plannedMinutes,
+        start_time: sessionStartISO || new Date().toISOString(),
+        end_time: new Date().toISOString(),
+        completed: completed,
+        tab_switches: tabSwitches,
+        blur_seconds: blurSeconds
+      };
+      sessionStartISO = null;
+      try {
+        await fetch('/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      } catch (e) { /* offline, drop silently */ }
+      loadMetrics();
+    }
+
+    function renderSessionLog(sessions) {
+      const el = document.getElementById('sessionLog');
+      if (!sessions || !sessions.length) { el.innerHTML = ''; return; }
+      el.innerHTML = sessions.slice().reverse().slice(0, 8).map(s => {
+        const mins = s.planned_minutes ? `${s.planned_minutes}m` : '';
+        const type = s.session_type === 'break' ? '☕' : '🍅';
+        const status = s.completed === false ? ' (stopped)' : '';
+        const label = (s.task || 'session').slice(0, 28);
+        const linkHtml = s.link ? ` <a href="${s.link}" target="_blank" rel="noopener">↗</a>` : '';
+        const score = (typeof s.concentration_score === 'number') ? `${s.concentration_score}%` : '';
+        return `<div class="session-log-item"><span>${type} ${label}${status}${linkHtml}</span><span>${mins} ${score}</span></div>`;
+      }).join('');
+    }
+
+    const SUBJECT_ABBR = {
+      'Obstetrics & Gynecology': 'OBG',
+      'Preventive & Social Medicine': 'PSM',
+      'Forensic Medicine': 'Forensic Med'
+    };
+    const SUBJECT_ORDER = [
+      'Medicine', 'Surgery', 'Obstetrics & Gynecology', 'Pediatrics',
+      'Preventive & Social Medicine', 'Pathology', 'Pharmacology',
+      'Anatomy', 'Physiology', 'Biochemistry', 'Microbiology',
+      'Forensic Medicine', 'ENT', 'Ophthalmology', 'Dermatology',
+      'Psychiatry', 'Radiology', 'Anesthesia', 'Orthopedics'
+    ];
+
+    function renderMatrix(subjects) {
+      const el = document.getElementById('matrixGrid');
+      if (!subjects) { return; }
+      el.innerHTML = SUBJECT_ORDER.map(name => {
+        const s = subjects[name];
+        if (!s) return '';
+        const label = SUBJECT_ABBR[name] || name;
+        const active = s.questions_solved > 0;
+        const tier = s.coverage_pct >= 50 ? '#34d399' : s.coverage_pct >= 20 ? '#c084fc' : active ? '#fbbf24' : null;
+        const style = tier ? `border-color:${tier}66;background:${tier}1a;color:${tier};` : '';
+        const title = `${name}: ${s.questions_solved} Qs solved · ${s.coverage_pct}% topic coverage (${s.topics_covered_count}/${s.canonical_topic_count}) · ~${s.weightage_pct_approx}% of exam`;
+        return `<div class="matrix-cell${active ? ' active' : ''}" style="${style}" title="${title}"><span>${label}</span><span>${s.coverage_pct}% cov</span></div>`;
+      }).join('');
+    }
+
+    function renderTopicGrid(topicMastery) {
+      const el = document.getElementById('topicGrid');
+      if (!topicMastery) { el.innerHTML = ''; return; }
+      const entries = Object.entries(topicMastery).sort((a, b) => b[1].count - a[1].count).slice(0, 8);
+      if (!entries.length) { el.innerHTML = '<div style="font-size:12px;color:var(--text-muted);">No QBank activity logged yet.</div>'; return; }
+      const badgeClass = s => s === 'High Mastery' ? 'status-high' : s === 'Solid' ? 'status-solid' : 'status-focus';
+      const barColor = s => s === 'High Mastery' ? '#34d399' : s === 'Solid' ? '#c084fc' : '#fbbf24';
+      el.innerHTML = entries.map(([name, m]) => `
+        <div class="topic-row">
+          <div class="topic-meta">
+            <span class="topic-name">${name} (${m.count} Qs)</span>
+            <span class="topic-badge ${badgeClass(m.status)}">${m.mastery_percent}% • ${m.status}</span>
+          </div>
+          <div class="topic-progress-bar">
+            <div class="topic-progress-fill" style="width: ${m.mastery_percent}%; background: ${barColor(m.status)};"></div>
+          </div>
+        </div>`).join('');
+    }
+
+    function renderOracle(insights, log) {
+      const el = document.getElementById('oracleText');
+      if (!insights) { el.innerHTML = 'No syllabus insights yet — run athena_metrics.py once.'; return; }
+      const lines = [];
+
+      lines.push(`<strong>Syllabus Coverage:</strong> <strong>${insights.overall_weighted_coverage_pct}%</strong> of the NEET PG syllabus is covered so far, weighted by each subject's researched exam share (not a flat topic count — heavier subjects count more).`);
+
+      if (insights.focus_next && insights.focus_next.length) {
+        const items = insights.focus_next.slice(0, 3).map(name => {
+          const s = insights.subjects[name];
+          return `${SUBJECT_ABBR[name] || name} (${s.coverage_pct}% covered, ~${s.weightage_pct_approx}% of exam)`;
+        }).join(', ');
+        lines.push(`<strong>Highest-Priority Gaps:</strong> ${items} — biggest gap × exam weight, solve here next.`);
+      }
+
+      if (insights.strongest_subjects && insights.strongest_subjects.length) {
+        const items = insights.strongest_subjects.map(name => {
+          const s = insights.subjects[name];
+          return `${SUBJECT_ABBR[name] || name} (${s.coverage_pct}%)`;
+        }).join(', ');
+        lines.push(`<strong>Strongest So Far:</strong> ${items}.`);
+      }
+
+      if (insights.untouched_high_yield_subjects && insights.untouched_high_yield_subjects.length) {
+        const combined = insights.untouched_high_yield_subjects.reduce((sum, name) => sum + insights.subjects[name].weightage_pct_approx, 0);
+        const names = insights.untouched_high_yield_subjects.map(n => SUBJECT_ABBR[n] || n).join(', ');
+        lines.push(`<strong>Untouched Subjects:</strong> ${names} — zero questions logged, worth ~${combined.toFixed(1)}% of the exam combined.`);
+      }
+
+      if (log && typeof log.concentration_score === 'number') {
+        const advisory = log.concentration_score >= 80 ? "you're locked in — keep the same environment for your next block." :
+          log.concentration_score >= 50 ? 'some drift mid-session — consider phone-away mode for the next block.' :
+          'heavy distraction detected — shorten to 25m blocks until concentration climbs back up.';
+        lines.push(`<strong>Concentration:</strong> ${log.concentration_score}% average today — ${advisory}`);
+      } else {
+        lines.push(`<strong>Concentration:</strong> not measured yet — start a Pomodoro block above to begin tracking.`);
+      }
+
+      if (log && log.speed_q_per_hour) {
+        lines.push(`<strong>Pace:</strong> ${log.speed_q_per_hour} Q/hr today. At this pace you need ~${Math.max(Math.ceil((300 - (log.questions_completed || 0)) / log.speed_q_per_hour * 10) / 10, 0)} more hours to hit the 300-question target.`);
+      }
+
+      if (insights.data_quality_flags && insights.data_quality_flags.length) {
+        const items = insights.data_quality_flags.map(f => `${f.subject}/${f.unmatched_topic_folders.join(', ')}`).join('; ');
+        lines.push(`<span style="color:var(--text-muted);">⚠️ Folder names not in the reference taxonomy (won't count toward coverage until reconciled): ${items}. See NEET_PG_Subject_Topics_Reference.md.</span>`);
+      }
+
+      el.innerHTML = lines.map(l => `• ${l}`).join('<br><br>');
+    }
+
+    async function loadMetrics() {
+      try {
+        const r = await fetch('/metrics');
+        if (r.ok) {
+          const d = await r.json();
+          const todayKey = new Date().toISOString().split('T')[0];
+          const log = d.daily_logs[todayKey];
+          if (log) {
+            document.getElementById('valQuestions').innerText = log.questions_completed;
+            document.getElementById('targetVal').innerText = `${log.questions_completed} / 300 Qs`;
+            const pct = Math.min((log.questions_completed / 300) * 100, 100).toFixed(1);
+            document.getElementById('mainBarFill').style.width = `${pct}%`;
+            document.getElementById('percentMeta').innerText = `${pct}% Completed`;
+            document.getElementById('remainingMeta').innerText = `${Math.max(300 - log.questions_completed, 0)} Questions Remaining Today`;
+            document.getElementById('valHours').innerText = `${log.active_hours} hrs`;
+            document.getElementById('valSpeed').innerText = `${log.speed_q_per_hour} Q/hr`;
+            document.getElementById('valEndurance').innerText = `${log.endurance_score} / 100`;
+            if (log.concentration_score !== null && log.concentration_score !== undefined) {
+              document.getElementById('valConcentration').innerText = `${log.concentration_score}%`;
+              document.getElementById('valConcentrationMeta').innerText =
+                log.concentration_score >= 80 ? '🟢 Locked in' : log.concentration_score >= 50 ? '🟡 Some drift' : '🔴 Distracted';
+            }
+            document.getElementById('syncTime').innerText = `Last Refreshed: ${new Date().toLocaleTimeString()}`;
+            renderSessionLog(log.sessions);
+            renderTopicGrid(log.topic_mastery);
+          }
+          renderMatrix(d.syllabus_insights && d.syllabus_insights.subjects);
+          renderOracle(d.syllabus_insights, log);
+        }
+      } catch (e) {
+        console.log('Metrics active');
+      }
+    }
+
+    renderTimer();
+    loadMetrics();
+    setInterval(loadMetrics, 10000);
+  </script>
+</body>
+</html>

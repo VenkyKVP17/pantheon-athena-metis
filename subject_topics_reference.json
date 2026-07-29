@@ -1,0 +1,121 @@
+{
+  "_meta": {
+    "purpose": "Canonical 19-subject topic taxonomy for NEET PG. QBank/Flashcards folder structure and Athena analytics (coverage %, priority scoring) are keyed off this file.",
+    "generated": "2026-07-29",
+    "methodology": "NBE does not publish an official subject-wise question breakdown for NEET PG. weightage_questions_approx/weightage_pct_approx are coaching-industry estimates reconciled across 10+ sources (Careers360, PrepLadder, doctutorials, DigiNerve, getoncourse, academically.com, Zynerd, findmyguru, pw.live, collegedunia, getmyuni), normalized to sum to 200 questions / 100%. Individual subject estimates carry roughly +/-20-30% disagreement across sources, worst for small subjects (Dermatology, Psychiatry, Anesthesia, Forensic Medicine). Topic lists reflect standard MBBS textbook chapter divisions, cross-checked against Marrow/PrepLadder/DigiNerve high-yield topic pages where available.",
+    "sources": [
+      "https://collegedunia.com/exams/neet-pg/chapter-wise-weightage",
+      "https://getoncourse.ai/blog/neet-pg-subject-wise-weightage-2026-marks-distribution-strategy",
+      "https://www.doctutorials.com/neet-pg/neet-pg-marks-distribution",
+      "https://medicine.careers360.com/articles/neet-pg-2025-subject-wise-weightage",
+      "https://www.findmyguru.com/blog/neet-pg-subject-wise-weightage",
+      "https://www.diginerve.com/blogs/neet-pg-subject-wise-weightage/",
+      "https://www.prepladder.com/neet-pg-study-material/exam-pattern/neet-pg-marks-distribution-latest-exam-pattern",
+      "https://www.getmyuni.com/articles/subject-wise-weightage-in-neet-pg",
+      "https://academically.com/blogs/neet-pg-2026-total-marks-and-marking-scheme/",
+      "https://www.zynerd.com/blogs/neet-pg-subject-wise-weightage",
+      "https://www.pw.live/neet-pg/exams/neet-pg-subject-wise-weightage-2026",
+      "https://www.prepladder.com/neet-pg-study-material/anatomy",
+      "https://www.prepladder.com/neet-pg-study-material/pharmacology/important-topics-for-pharmacology-neet-pg",
+      "https://www.prepladder.com/neet-pg-study-material/social-and-preventive-medicine",
+      "https://www.prepladder.com/neet-pg-study-material/forensic-medicine/high-yield-topics-for-forensic-medicine-am-toxicology",
+      "https://www.prepladder.com/neet-pg-study-material/high-yield-topic/neet-pg-high-yield-topics-for-radiology",
+      "https://www.prepladder.com/neet-pg-study-material/anaesthesia"
+    ]
+  },
+  "Medicine": {
+    "weightage_questions_approx": 30,
+    "weightage_pct_approx": 15.0,
+    "topics": ["Cardiology", "Nephrology", "Pulmonology", "Gastroenterology", "Hepatology", "Endocrinology", "Neurology", "Infectious_Disease", "Hematology_and_Oncology", "Rheumatology_and_Immunology", "Critical_Care_and_Emergency", "Genetics_and_Metabolic_Disorders"]
+  },
+  "Surgery": {
+    "weightage_questions_approx": 23,
+    "weightage_pct_approx": 11.5,
+    "topics": ["General_Surgery_Principles", "GI_and_Abdominal_Surgery", "Hepatobiliary_and_Pancreatic_Surgery", "Breast_Surgery", "Endocrine_Surgery", "Urology", "Neurosurgery", "Cardiothoracic_and_Vascular_Surgery", "Pediatric_Surgery", "Trauma_and_Burns", "Onco_Surgery", "Transplant_Surgery"]
+  },
+  "Obstetrics & Gynecology": {
+    "weightage_questions_approx": 19,
+    "weightage_pct_approx": 9.5,
+    "topics": ["Antenatal_Care_and_Normal_Labor", "High_Risk_Pregnancy", "Abnormal_Labor_and_Operative_Obstetrics", "Postpartum_Complications", "Infertility", "Menstrual_Disorders", "Contraception", "Gynecological_Oncology", "Genital_Tract_Infections", "Uterine_and_Ovarian_Disorders", "Pelvic_Floor_and_Urogynecology", "Reproductive_Endocrinology"]
+  },
+  "Pediatrics": {
+    "weightage_questions_approx": 8,
+    "weightage_pct_approx": 4.0,
+    "topics": ["Growth_and_Development", "Neonatology", "Nutrition_and_Vitamin_Disorders", "Immunization", "Genetic_and_Metabolic_Disorders", "Pediatric_Infectious_Disease", "Pediatric_Cardiology", "Pediatric_Nephrology", "Pediatric_Neurology", "Pediatric_Hematology_and_Oncology", "Pediatric_Emergencies_and_PALS", "Fluid_Electrolyte_and_IAP_Guidelines"]
+  },
+  "Preventive & Social Medicine": {
+    "weightage_questions_approx": 13,
+    "weightage_pct_approx": 6.5,
+    "topics": ["Epidemiology", "Biostatistics", "Demography_and_Vital_Statistics", "Communicable_Diseases", "Non_Communicable_Diseases", "National_Health_Programs", "Nutrition", "Environmental_Health", "Occupational_Health", "Maternal_and_Child_Health", "Health_Administration_and_Planning", "Research_Methodology_and_Ethics"]
+  },
+  "Pathology": {
+    "weightage_questions_approx": 13,
+    "weightage_pct_approx": 6.5,
+    "topics": ["General_Pathology_Cell_Injury", "Inflammation_and_Repair", "Neoplasia", "Hematopathology", "Cardiovascular_Pathology", "Respiratory_Pathology", "GI_and_Liver_Pathology", "Renal_Pathology", "Endocrine_Pathology", "Genital_and_Breast_Pathology", "Bone_and_Soft_Tissue_Pathology", "CNS_Pathology", "Clinical_Pathology_and_Hematology_Techniques"]
+  },
+  "Pharmacology": {
+    "weightage_questions_approx": 12,
+    "weightage_pct_approx": 6.0,
+    "topics": ["General_Pharmacology_and_Pharmacokinetics", "Autonomic_Nervous_System_Drugs", "Cardiovascular_Pharmacology", "CNS_Pharmacology", "Chemotherapy_and_Antimicrobials", "Endocrine_Pharmacology", "Respiratory_and_GI_Pharmacology", "Antineoplastic_Drugs", "Immunopharmacology", "Toxicology_and_Antidotes", "NSAIDs_and_Autacoids", "Newer_Drugs_and_Recent_Advances"]
+  },
+  "Anatomy": {
+    "weightage_questions_approx": 10,
+    "weightage_pct_approx": 5.0,
+    "topics": ["Upper_Limb", "Lower_Limb", "Thorax", "Abdomen", "Pelvis_and_Perineum", "Head_and_Neck", "Back_and_Spinal_Cord", "Neuroanatomy", "Embryology", "Histology_and_Genetics"]
+  },
+  "Physiology": {
+    "weightage_questions_approx": 10,
+    "weightage_pct_approx": 5.0,
+    "topics": ["General_Physiology_and_Cell", "Nerve_Muscle_Physiology", "Blood_and_Immunity", "Cardiovascular_Physiology", "Respiratory_Physiology", "Renal_Physiology", "GI_Physiology", "Endocrine_Physiology", "Reproductive_Physiology", "CNS_and_Special_Senses", "Exercise_and_Environmental_Physiology"]
+  },
+  "Biochemistry": {
+    "weightage_questions_approx": 9,
+    "weightage_pct_approx": 4.5,
+    "topics": ["Enzymes_and_Biological_Oxidation", "Carbohydrate_Metabolism", "Lipid_Metabolism", "Protein_and_Amino_Acid_Metabolism", "Molecular_Biology_and_Genetics", "Nutrition_and_Vitamins", "Hormones", "Immunology", "Cancer_Biology", "Acid_Base_and_Electrolyte_Balance", "Organ_Function_Tests"]
+  },
+  "Microbiology": {
+    "weightage_questions_approx": 12,
+    "weightage_pct_approx": 6.0,
+    "topics": ["General_Microbiology_and_Immunology", "Bacteriology", "Systemic_Bacteriology", "Virology", "Mycology", "Parasitology", "Sterilization_and_Disinfection", "Hospital_Infection_Control", "Vaccines_and_Immunization", "Diagnostic_Microbiology"]
+  },
+  "Forensic Medicine": {
+    "weightage_questions_approx": 5,
+    "weightage_pct_approx": 2.5,
+    "topics": ["Thanatology_Death_and_Postmortem_Changes", "Forensic_Autopsy_and_Identification", "Mechanical_Injuries_and_Wounds", "Asphyxial_Deaths", "Forensic_Toxicology", "Medical_Jurisprudence_and_Ethics", "Sexual_Offences_and_Medicolegal_Examination", "Forensic_Psychiatry", "Regional_Injuries_Firearms_and_Burns"]
+  },
+  "ENT": {
+    "weightage_questions_approx": 6,
+    "weightage_pct_approx": 3.0,
+    "topics": ["Ear_Diseases_and_Hearing_Loss", "Nose_and_Paranasal_Sinuses", "Throat_and_Pharynx", "Larynx_and_Voice_Disorders", "Head_and_Neck_Tumors", "Salivary_Gland_Disorders", "Otology_Surgery", "Rhinology_Surgery", "Foreign_Bodies_and_Emergencies"]
+  },
+  "Ophthalmology": {
+    "weightage_questions_approx": 6,
+    "weightage_pct_approx": 3.0,
+    "topics": ["Cornea_and_External_Eye", "Lens_and_Cataract", "Glaucoma", "Retina_and_Vitreous", "Uvea_and_Uveitis", "Refractive_Errors", "Neuro_Ophthalmology", "Squint_and_Pediatric_Ophthalmology", "Orbit_and_Lids", "Ocular_Trauma"]
+  },
+  "Dermatology": {
+    "weightage_questions_approx": 4,
+    "weightage_pct_approx": 2.0,
+    "topics": ["Eczema_and_Dermatitis", "Psoriasis_and_Papulosquamous_Disorders", "Bacterial_Fungal_and_Viral_Infections", "Leprosy", "Vesiculobullous_Disorders", "Pigmentary_Disorders", "Hair_and_Nail_Disorders", "Sexually_Transmitted_Infections", "Skin_Tumors", "Drug_Reactions_and_Immunodermatology"]
+  },
+  "Psychiatry": {
+    "weightage_questions_approx": 4,
+    "weightage_pct_approx": 2.0,
+    "topics": ["Schizophrenia_and_Psychotic_Disorders", "Mood_Disorders", "Anxiety_and_Neurotic_Disorders", "Substance_Use_Disorders", "Personality_Disorders", "Child_Psychiatry", "Organic_Mental_Disorders_and_Dementia", "Psychopharmacology", "Psychotherapy", "Sleep_Disorders"]
+  },
+  "Radiology": {
+    "weightage_questions_approx": 6,
+    "weightage_pct_approx": 3.0,
+    "topics": ["Chest_Imaging", "Abdominal_Imaging", "Neuroimaging", "Musculoskeletal_Imaging", "Cardiovascular_Imaging", "Genitourinary_Imaging", "Obstetric_and_Gynecological_Imaging", "Pediatric_Imaging", "Contrast_Media_and_Radiation_Safety", "Interventional_Radiology"]
+  },
+  "Anesthesia": {
+    "weightage_questions_approx": 4,
+    "weightage_pct_approx": 2.0,
+    "topics": ["General_Anesthesia_and_Stages", "Local_and_Regional_Anesthesia", "Airway_Management", "Muscle_Relaxants", "Monitoring_and_Equipment", "Pain_Management", "Obstetric_Anesthesia", "Pediatric_Anesthesia", "Critical_Care_and_CPR", "Anesthetic_Complications"]
+  },
+  "Orthopedics": {
+    "weightage_questions_approx": 6,
+    "weightage_pct_approx": 3.0,
+    "topics": ["Fracture_Principles_and_Healing", "Trauma_and_Polytrauma", "Spine_Disorders", "Bone_and_Joint_Infections", "Bone_Tumors", "Metabolic_Bone_Disease", "Arthritis_and_Joint_Disorders", "Pediatric_Orthopedics", "Sports_Injuries_and_Ligaments", "Peripheral_Nerve_Injuries", "Amputation_and_Prosthetics"]
+  }
+}

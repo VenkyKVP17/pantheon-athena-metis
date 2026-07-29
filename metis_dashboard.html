@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PANTHEON | METIS Anki Flashcards Engine</title>
+  <meta name="description" content="METIS Spaced Repetition Flashcards Governor PWA under ATHENA for NEET PG Exam Mastery">
+  <meta name="theme-color" content="#090d16">
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 0%, #0f172a 0%, #090d16 60%, #030712 100%);
+      --card-bg: rgba(15, 23, 42, 0.75);
+      --card-border: rgba(56, 189, 248, 0.2);
+      --gold-border: rgba(251, 191, 36, 0.3);
+      --cyan-glow: #00f2fe;
+      --cyan-accent: #38bdf8;
+      --gold-accent: #fbbf24;
+      --purple-accent: #c084fc;
+      --emerald-accent: #34d399;
+      --rose-accent: #f43f5e;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 24px;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* HEADER */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 20px 32px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      position: relative;
+    }
+
+    header::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #00f2fe, #a855f7, #fbbf24);
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .metis-logo {
+      width: 52px;
+      height: 52px;
+      background: linear-gradient(135deg, #a855f7 0%, #3b82f6 50%, #00f2fe 100%);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      box-shadow: 0 0 25px rgba(168, 85, 247, 0.5);
+    }
+
+    .brand-title h1 {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      background: linear-gradient(90deg, #ffffff 0%, var(--purple-accent) 50%, var(--cyan-accent) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-action {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-main);
+      padding: 10px 18px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      text-decoration: none;
+    }
+
+    .btn-action:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--cyan-accent);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .btn-athena {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(168, 85, 247, 0.2));
+      border-color: var(--gold-accent);
+    }
+
+    .btn-athena:hover {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.35), rgba(168, 85, 247, 0.35));
+      box-shadow: 0 0 25px rgba(251, 191, 36, 0.4);
+    }
+
+    /* TOP METRICS GRID */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--cyan-accent);
+    }
+
+    .metric-card.gold::before { background: var(--gold-accent); }
+    .metric-card.purple::before { background: var(--purple-accent); }
+    .metric-card.emerald::before { background: var(--emerald-accent); }
+
+    .metric-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .metric-value {
+      font-size: 32px;
+      font-weight: 900;
+      font-family: 'JetBrains Mono', monospace;
+      color: #fff;
+    }
+
+    .metric-sub {
+      font-size: 12px;
+      color: var(--emerald-accent);
+      font-weight: 500;
+    }
+
+    /* NAVIGATION TABS */
+    .tabs-bar {
+      display: flex;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 8px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tab-btn.active {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--cyan-accent);
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+    }
+
+    .tab-btn:hover:not(.active) {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* VIEW PANELS */
+    .view-panel {
+      display: none;
+    }
+
+    .view-panel.active {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* FLASHCARD PLAYER */
+    .player-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      max-width: 800px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .card-progress-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .card-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #00f2fe, #a855f7);
+      transition: width 0.3s ease;
+    }
+
+    .flashcard-stage {
+      width: 100%;
+      min-height: 360px;
+      cursor: pointer;
+    }
+
+    .flashcard-card {
+      width: 100%;
+      min-height: 360px;
+      background: var(--card-bg);
+      backdrop-filter: blur(24px);
+      border: 1px solid var(--card-border);
+      border-radius: 28px;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 20px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .flashcard-card.revealed {
+      border-color: var(--gold-border);
+      box-shadow: 0 0 40px rgba(251, 191, 36, 0.3);
+      background: rgba(20, 25, 45, 0.95);
+    }
+
+    .card-question-box {
+      font-size: 22px;
+      font-weight: 600;
+      line-height: 1.5;
+      color: #fff;
+    }
+
+    .answer-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-accent), transparent);
+      margin: 8px 0;
+    }
+
+    .card-answer-box {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+      animation: fadeInAnswer 0.35s ease forwards;
+    }
+
+    .card-answer-box.show {
+      display: flex;
+    }
+
+    @keyframes fadeInAnswer {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .answer-text {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--gold-accent);
+      line-height: 1.5;
+    }
+
+    .card-tags-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .badge-subject {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--cyan-accent);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .badge-deck {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .card-text {
+      font-size: 22px;
+      font-weight: 600;
+      line-height: 1.5;
+      color: #fff;
+      text-align: center;
+      margin: auto 0;
+    }
+
+    .cloze-hidden {
+      background: rgba(168, 85, 247, 0.3);
+      border-bottom: 2px dashed var(--purple-accent);
+      color: var(--purple-accent);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .card-takeaway {
+      background: rgba(251, 191, 36, 0.1);
+      border-left: 3px solid var(--gold-accent);
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #fef08a;
+      line-height: 1.4;
+    }
+
+    .card-prompt-hint {
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    /* RATING BUTTONS */
+    .ratings-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      width: 100%;
+      max-width: 800px;
+    }
+
+    .btn-rate {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 16px;
+      border-radius: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-rate:hover {
+      transform: translateY(-3px);
+    }
+
+    .btn-rate.again { border-color: var(--rose-accent); }
+    .btn-rate.again:hover { background: rgba(244, 63, 94, 0.2); box-shadow: 0 0 20px rgba(244, 63, 94, 0.4); }
+    
+    .btn-rate.hard { border-color: var(--gold-accent); }
+    .btn-rate.hard:hover { background: rgba(251, 191, 36, 0.2); box-shadow: 0 0 20px rgba(251, 191, 36, 0.4); }
+
+    .btn-rate.good { border-color: var(--cyan-accent); }
+    .btn-rate.good:hover { background: rgba(56, 189, 248, 0.2); box-shadow: 0 0 20px rgba(56, 189, 248, 0.4); }
+
+    .btn-rate.easy { border-color: var(--emerald-accent); }
+    .btn-rate.easy:hover { background: rgba(52, 211, 153, 0.2); box-shadow: 0 0 20px rgba(52, 211, 153, 0.4); }
+
+    .rate-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .rate-time {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .key-shortcut {
+      font-size: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* DECK BROWSER */
+    .deck-controls {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--card-border);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 14px;
+      font-size: 14px;
+      width: 320px;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--cyan-accent);
+      box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .card-item-mini {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      transition: all 0.3s;
+    }
+
+    .card-item-mini:hover {
+      border-color: var(--cyan-accent);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
+
+    .card-mini-q {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.4;
+    }
+
+    .card-mini-a {
+      font-size: 13px;
+      color: var(--cyan-accent);
+      background: rgba(56, 189, 248, 0.1);
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+
+    .card-mini-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* METRICS HEATMAP & SUBJECT MATRIX */
+    .matrix-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .subject-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .subject-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .subject-progress-bg {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .subject-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--cyan-accent), var(--gold-accent));
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- HEADER -->
+  <header>
+    <div class="brand-section">
+      <div class="metis-logo">🦉</div>
+      <div class="brand-title">
+        <h1>PANTHEON | METIS</h1>
+        <div class="brand-subtitle">Spaced Repetition & Anki Flashcard Governor</div>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <button class="btn-action" onclick="openAnkiSettings()">
+        <span style="color: var(--gold-accent);">⚙️</span> Anki Options
+      </button>
+      <button class="btn-action" id="btnSync" onclick="triggerMetisSync()">
+        <span>🔄</span> Sync METIS
+      </button>
+      <button class="btn-action" id="btnInstallPwa" onclick="installPwa()" style="display: none;">
+        <span>📱</span> Install PWA
+      </button>
+      <a href="athena_dashboard.html" class="btn-action btn-athena">
+        <span>🏛️</span> ATHENA Control Center
+      </a>
+    </div>
+  </header>
+
+  <!-- TOP METRICS -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-header">
+        <span>Total Vault Flashcards</span>
+        <span>📚</span>
+      </div>
+      <div class="metric-value" id="valTotalCards">145</div>
+      <div class="metric-sub">Across 3 Core Subjects</div>
+    </div>
+
+    <div class="metric-card gold">
+      <div class="metric-header">
+        <span>Cards Due Today</span>
+        <span>⏰</span>
+      </div>
+      <div class="metric-value" id="valDueToday">145</div>
+      <div class="metric-sub">FSRS / SM-2 Queue</div>
+    </div>
+
+    <div class="metric-card emerald">
+      <div class="metric-header">
+        <span>Mastered Cards</span>
+        <span>🏆</span>
+      </div>
+      <div class="metric-value" id="valMastered">0</div>
+      <div class="metric-sub">Interval &ge; 7 days</div>
+    </div>
+
+    <div class="metric-card purple">
+      <div class="metric-header">
+        <span>Est. Retention Rate</span>
+        <span>🎯</span>
+      </div>
+      <div class="metric-value" id="valRetention">88.5%</div>
+      <div class="metric-sub">Optimal Recall Index</div>
+    </div>
+  </div>
+
+  <!-- NAVIGATION TABS -->
+  <div class="tabs-bar">
+    <button class="tab-btn active" onclick="switchTab('study')">
+      <span>🎴</span> Anki Review Mode
+    </button>
+    <button class="tab-btn" onclick="switchTab('deck')">
+      <span>🗂️</span> Deck Explorer
+    </button>
+    <button class="tab-btn" onclick="switchTab('analytics')">
+      <span>📊</span> METIS Mastery Analytics
+    </button>
+  </div>
+
+  <!-- VIEW PANEL 1: STUDY MODE -->
+  <div class="view-panel active" id="panel-study">
+    <div class="player-container">
+      <div class="card-progress-bar">
+        <div class="card-progress-fill" id="studyProgressBar"></div>
+      </div>
+
+      <div class="flashcard-stage" onclick="flipCard()">
+        <div class="flashcard-card" id="flashcardElement">
+          <!-- TAGS ROW -->
+          <div class="card-tags-row">
+            <span class="badge-subject" id="cardSubject">Anatomy</span>
+            <span class="badge-deck" id="cardDeck">General Anatomy</span>
+          </div>
+
+          <!-- QUESTION -->
+          <div class="card-question-box" id="cardFrontText">
+            Loading METIS Flashcard Queue...
+          </div>
+
+          <!-- UNREVEALED PROMPT -->
+          <div class="card-prompt-hint" id="unrevealedPrompt">
+            <span>💡 Click Card or Press <b>SPACE</b> to reveal answer</span>
+          </div>
+
+          <!-- ANSWER BOX (HIDDEN UNTIL REVEALED) -->
+          <div class="card-answer-box" id="answerBox">
+            <div class="answer-divider"></div>
+            <div class="answer-text" id="cardBackText">
+              Answer text...
+            </div>
+            <div class="card-takeaway" id="cardTakeaway" style="display: none;">
+              <strong>Takeaway:</strong> Key high-yield summary...
+            </div>
+            <div class="card-prompt-hint" style="color: var(--gold-accent);">
+              <span>Rate recall difficulty below to advance queue</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RATING BUTTONS -->
+      <div class="ratings-container" id="ratingsRow" style="opacity: 0.5; pointer-events: none;">
+        <button class="btn-rate again" onclick="rateCard('again', event)">
+          <span class="rate-title">Again</span>
+          <span class="rate-time" id="lblRateAgain">&lt; 1m</span>
+          <span class="key-shortcut">Key 1</span>
+        </button>
+        <button class="btn-rate hard" onclick="rateCard('hard', event)">
+          <span class="rate-title">Hard</span>
+          <span class="rate-time" id="lblRateHard">6m</span>
+          <span class="key-shortcut">Key 2</span>
+        </button>
+        <button class="btn-rate good" onclick="rateCard('good', event)">
+          <span class="rate-title">Good</span>
+          <span class="rate-time" id="lblRateGood">10m</span>
+          <span class="key-shortcut">Key 3</span>
+        </button>
+        <button class="btn-rate easy" onclick="rateCard('easy', event)">
+          <span class="rate-title">Easy</span>
+          <span class="rate-time" id="lblRateEasy">4d</span>
+          <span class="key-shortcut">Key 4</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW PANEL 2: DECK EXPLORER -->
+  <div class="view-panel" id="panel-deck">
+    <div class="deck-controls">
+      <input type="text" class="search-input" id="searchDeck" placeholder="🔍 Search flashcards or topics..." oninput="filterCards()">
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-action" onclick="filterBySubject('All')">All Decks</button>
+        <button class="btn-action" onclick="filterBySubject('Anatomy')">Anatomy</button>
+        <button class="btn-action" onclick="filterBySubject('Medicine')">Medicine</button>
+        <button class="btn-action" onclick="filterBySubject('Surgery')">Surgery</button>
+      </div>
+    </div>
+    <div class="cards-grid" id="cardsGridContainer">
+      <!-- Dynamically populated -->
+    </div>
+  </div>
+
+  <!-- VIEW PANEL 3: METIS ANALYTICS -->
+  <div class="view-panel" id="panel-analytics">
+    <div class="matrix-grid" id="subjectMatrixContainer">
+      <!-- Dynamically populated -->
+    </div>
+  </div>
+</div>
+
+<!-- ANKI SETTINGS MODAL -->
+<div class="modal-overlay" id="ankiSettingsModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(3, 7, 18, 0.85); backdrop-filter: blur(12px); z-index: 1000; justify-content: center; align-items: center;">
+  <div class="modal-card" style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 24px; padding: 32px; max-width: 540px; width: 90%; box-shadow: 0 25px 60px rgba(0,0,0,0.8); display: flex; flex-direction: column; gap: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h2 style="font-size: 20px; font-weight: 800; color: #fff;">⚙️ Anki Deck Options & Algorithm Config</h2>
+      <button onclick="closeAnkiSettings()" style="background: transparent; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer;">✕</button>
+    </div>
+    
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <label style="font-size: 14px; font-weight: 600; color: var(--text-muted);">Spaced Repetition Engine</label>
+        <select id="settingAlgorithm" style="background: rgba(3,7,18,0.7); border: 1px solid var(--card-border); color: #fff; padding: 8px 14px; border-radius: 10px; font-size: 13px;">
+          <option value="SM-2">Anki SM-2 Standard (Default)</option>
+          <option value="FSRS">FSRS 5.0 (Free Spaced Repetition)</option>
+        </select>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <label style="font-size: 14px; font-weight: 600; color: var(--text-muted);">New Cards / Day</label>
+        <input type="number" id="settingNewLimit" value="20" style="background: rgba(3,7,18,0.7); border: 1px solid var(--card-border); color: #fff; padding: 8px 14px; border-radius: 10px; font-size: 13px; width: 100px;">
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <label style="font-size: 14px; font-weight: 600; color: var(--text-muted);">Max Reviews / Day</label>
+        <input type="number" id="settingMaxReviews" value="200" style="background: rgba(3,7,18,0.7); border: 1px solid var(--card-border); color: #fff; padding: 8px 14px; border-radius: 10px; font-size: 13px; width: 100px;">
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <label style="font-size: 14px; font-weight: 600; color: var(--text-muted);">Learning Steps (min)</label>
+        <input type="text" id="settingLearningSteps" value="1 10" style="background: rgba(3,7,18,0.7); border: 1px solid var(--card-border); color: #fff; padding: 8px 14px; border-radius: 10px; font-size: 13px; width: 120px;">
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <label style="font-size: 14px; font-weight: 600; color: var(--text-muted);">Graduating Interval (days)</label>
+        <input type="number" id="settingGraduating" value="1" style="background: rgba(3,7,18,0.7); border: 1px solid var(--card-border); color: #fff; padding: 8px 14px; border-radius: 10px; font-size: 13px; width: 100px;">
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <label style="font-size: 14px; font-weight: 600; color: var(--text-muted);">Easy Interval (days)</label>
+        <input type="number" id="settingEasy" value="4" style="background: rgba(3,7,18,0.7); border: 1px solid var(--card-border); color: #fff; padding: 8px 14px; border-radius: 10px; font-size: 13px; width: 100px;">
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px;">
+      <button onclick="closeAnkiSettings()" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 10px 18px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer;">Cancel</button>
+      <button onclick="saveAnkiSettings()" style="background: linear-gradient(135deg, var(--cyan-accent), #3b82f6); border: none; color: #000; padding: 10px 20px; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer;">Save Settings</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let allCards = [];
+  let currentCardIndex = 0;
+  let isFlipped = false;
+  let cardsReviewedSession = 0;
+
+  // PWA Register
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed', err));
+  }
+
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('btnInstallPwa').style.display = 'flex';
+  });
+
+  function installPwa() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(() => {
+        deferredPrompt = null;
+        document.getElementById('btnInstallPwa').style.display = 'none';
+      });
+    }
+  }
+
+  // Load METIS Flashcards
+  async function loadMetisData() {
+    try {
+      let resp = await fetch('/api/metis/report');
+      if (!resp.ok) {
+        resp = await fetch('../06-Agent_Outputs/METIS/metis_daily_report.json');
+      }
+      if (resp.ok) {
+        const data = await resp.json();
+        allCards = data.cards || [];
+        document.getElementById('valTotalCards').innerText = data.total_cards_scanned || allCards.length;
+        document.getElementById('valDueToday').innerText = data.due_today || allCards.length;
+        document.getElementById('valMastered').innerText = data.mastered_cards || 0;
+        document.getElementById('valRetention').innerText = (data.retention_rate_pct || 88.5) + '%';
+        
+        renderCurrentCard();
+        renderDeckExplorer(allCards);
+        renderSubjectMatrix(data.subject_distribution || {});
+      }
+    } catch (e) {
+      console.error('Error loading METIS report:', e);
+    }
+  }
+
+  let ankiSettings = JSON.parse(localStorage.getItem('metis_anki_settings') || JSON.stringify({
+    newCardsPerDay: 20,
+    maxReviewsPerDay: 200,
+    learningSteps: [1, 10],
+    graduatingInterval: 1,
+    easyInterval: 4,
+    relearningSteps: [10],
+    startingEase: 2.50,
+    algorithm: 'SM-2'
+  }));
+
+  let cardStateMap = JSON.parse(localStorage.getItem('metis_card_states') || '{}');
+
+  function openAnkiSettings() {
+    document.getElementById('settingAlgorithm').value = ankiSettings.algorithm || 'SM-2';
+    document.getElementById('settingNewLimit').value = ankiSettings.newCardsPerDay || 20;
+    document.getElementById('settingMaxReviews').value = ankiSettings.maxReviewsPerDay || 200;
+    document.getElementById('settingLearningSteps').value = (ankiSettings.learningSteps || [1, 10]).join(' ');
+    document.getElementById('settingGraduating').value = ankiSettings.graduatingInterval || 1;
+    document.getElementById('settingEasy').value = ankiSettings.easyInterval || 4;
+
+    document.getElementById('ankiSettingsModal').style.display = 'flex';
+  }
+
+  function closeAnkiSettings() {
+    document.getElementById('ankiSettingsModal').style.display = 'none';
+  }
+
+  function saveAnkiSettings() {
+    ankiSettings.algorithm = document.getElementById('settingAlgorithm').value;
+    ankiSettings.newCardsPerDay = parseInt(document.getElementById('settingNewLimit').value) || 20;
+    ankiSettings.maxReviewsPerDay = parseInt(document.getElementById('settingMaxReviews').value) || 200;
+    
+    const stepsInput = document.getElementById('settingLearningSteps').value.trim();
+    ankiSettings.learningSteps = stepsInput ? stepsInput.split(/\s+/).map(Number) : [1, 10];
+    
+    ankiSettings.graduatingInterval = parseInt(document.getElementById('settingGraduating').value) || 1;
+    ankiSettings.easyInterval = parseInt(document.getElementById('settingEasy').value) || 4;
+
+    localStorage.setItem('metis_anki_settings', JSON.stringify(ankiSettings));
+    closeAnkiSettings();
+    renderCurrentCard();
+  }
+
+  function getCardState(cardId) {
+    if (!cardStateMap[cardId]) {
+      cardStateMap[cardId] = {
+        state: 'new',
+        step: 0,
+        interval: 0,
+        ease: ankiSettings.startingEase || 2.50,
+        reps: 0,
+        lapses: 0,
+        dueDate: new Date().toISOString().split('T')[0]
+      };
+    }
+    return cardStateMap[cardId];
+  }
+
+  function formatIntervalText(val) {
+    if (typeof val === 'string') return val;
+    if (val < 1) {
+      const mins = Math.max(1, Math.round(val * 24 * 60));
+      return mins + 'm';
+    }
+    const days = Math.round(val * 10) / 10;
+    if (days < 30) return (days === Math.floor(days) ? days : days.toFixed(1)) + 'd';
+    if (days < 365) return (days / 30).toFixed(1) + 'mo';
+    return (days / 365).toFixed(1) + 'y';
+  }
+
+  function calculateDynamicIntervals(cardId) {
+    const cs = getCardState(cardId);
+    let intervals = { again: '1m', hard: '6m', good: '10m', easy: '4d' };
+
+    if (cs.state === 'new' || cs.state === 'learning') {
+      const step1 = ankiSettings.learningSteps[0] || 1;
+      const step2 = ankiSettings.learningSteps[1] || 10;
+      
+      intervals.again = step1 + 'm';
+      intervals.hard = Math.round((step1 + step2) / 2) + 'm';
+      intervals.good = step2 + 'm';
+      intervals.easy = (ankiSettings.easyInterval || 4) + 'd';
+    } else {
+      intervals.again = (ankiSettings.relearningSteps ? ankiSettings.relearningSteps[0] : 10) + 'm';
+      
+      const hardDays = Math.max(cs.interval + 1, Math.round(cs.interval * 1.2));
+      intervals.hard = formatIntervalText(hardDays);
+
+      const goodDays = Math.max(hardDays + 1, Math.round(cs.interval * cs.ease));
+      intervals.good = formatIntervalText(goodDays);
+
+      const easyDays = Math.max(goodDays + 1, Math.round(cs.interval * cs.ease * 1.3));
+      intervals.easy = formatIntervalText(easyDays);
+    }
+    return intervals;
+  }
+
+  function updateCardStateOnRating(cardId, rating) {
+    const cs = getCardState(cardId);
+    cs.reps++;
+
+    if (cs.state === 'new' || cs.state === 'learning') {
+      if (rating === 'again') {
+        cs.state = 'learning';
+        cs.step = 0;
+        cs.interval = 0;
+      } else if (rating === 'hard') {
+        cs.state = 'learning';
+      } else if (rating === 'good') {
+        if (cs.step + 1 < (ankiSettings.learningSteps || [1, 10]).length) {
+          cs.step++;
+        } else {
+          cs.state = 'review';
+          cs.interval = ankiSettings.graduatingInterval || 1;
+        }
+      } else if (rating === 'easy') {
+        cs.state = 'review';
+        cs.interval = ankiSettings.easyInterval || 4;
+        cs.ease += 0.15;
+      }
+    } else {
+      if (rating === 'again') {
+        cs.lapses++;
+        cs.ease = Math.max(1.30, cs.ease - 0.20);
+        cs.state = 'relearning';
+        cs.interval = 1;
+      } else if (rating === 'hard') {
+        cs.ease = Math.max(1.30, cs.ease - 0.15);
+        cs.interval = Math.max(cs.interval + 1, Math.round(cs.interval * 1.2));
+      } else if (rating === 'good') {
+        cs.interval = Math.max(cs.interval + 1, Math.round(cs.interval * cs.ease));
+      } else if (rating === 'easy') {
+        cs.ease += 0.15;
+        cs.interval = Math.max(cs.interval + 2, Math.round(cs.interval * cs.ease * 1.3));
+      }
+    }
+
+    cardStateMap[cardId] = cs;
+    localStorage.setItem('metis_card_states', JSON.stringify(cardStateMap));
+  }
+
+  function renderCurrentCard() {
+    if (!allCards || allCards.length === 0) return;
+    const card = allCards[currentCardIndex];
+    
+    document.getElementById('cardSubject').innerText = card.subject || 'General';
+    document.getElementById('cardDeck').innerText = (card.file || '').replace('_Flashcards.md', '');
+
+    document.getElementById('cardFrontText').innerHTML = card.question;
+    
+    // Parse takeaway if present in answer
+    let answerText = card.answer;
+    let takeawayText = '';
+    if (answerText.includes('Takeaway:')) {
+      const parts = answerText.split('Takeaway:');
+      answerText = parts[0];
+      takeawayText = parts[1];
+    }
+
+    document.getElementById('cardBackText').innerHTML = answerText;
+    
+    const takeawayEl = document.getElementById('cardTakeaway');
+    if (takeawayText) {
+      takeawayEl.style.display = 'block';
+      takeawayEl.innerHTML = '<strong>Takeaway:</strong> ' + takeawayText;
+    } else {
+      takeawayEl.style.display = 'none';
+    }
+
+    // Dynamic Rating Button Labels per card
+    const intervals = calculateDynamicIntervals(card.id);
+    document.getElementById('lblRateAgain').innerText = intervals.again;
+    document.getElementById('lblRateHard').innerText = intervals.hard;
+    document.getElementById('lblRateGood').innerText = intervals.good;
+    document.getElementById('lblRateEasy').innerText = intervals.easy;
+
+    // Reset Revealed State
+    isFlipped = false;
+    document.getElementById('flashcardElement').classList.remove('revealed');
+    document.getElementById('answerBox').classList.remove('show');
+    document.getElementById('unrevealedPrompt').style.display = 'flex';
+    document.getElementById('ratingsRow').style.opacity = '0.4';
+    document.getElementById('ratingsRow').style.pointerEvents = 'none';
+
+    // Update Progress
+    const pct = ((currentCardIndex) / allCards.length) * 100;
+    document.getElementById('studyProgressBar').style.width = pct + '%';
+  }
+
+  function flipCard() {
+    isFlipped = !isFlipped;
+    const cardEl = document.getElementById('flashcardElement');
+    const answerBox = document.getElementById('answerBox');
+    const unrevealedPrompt = document.getElementById('unrevealedPrompt');
+
+    if (isFlipped) {
+      cardEl.classList.add('revealed');
+      answerBox.classList.add('show');
+      unrevealedPrompt.style.display = 'none';
+      document.getElementById('ratingsRow').style.opacity = '1';
+      document.getElementById('ratingsRow').style.pointerEvents = 'auto';
+    } else {
+      cardEl.classList.remove('revealed');
+      answerBox.classList.remove('show');
+      unrevealedPrompt.style.display = 'flex';
+      document.getElementById('ratingsRow').style.opacity = '0.4';
+      document.getElementById('ratingsRow').style.pointerEvents = 'none';
+    }
+  }
+
+  function rateCard(rating, evt) {
+    if (evt) evt.stopPropagation();
+    cardsReviewedSession++;
+    
+    if (allCards[currentCardIndex]) {
+      updateCardStateOnRating(allCards[currentCardIndex].id, rating);
+    }
+    
+    playFeedbackTone(rating);
+
+    currentCardIndex = (currentCardIndex + 1) % allCards.length;
+    renderCurrentCard();
+  }
+
+  function playFeedbackTone(rating) {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      const freqs = { 'again': 220, 'hard': 330, 'good': 440, 'easy': 554 };
+      osc.frequency.value = freqs[rating] || 440;
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+      
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
+    } catch(e){}
+  }
+
+  // Keyboard Shortcuts
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+      e.preventDefault();
+      flipCard();
+    } else if (isFlipped) {
+      if (e.key === '1') rateCard('again');
+      if (e.key === '2') rateCard('hard');
+      if (e.key === '3') rateCard('good');
+      if (e.key === '4') rateCard('easy');
+    }
+  });
+
+  // Tab switcher
+  function switchTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+
+    event.currentTarget.classList.add('active');
+    document.getElementById('panel-' + tabName).classList.add('active');
+  }
+
+  // Deck Explorer
+  function renderDeckExplorer(cards) {
+    const container = document.getElementById('cardsGridContainer');
+    container.innerHTML = cards.map(c => `
+      <div class="card-item-mini">
+        <div class="card-mini-q">${c.question}</div>
+        <div class="card-mini-a">${c.answer}</div>
+        <div class="card-mini-meta">
+          <span>📚 ${c.subject}</span>
+          <span>FSRS Ease: 2.50</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function filterCards() {
+    const q = document.getElementById('searchDeck').value.toLowerCase();
+    const filtered = allCards.filter(c => c.question.toLowerCase().includes(q) || c.answer.toLowerCase().includes(q));
+    renderDeckExplorer(filtered);
+  }
+
+  function filterBySubject(subj) {
+    if (subj === 'All') {
+      renderDeckExplorer(allCards);
+    } else {
+      const filtered = allCards.filter(c => c.subject === subj);
+      renderDeckExplorer(filtered);
+    }
+  }
+
+  function renderSubjectMatrix(dist) {
+    const container = document.getElementById('subjectMatrixContainer');
+    container.innerHTML = Object.keys(dist).map(subj => {
+      const count = dist[subj];
+      return `
+        <div class="subject-box">
+          <div class="subject-title">
+            <span>${subj}</span>
+            <span style="font-family: 'JetBrains Mono'; color: var(--cyan-accent);">${count} Cards</span>
+          </div>
+          <div class="subject-progress-bg">
+            <div class="subject-progress-fill" style="width: ${Math.min((count/50)*100, 100)}%;"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function triggerMetisSync() {
+    document.getElementById('btnSync').innerText = '⏳ Syncing...';
+    setTimeout(() => {
+      loadMetisData();
+      document.getElementById('btnSync').innerText = '✅ Synced';
+      setTimeout(() => document.getElementById('btnSync').innerText = '🔄 Sync METIS', 2000);
+    }, 800);
+  }
+
+  loadMetisData();
+</script>
+</body>
+</html>
