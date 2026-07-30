@@ -23,29 +23,41 @@ IST = timezone(timedelta(hours=5, minutes=30))
 def build_prompt(insights):
     subjects = insights["subjects"]
     focus_next = insights["focus_next"]
+    highest_yield = insights.get("highest_yield_targets", [])
     untouched = insights["untouched_high_yield_subjects"]
 
     lines = [
-        "You are ATHENA, reviewing a NEET-PG aspirant's QBank progress against exam weightage.",
-        f"Overall weighted syllabus coverage: {insights['overall_weighted_coverage_pct']}%.",
+        "You are ATHENA, a predictive AI reviewing a NEET-PG aspirant's QBank and Anki (FSRS) progress.",
+        f"Overall weighted syllabus mastery (coverage + retention): {insights.get('overall_weighted_mastery_pct', insights.get('overall_weighted_coverage_pct'))}%.",
         "",
-        "Top-priority subjects (weighted gap = high exam weightage x low coverage):",
+        "Top-priority subjects (dynamic penalty based on decay and poor retention):",
     ]
     for subj in focus_next:
         s = subjects[subj]
         lines.append(
-            f"- {subj}: {s['coverage_pct']}% coverage, {s['questions_solved']} Qs solved, "
-            f"~{s['weightage_pct_approx']}% of exam, priority score {s['priority_score']}"
+            f"- {subj}: Mastery {s.get('mastery_pct')}% (Coverage {s['coverage_pct']}%, FSRS Stability {s.get('avg_stability', 0)}), "
+            f"Exam Weight ~{s['weightage_pct_approx']}%, Priority Score {s['priority_score']}"
         )
+        
+    if highest_yield:
+        lines.append("")
+        lines.append("Highest Yield-to-Effort Opportunities (max marks for least effort):")
+        for subj in highest_yield:
+            s = subjects[subj]
+            lines.append(
+                f"- {subj}: Yield {s.get('estimated_yield_marks', 0)} marks. Avg Difficulty: {s.get('avg_difficulty', 0)}/10. "
+                f"(Ratio: {s.get('yield_effort_ratio', 0)})"
+            )
 
     if untouched:
         lines.append("")
-        lines.append("Untouched high-yield subjects (0 questions solved): " + ", ".join(untouched[:5]))
+        lines.append("Untouched high-yield subjects: " + ", ".join(untouched[:5]))
 
     lines.append("")
     lines.append(
-        "In under 120 words, give a direct, no-fluff read: what's the single biggest risk "
-        "right now, and which 1-2 subjects to attack next. No preamble, no restating the numbers."
+        "In under 120 words, give a highly dynamic, algorithmic read: "
+        "Point out specific retention decay risks (e.g. 'You're forgetting Surgery'), and which 1-2 subjects to attack next based on the highest yield vs effort ratio. "
+        "No preamble, no restating the raw numbers. Talk like an AI data scientist."
     )
     return "\n".join(lines)
 

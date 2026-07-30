@@ -2,10 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>PANTHEON | METIS Flashcards</title>
   <meta name="description" content="METIS — multi-user Anki-style spaced repetition flashcards for NEET PG, scheduled with FSRS.">
   <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="METIS">
   <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -77,7 +80,7 @@
     a { color: var(--cyan-accent); }
 
     header {
-      display: flex; justify-content: space-between; align-items: center;
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px;
       background: var(--card-bg); border: 1px solid var(--card-border);
       border-radius: 20px; padding: 16px 24px;
     }
@@ -123,6 +126,7 @@
     }
     .field input:focus { outline: none; border-color: var(--cyan-accent); }
     .auth-error { color: var(--rose-accent); font-size: 13px; margin-bottom: 12px; min-height: 18px; }
+    .settings-hint { font-size: 12px; color: var(--text-muted); margin-top: 6px; line-height: 1.5; }
 
     /* ---------- App shell ---------- */
     #app { display: none; flex-direction: column; gap: 20px; }
@@ -258,7 +262,7 @@
         </div>
       </div>
       <div class="header-actions">
-        <a href="athena_dashboard.html" class="btn-ghost">🛡️ ATHENA</a>
+        <a href="/athena_dashboard.html" class="btn-ghost">🛡️ ATHENA</a>
         <span id="whoami" class="btn-ghost" style="display:none;"></span>
         <button class="icon-btn" id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark theme">🌙</button>
         <button class="icon-btn" id="logoutBtn" onclick="logout()" title="Log out" style="display:none;">🚪</button>
@@ -294,6 +298,7 @@
         <button class="tab-btn" onclick="switchTab('decks')">🗂️ Decks</button>
         <button class="tab-btn" onclick="switchTab('browse')">🔍 Browse</button>
         <button class="tab-btn" onclick="switchTab('stats')">📊 Stats</button>
+        <button class="tab-btn" onclick="switchTab('settings')">⚙️ Settings</button>
       </div>
 
       <!-- ---- Study ---- -->
@@ -366,6 +371,92 @@
         <div class="card">
           <h2 style="font-size:15px; margin-bottom:6px;">Forecast — next 14 days</h2>
           <div class="bars" id="forecastBars"></div>
+        </div>
+      </div>
+
+      <!-- ---- Settings ---- -->
+      <div class="panel" id="panel-settings">
+        <div class="card">
+          <h2 style="font-size:17px; margin-bottom:4px;">Scheduling algorithm</h2>
+          <p class="settings-hint">Changes here apply the next time you review a card — cards already in progress under the old algorithm are treated as new the first time you review them again (your full review history is kept either way).</p>
+          <div class="auth-tabs" style="max-width:420px;">
+            <div class="auth-tab" id="algoFsrsTab" onclick="setAlgoTab('fsrs')">FSRS-6</div>
+            <div class="auth-tab" id="algoSm2Tab" onclick="setAlgoTab('sm2')">Anki SM-2 Standard</div>
+          </div>
+        </div>
+
+        <div class="card" id="fsrsSettingsCard">
+          <h2 style="font-size:15px; margin-bottom:14px;">FSRS settings</h2>
+          <div class="field">
+            <label>Desired retention: <span id="retentionVal">90%</span></label>
+            <input type="range" id="setRetention" min="70" max="97" step="1" oninput="document.getElementById('retentionVal').innerText = this.value + '%'">
+            <p class="settings-hint">Higher = reviews more often to keep recall stronger before your exam; lower = wider intervals, more forgetting risk.</p>
+          </div>
+          <div class="field">
+            <label>Maximum interval (days)</label>
+            <input type="number" id="setMaxInterval" min="1" max="36500">
+            <p class="settings-hint">Caps how far out a card can be scheduled. For exam prep, capping this near your target date (e.g. 180–365) keeps FSRS from scheduling reviews long after you no longer need them.</p>
+          </div>
+          <div class="field">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+              <input type="checkbox" id="setFuzzing" style="width:auto;"> Enable interval fuzzing
+            </label>
+            <p class="settings-hint">Adds small randomness to intervals so cards don't all pile up due on the same day.</p>
+          </div>
+        </div>
+
+        <div class="card" id="sm2SettingsCard">
+          <h2 style="font-size:15px; margin-bottom:14px;">Anki SM-2 settings</h2>
+          <div class="field">
+            <label>Starting ease</label>
+            <input type="number" id="setStartingEase" min="1.3" max="5.0" step="0.05">
+          </div>
+          <div class="field">
+            <label>Graduating interval (days)</label>
+            <input type="number" id="setGraduating" min="1" max="3650">
+          </div>
+          <div class="field">
+            <label>Easy interval (days)</label>
+            <input type="number" id="setEasyInterval" min="1" max="3650">
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 style="font-size:15px; margin-bottom:14px;">Learning steps</h2>
+          <div class="field">
+            <label>Learning steps (minutes, comma separated)</label>
+            <input type="text" id="setLearningSteps" placeholder="e.g. 1,10">
+          </div>
+          <div class="field">
+            <label>Relearning steps (minutes, comma separated)</label>
+            <input type="text" id="setRelearningSteps" placeholder="e.g. 10">
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 style="font-size:15px; margin-bottom:14px;">Daily limits</h2>
+          <div class="field">
+            <label>New cards / day</label>
+            <input type="number" id="setNewPerDay" min="0" max="9999">
+          </div>
+          <div class="field">
+            <label>Max reviews / day</label>
+            <input type="number" id="setMaxReviewsPerDay" min="0" max="99999">
+          </div>
+        </div>
+
+        <div class="card">
+          <button class="btn-primary" style="width:100%;" onclick="saveSettings()">Save Settings</button>
+        </div>
+
+        <div class="card" id="optimizeCard">
+          <h2 style="font-size:15px; margin-bottom:4px;">Personalized FSRS weights</h2>
+          <p class="settings-hint">FSRS ships with generic weights fit to an average student. Optimizing fits the 21 scheduling weights to your own review history instead — this is the actual point of FSRS over plain SM-2. Needs a substantial review history (a few hundred non-same-day reviews) before it has enough signal to do anything.</p>
+          <p id="optimizeStatus" style="font-size:13px; color:var(--text-secondary); margin:10px 0;">Loading&hellip;</p>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn-primary" onclick="runOptimize()" id="optimizeBtn">Optimize from my history</button>
+            <button class="row-btn" onclick="resetOptimize()" id="resetOptimizeBtn" style="display:none;">Reset to stock weights</button>
+          </div>
         </div>
       </div>
     </div>
@@ -527,6 +618,7 @@
       if (name === 'decks') loadDecks();
       if (name === 'browse') loadBrowse();
       if (name === 'stats') loadStats();
+      if (name === 'settings') loadSettings();
     }
 
     let appInitialized = false;
@@ -553,18 +645,25 @@
       const decks = await apiGet('/api/metis/decks');
       const sel = document.getElementById('studyDeckSelect');
       const browseSel = document.getElementById('browseDeckFilter');
+      const prevSel = sel.value;
+      const prevBrowseSel = browseSel.value;
       const opts = decks.decks.map(d =>
         `<option value="${d.id}">${d.subject} — ${d.topic} (${d.due} due)</option>`).join('');
       sel.innerHTML = '<option value="">All decks (due today)</option>' + opts;
       browseSel.innerHTML = '<option value="">All decks</option>' +
         decks.decks.map(d => `<option value="${d.id}">${d.subject} — ${d.topic}</option>`).join('');
+      if (prevSel && sel.querySelector(`option[value="${prevSel}"]`)) sel.value = prevSel;
+      if (prevBrowseSel && browseSel.querySelector(`option[value="${prevBrowseSel}"]`)) browseSel.value = prevBrowseSel;
     }
+
+    let lastCaps = null;
 
     async function loadQueue(deckIdOverride) {
       const deckId = deckIdOverride !== undefined ? deckIdOverride : document.getElementById('studyDeckSelect').value;
       const url = '/api/metis/queue?limit=20' + (deckId ? `&deck_id=${deckId}` : '');
       const data = await apiGet(url);
       queue = data.cards;
+      lastCaps = data.caps;
       showCurrentCard();
     }
 
@@ -579,10 +678,19 @@
       if (!queue.length) {
         currentCard = null;
         rateRow.style.display = 'none';
-        document.getElementById('cardDeckLabel').innerText = "You're all caught up";
-        document.getElementById('cardFront').innerHTML = '🎉 No cards due right now.';
         document.getElementById('cardHint').style.display = 'none';
         document.getElementById('studyProgress').innerText = '';
+        const capHit = lastCaps && (lastCaps.new_cap_reached || lastCaps.review_cap_reached);
+        if (capHit) {
+          document.getElementById('cardDeckLabel').innerText = "Daily limit reached";
+          const bits = [];
+          if (lastCaps.review_cap_reached) bits.push(`${lastCaps.reviews_done_today}/${lastCaps.max_reviews_per_day} reviews`);
+          if (lastCaps.new_cap_reached) bits.push(`${lastCaps.new_shown_today}/${lastCaps.new_cards_per_day} new cards`);
+          document.getElementById('cardFront').innerHTML = `✅ Hit today's cap (${bits.join(', ')}). Raise it in ⚙️ Settings if you want more.`;
+        } else {
+          document.getElementById('cardDeckLabel').innerText = "You're all caught up";
+          document.getElementById('cardFront').innerHTML = '🎉 No cards due right now.';
+        }
         return;
       }
 
@@ -765,6 +873,103 @@
       `;
       renderBars('activityBars', s.activity_last_30_days, 3);
       renderBars('forecastBars', s.forecast_next_14_days, 3);
+    }
+
+    // ---------------- Settings ----------------
+    let currentSettings = null;
+    let pendingAlgo = 'fsrs';
+
+    function setAlgoTab(algo) {
+      pendingAlgo = algo;
+      document.getElementById('algoFsrsTab').classList.toggle('active', algo === 'fsrs');
+      document.getElementById('algoSm2Tab').classList.toggle('active', algo === 'sm2');
+      document.getElementById('fsrsSettingsCard').style.display = algo === 'fsrs' ? 'block' : 'none';
+      document.getElementById('sm2SettingsCard').style.display = algo === 'sm2' ? 'block' : 'none';
+      document.getElementById('optimizeCard').style.display = algo === 'fsrs' ? 'block' : 'none';
+    }
+
+    function renderOptimizeStatus(s) {
+      const el = document.getElementById('optimizeStatus');
+      const resetBtn = document.getElementById('resetOptimizeBtn');
+      if (s.fsrs_parameters) {
+        const when = s.fsrs_optimized_at ? new Date(s.fsrs_optimized_at).toLocaleDateString() : 'unknown date';
+        el.innerHTML = `✅ Personalized weights active — optimized ${when} from ${s.fsrs_optimized_review_count} reviews.`;
+        resetBtn.style.display = 'inline-flex';
+      } else {
+        el.innerHTML = 'Using stock FSRS-6 default weights (not yet personalized to you).';
+        resetBtn.style.display = 'none';
+      }
+    }
+
+    async function loadSettings() {
+      const data = await apiGet('/api/metis/settings');
+      currentSettings = data.settings;
+      const s = currentSettings;
+      setAlgoTab(s.algorithm);
+      document.getElementById('setRetention').value = Math.round(s.desired_retention * 100);
+      document.getElementById('retentionVal').innerText = Math.round(s.desired_retention * 100) + '%';
+      document.getElementById('setMaxInterval').value = s.maximum_interval_days;
+      document.getElementById('setFuzzing').checked = s.enable_fuzzing;
+      document.getElementById('setStartingEase').value = s.starting_ease;
+      document.getElementById('setGraduating').value = s.graduating_interval_days;
+      document.getElementById('setEasyInterval').value = s.easy_interval_days;
+      document.getElementById('setLearningSteps').value = s.learning_steps_min;
+      document.getElementById('setRelearningSteps').value = s.relearning_steps_min;
+      document.getElementById('setNewPerDay').value = s.new_cards_per_day;
+      document.getElementById('setMaxReviewsPerDay').value = s.max_reviews_per_day;
+      renderOptimizeStatus(s);
+    }
+
+    async function saveSettings() {
+      const payload = {
+        algorithm: pendingAlgo,
+        desired_retention: Number(document.getElementById('setRetention').value) / 100,
+        maximum_interval_days: Number(document.getElementById('setMaxInterval').value),
+        enable_fuzzing: document.getElementById('setFuzzing').checked,
+        starting_ease: Number(document.getElementById('setStartingEase').value),
+        graduating_interval_days: Number(document.getElementById('setGraduating').value),
+        easy_interval_days: Number(document.getElementById('setEasyInterval').value),
+        learning_steps_min: document.getElementById('setLearningSteps').value,
+        relearning_steps_min: document.getElementById('setRelearningSteps').value,
+        new_cards_per_day: Number(document.getElementById('setNewPerDay').value),
+        max_reviews_per_day: Number(document.getElementById('setMaxReviewsPerDay').value),
+      };
+      try {
+        const data = await apiPut('/api/metis/settings', payload);
+        currentSettings = data.settings;
+        toast('Settings saved');
+        renderOptimizeStatus(currentSettings);
+        loadDeckSelect();
+        loadQueue();
+      } catch (e) {
+        toast('Save failed: ' + e.message);
+      }
+    }
+
+    async function runOptimize() {
+      const btn = document.getElementById('optimizeBtn');
+      btn.disabled = true;
+      btn.innerText = 'Optimizing… (this can take a moment)';
+      try {
+        await apiPost('/api/metis/optimize');
+        toast('Personalized weights computed');
+        await loadSettings();
+      } catch (e) {
+        toast(e.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Optimize from my history';
+      }
+    }
+
+    async function resetOptimize() {
+      try {
+        await apiPost('/api/metis/optimize/reset');
+        toast('Reset to stock FSRS-6 weights');
+        await loadSettings();
+      } catch (e) {
+        toast('Reset failed: ' + e.message);
+      }
     }
 
     checkSession();

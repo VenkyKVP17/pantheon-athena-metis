@@ -194,3 +194,31 @@ The **suprascapular artery** is a branch of the **thyrocervical trunk** (from th
 The **dorsal scapular nerve (C5)** pierces scalenus medius and runs deep along the medial border of the scapula. It innervates **rhomboid major, rhomboid minor, and levator scapulae**, which retract and elevate the scapula.
 
 **Take Home Message:** The dorsal scapular nerve (C5) supplies the rhomboids and levator scapulae, the retractors and elevator of the scapula.
+
+---
+
+## Q11. Supracondylar Humerus Fracture & AIN (OK Sign) Injury
+**Question ID:** Q6317006
+**Question:** A 7-year-old child presents following a fall on an outstretched hand (FOOSH) with a supracondylar fracture of the distal humerus. Physical examination demonstrates an inability to make the "OK" sign (inability to flex the interphalangeal joint of the thumb and the distal interphalangeal joint of the index finger). Which nerve is most likely injured in this patient?
+- A) Anterior interosseous nerve (deep branch of median nerve)
+- B) Posterior interosseous nerve (deep branch of radial nerve)
+- C) Ulnar nerve (deep branch)
+- D) Musculocutaneous nerve
+
+**Answer:** A) Anterior interosseous nerve (deep branch of median nerve)
+
+**Explanation:**
+The inability to make the **"OK" sign** is the classic clinical test for **Anterior Interosseous Nerve (AIN)** dysfunction. 
+
+The OK sign requires:
+- **Flexion of the thumb** at the interphalangeal (IP) joint -> by **Flexor Pollicis Longus (FPL)**.
+- **Flexion of the index finger** at the distal interphalangeal (DIP) joint -> by lateral half of **Flexor Digitorum Profundus (FDP)**.
+
+Both FPL and lateral half of FDP are innervated by the **Anterior Interosseous Nerve (AIN)**, which is the **deep motor branch of the median nerve** in the forearm.
+
+**Supracondylar Fracture Clinical Correlation:**
+- **Supracondylar fracture of the humerus** is the most common elbow fracture in pediatric patients, usually caused by falling on an outstretched hand (FOOSH injury).
+- The median nerve (specifically its AIN branch) is the most commonly injured nerve in extension-type supracondylar fractures due to anterior displacement of the proximal humeral fracture segment.
+
+**Take Home Message:** Inability to form an "OK" sign after a pediatric supracondylar humerus fracture indicates anterior interosseous nerve (AIN) injury, paralyzing flexor pollicis longus (FPL) and flexor digitorum profundus (FDP, index finger).
+

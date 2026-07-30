@@ -70,3 +70,9 @@ What nerve (arising from C5) supplies the rhomboids and levator scapulae?
 ?
 **Dorsal scapular nerve**.
 <!-- QBank ID: Q7278082 -->
+
+What nerve injury causes inability to make the "OK" sign following a supracondylar fracture of the humerus?
+?
+**Anterior interosseous nerve (AIN)** (deep branch of median nerve). It supplies **flexor pollicis longus (FPL)** (thumb IP flexion) and **flexor digitorum profundus (FDP, lateral half)** (index finger DIP flexion).
+tags: #flashcards/anatomy/upper_limb #neet-pg
+---

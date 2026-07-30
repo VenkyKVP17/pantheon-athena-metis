@@ -16,6 +16,8 @@ import os
 
 import fsrs
 
+import metis_sm2
+
 DB_FILE = '/home/ubuntu/vp/NEET_PG/metis.db'
 
 SCHEMA = """
@@ -81,11 +83,47 @@ CREATE TABLE IF NOT EXISTS review_log (
     FOREIGN KEY(card_id) REFERENCES cards(id)
 );
 
+CREATE TABLE IF NOT EXISTS user_settings (
+    user_id INTEGER PRIMARY KEY,
+    algorithm TEXT NOT NULL DEFAULT 'fsrs',
+    desired_retention REAL NOT NULL DEFAULT 0.9,
+    learning_steps_min TEXT NOT NULL DEFAULT '1,10',
+    relearning_steps_min TEXT NOT NULL DEFAULT '10',
+    maximum_interval_days INTEGER NOT NULL DEFAULT 36500,
+    enable_fuzzing INTEGER NOT NULL DEFAULT 1,
+    new_cards_per_day INTEGER NOT NULL DEFAULT 20,
+    max_reviews_per_day INTEGER NOT NULL DEFAULT 200,
+    graduating_interval_days INTEGER NOT NULL DEFAULT 1,
+    easy_interval_days INTEGER NOT NULL DEFAULT 4,
+    starting_ease REAL NOT NULL DEFAULT 2.5,
+    fsrs_parameters TEXT,
+    fsrs_optimized_at TEXT,
+    fsrs_optimized_review_count INTEGER,
+    updated_at TEXT NOT NULL,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);
+
 CREATE INDEX IF NOT EXISTS idx_cards_deck ON cards(deck_id);
 CREATE INDEX IF NOT EXISTS idx_review_log_user_time ON review_log(user_id, reviewed_at);
 """
 
-_scheduler = fsrs.Scheduler(desired_retention=0.9)
+DEFAULT_FSRS_PARAMETERS = list(fsrs.Scheduler().parameters)
+
+# ---------------------------------------------------------- Migration ----
+# card_state predates per-algorithm scheduling; these columns are added
+# on top of any existing production DB so upgrades don't lose progress.
+_CARD_STATE_MIGRATIONS = [
+    ("algorithm", "TEXT NOT NULL DEFAULT 'fsrs'"),
+    ("first_seen_at", "TEXT"),
+]
+
+
+def _migrate(conn):
+    existing_cols = {row['name'] for row in conn.execute('PRAGMA table_info(card_state)').fetchall()}
+    for col, decl in _CARD_STATE_MIGRATIONS:
+        if col not in existing_cols:
+            conn.execute(f'ALTER TABLE card_state ADD COLUMN {col} {decl}')
+    conn.commit()
 
 
 def get_conn():
@@ -99,6 +137,7 @@ def init_db():
     conn = get_conn()
     conn.executescript(SCHEMA)
     conn.commit()
+    _migrate(conn)
     conn.close()
 
 
@@ -266,6 +305,7 @@ def delete_card(card_id):
 
 
 def list_decks_with_counts(user_id):
+    algorithm = get_user_settings(user_id)['algorithm']
     conn = get_conn()
     try:
         decks = conn.execute('SELECT id, subject, topic FROM decks ORDER BY subject, topic').fetchall()
@@ -280,14 +320,14 @@ def list_decks_with_counts(user_id):
             new_count = conn.execute(
                 'SELECT COUNT(*) c FROM cards ca LEFT JOIN card_state cs '
                 'ON cs.card_id = ca.id AND cs.user_id = ? '
-                'WHERE ca.deck_id = ? AND ca.deleted = 0 AND cs.card_id IS NULL',
-                (user_id, d['id'])
+                'WHERE ca.deck_id = ? AND ca.deleted = 0 AND (cs.card_id IS NULL OR cs.algorithm != ?)',
+                (user_id, d['id'], algorithm)
             ).fetchone()['c']
             due_count = conn.execute(
                 'SELECT COUNT(*) c FROM cards ca JOIN card_state cs '
                 'ON cs.card_id = ca.id AND cs.user_id = ? '
-                'WHERE ca.deck_id = ? AND ca.deleted = 0 AND cs.due <= ?',
-                (user_id, d['id'], now)
+                'WHERE ca.deck_id = ? AND ca.deleted = 0 AND cs.algorithm = ? AND cs.due <= ?',
+                (user_id, d['id'], algorithm, now)
             ).fetchone()['c']
             out.append({
                 'id': d['id'], 'subject': d['subject'], 'topic': d['topic'],
@@ -341,7 +381,155 @@ def get_card(card_id):
         conn.close()
 
 
+# ---------------------------------------------------------- Settings ----
+
+def _row_to_settings_dict(row):
+    return {
+        'algorithm': row['algorithm'],
+        'desired_retention': row['desired_retention'],
+        'learning_steps_min': row['learning_steps_min'],
+        'relearning_steps_min': row['relearning_steps_min'],
+        'maximum_interval_days': row['maximum_interval_days'],
+        'enable_fuzzing': bool(row['enable_fuzzing']),
+        'new_cards_per_day': row['new_cards_per_day'],
+        'max_reviews_per_day': row['max_reviews_per_day'],
+        'graduating_interval_days': row['graduating_interval_days'],
+        'easy_interval_days': row['easy_interval_days'],
+        'starting_ease': row['starting_ease'],
+        'fsrs_parameters': json.loads(row['fsrs_parameters']) if row['fsrs_parameters'] else None,
+        'fsrs_optimized_at': row['fsrs_optimized_at'],
+        'fsrs_optimized_review_count': row['fsrs_optimized_review_count'],
+    }
+
+
+def get_user_settings(user_id):
+    conn = get_conn()
+    try:
+        row = conn.execute('SELECT * FROM user_settings WHERE user_id = ?', (user_id,)).fetchone()
+        if not row:
+            conn.execute('INSERT INTO user_settings (user_id, updated_at) VALUES (?, ?)', (user_id, now_iso()))
+            conn.commit()
+            row = conn.execute('SELECT * FROM user_settings WHERE user_id = ?', (user_id,)).fetchone()
+        return _row_to_settings_dict(row)
+    finally:
+        conn.close()
+
+
+def _validate_steps(steps_str):
+    steps_str = (steps_str or '').strip()
+    parts = [p.strip() for p in steps_str.split(',') if p.strip()]
+    if not parts:
+        raise ValueError('Steps cannot be empty (e.g. "1,10")')
+    for p in parts:
+        if not p.isdigit() or not (1 <= int(p) <= 43200):
+            raise ValueError('Each step must be a whole number of minutes between 1 and 43200 (30 days)')
+    return ','.join(parts)
+
+
+def update_user_settings(user_id, updates):
+    """updates: dict of any subset of the user_settings columns. Raises ValueError on bad input."""
+    get_user_settings(user_id)  # ensures a row exists
+    set_clauses, params = [], []
+
+    def add(col, value):
+        set_clauses.append(f'{col} = ?')
+        params.append(value)
+
+    if 'algorithm' in updates:
+        algo = updates['algorithm']
+        if algo not in ('fsrs', 'sm2'):
+            raise ValueError("algorithm must be 'fsrs' or 'sm2'")
+        add('algorithm', algo)
+
+    if 'desired_retention' in updates:
+        v = float(updates['desired_retention'])
+        if not (0.70 <= v <= 0.99):
+            raise ValueError('desired_retention must be between 0.70 and 0.99')
+        add('desired_retention', v)
+
+    if 'learning_steps_min' in updates:
+        add('learning_steps_min', _validate_steps(updates['learning_steps_min']))
+
+    if 'relearning_steps_min' in updates:
+        add('relearning_steps_min', _validate_steps(updates['relearning_steps_min']))
+
+    if 'maximum_interval_days' in updates:
+        v = int(updates['maximum_interval_days'])
+        if not (1 <= v <= 36500):
+            raise ValueError('maximum_interval_days must be between 1 and 36500')
+        add('maximum_interval_days', v)
+
+    if 'enable_fuzzing' in updates:
+        add('enable_fuzzing', 1 if updates['enable_fuzzing'] else 0)
+
+    if 'new_cards_per_day' in updates:
+        v = int(updates['new_cards_per_day'])
+        if not (0 <= v <= 9999):
+            raise ValueError('new_cards_per_day must be between 0 and 9999')
+        add('new_cards_per_day', v)
+
+    if 'max_reviews_per_day' in updates:
+        v = int(updates['max_reviews_per_day'])
+        if not (0 <= v <= 99999):
+            raise ValueError('max_reviews_per_day must be between 0 and 99999')
+        add('max_reviews_per_day', v)
+
+    if 'graduating_interval_days' in updates:
+        v = int(updates['graduating_interval_days'])
+        if not (1 <= v <= 3650):
+            raise ValueError('graduating_interval_days must be between 1 and 3650')
+        add('graduating_interval_days', v)
+
+    if 'easy_interval_days' in updates:
+        v = int(updates['easy_interval_days'])
+        if not (1 <= v <= 3650):
+            raise ValueError('easy_interval_days must be between 1 and 3650')
+        add('easy_interval_days', v)
+
+    if 'starting_ease' in updates:
+        v = float(updates['starting_ease'])
+        if not (1.3 <= v <= 5.0):
+            raise ValueError('starting_ease must be between 1.3 and 5.0')
+        add('starting_ease', v)
+
+    if not set_clauses:
+        return get_user_settings(user_id)
+
+    add('updated_at', now_iso())
+    params.append(user_id)
+    conn = get_conn()
+    try:
+        conn.execute(f'UPDATE user_settings SET {", ".join(set_clauses)} WHERE user_id = ?', params)
+        conn.commit()
+    finally:
+        conn.close()
+    return get_user_settings(user_id)
+
+
+def today_str():
+    return datetime.datetime.now(datetime.timezone.utc).date().isoformat()
+
+
 # ------------------------------------------------------------- FSRS ----
+
+def _build_fsrs_scheduler(settings):
+    """Builds an fsrs.Scheduler from a user's settings dict, using their
+    personalized weights if optimize_user_parameters() has been run,
+    otherwise the library's stock FSRS-6 defaults."""
+    kwargs = {
+        'parameters': settings['fsrs_parameters'] or DEFAULT_FSRS_PARAMETERS,
+        'desired_retention': settings['desired_retention'],
+        'maximum_interval': settings['maximum_interval_days'],
+        'enable_fuzzing': settings['enable_fuzzing'],
+    }
+    learning_steps = metis_sm2.parse_minutes(settings['learning_steps_min'])
+    relearning_steps = metis_sm2.parse_minutes(settings['relearning_steps_min'])
+    if learning_steps:
+        kwargs['learning_steps'] = [datetime.timedelta(minutes=m) for m in learning_steps]
+    if relearning_steps:
+        kwargs['relearning_steps'] = [datetime.timedelta(minutes=m) for m in relearning_steps]
+    return fsrs.Scheduler(**kwargs)
+
 
 def _row_to_fsrs_card(row):
     if row is None:
@@ -357,27 +545,79 @@ def _row_to_fsrs_card(row):
     })
 
 
-def _persist_card_state(conn, user_id, card_id, card, reps_delta=0, lapse=False):
-    d = card.to_dict()
+RATING_NAME_TO_INT = {'again': 1, 'hard': 2, 'good': 3, 'easy': 4}
+
+
+def _schedule_review(state_row, rating_int, settings):
+    """Returns (new_state_dict, lapse: bool) for whichever algorithm the
+    user currently has active. If state_row's stored algorithm doesn't
+    match (i.e. the user switched schedulers since this card was last
+    reviewed), its progress is stale under the new algorithm's semantics
+    and the card is treated as brand new — same as Anki resetting cards
+    on a scheduler version change."""
+    effective_row = None
+    if state_row is not None and state_row['algorithm'] == settings['algorithm']:
+        effective_row = state_row
+
+    if settings['algorithm'] == 'sm2':
+        row_dict = dict(effective_row) if effective_row is not None else None
+        return metis_sm2.review(row_dict, rating_int, settings)
+
+    scheduler = _build_fsrs_scheduler(settings)
+    card = _row_to_fsrs_card(effective_row)
+    was_review = effective_row is not None and effective_row['state'] == fsrs.State.Review.value
+    rating = fsrs.Rating(rating_int)
+    updated, _log = scheduler.review_card(card, rating)
+    lapse = was_review and rating == fsrs.Rating.Again
+    d = updated.to_dict()
+    new_state = {
+        'state': d['state'], 'step': d['step'], 'stability': d['stability'],
+        'difficulty': d['difficulty'], 'due': d['due'], 'last_review': d['last_review'],
+    }
+    return new_state, lapse
+
+
+def _persist_card_state(conn, user_id, card_id, new_state, algorithm, reps_delta=0, lapse=False):
     existing = conn.execute(
-        'SELECT reps, lapses FROM card_state WHERE user_id = ? AND card_id = ?', (user_id, card_id)
+        'SELECT reps, lapses, algorithm, first_seen_at FROM card_state WHERE user_id = ? AND card_id = ?',
+        (user_id, card_id)
     ).fetchone()
-    reps = (existing['reps'] if existing else 0) + reps_delta
-    lapses = (existing['lapses'] if existing else 0) + (1 if lapse else 0)
+    fresh = existing is None or existing['algorithm'] != algorithm
+    reps = (0 if fresh else existing['reps']) + reps_delta
+    lapses = (0 if fresh else existing['lapses']) + (1 if lapse else 0)
+    first_seen_at = now_iso() if fresh else existing['first_seen_at']
     conn.execute(
-        'INSERT INTO card_state (user_id, card_id, state, step, stability, difficulty, due, last_review, reps, lapses) '
-        'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) '
+        'INSERT INTO card_state (user_id, card_id, state, step, stability, difficulty, due, last_review, '
+        'reps, lapses, algorithm, first_seen_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) '
         'ON CONFLICT(user_id, card_id) DO UPDATE SET '
         'state=excluded.state, step=excluded.step, stability=excluded.stability, difficulty=excluded.difficulty, '
-        'due=excluded.due, last_review=excluded.last_review, reps=excluded.reps, lapses=excluded.lapses',
-        (user_id, card_id, d['state'], d['step'], d['stability'], d['difficulty'], d['due'], d['last_review'], reps, lapses)
+        'due=excluded.due, last_review=excluded.last_review, reps=excluded.reps, lapses=excluded.lapses, '
+        'algorithm=excluded.algorithm, first_seen_at=excluded.first_seen_at',
+        (user_id, card_id, new_state['state'], new_state['step'], new_state['stability'], new_state['difficulty'],
+         new_state['due'], new_state['last_review'], reps, lapses, algorithm, first_seen_at)
     )
 
 
 def get_due_queue(user_id, deck_id=None, limit=20, new_limit=10):
+    settings = get_user_settings(user_id)
+    algorithm = settings['algorithm']
     conn = get_conn()
     try:
         now = now_iso()
+        today = today_str()
+
+        new_shown_today = conn.execute(
+            'SELECT COUNT(*) c FROM card_state WHERE user_id = ? AND algorithm = ? AND substr(first_seen_at, 1, 10) = ?',
+            (user_id, algorithm, today)
+        ).fetchone()['c']
+        reviews_done_today = conn.execute(
+            'SELECT COUNT(*) c FROM review_log WHERE user_id = ? AND substr(reviewed_at, 1, 10) = ?',
+            (user_id, today)
+        ).fetchone()['c']
+
+        new_allowance = max(settings['new_cards_per_day'] - new_shown_today, 0)
+        review_allowance = max(settings['max_reviews_per_day'] - reviews_done_today, 0)
+
         base = (
             'FROM cards ca JOIN decks d ON d.id = ca.deck_id '
             'LEFT JOIN card_state cs ON cs.card_id = ca.id AND cs.user_id = ? '
@@ -388,20 +628,27 @@ def get_due_queue(user_id, deck_id=None, limit=20, new_limit=10):
             base += ' AND ca.deck_id = ?'
             params.append(deck_id)
 
-        due_rows = conn.execute(
-            f'SELECT ca.id, ca.front, ca.back, ca.tags, d.subject, d.topic, cs.state, cs.due '
-            f'{base} AND cs.card_id IS NOT NULL AND cs.due <= ? '
-            f'ORDER BY cs.state ASC, cs.due ASC LIMIT ?',
-            params + [now, limit]
-        ).fetchall()
+        due_limit = min(limit, review_allowance)
+        due_rows = []
+        if due_limit > 0:
+            due_rows = conn.execute(
+                f'SELECT ca.id, ca.front, ca.back, ca.tags, d.subject, d.topic, cs.state, cs.due '
+                f'{base} AND cs.card_id IS NOT NULL AND cs.algorithm = ? AND cs.due <= ? '
+                f'ORDER BY cs.state ASC, cs.due ASC LIMIT ?',
+                params + [algorithm, now, due_limit]
+            ).fetchall()
 
-        remaining = max(limit - len(due_rows), 0)
+        # New cards have their own daily allowance, independent of the
+        # review cap — hitting one cap shouldn't block the other queue.
+        remaining_batch = max(limit - len(due_rows), 0)
+        new_slot = min(new_limit, new_allowance, remaining_batch)
         new_rows = []
-        if remaining > 0:
+        if new_slot > 0:
             new_rows = conn.execute(
                 f'SELECT ca.id, ca.front, ca.back, ca.tags, d.subject, d.topic, NULL as state, NULL as due '
-                f'{base} AND cs.card_id IS NULL ORDER BY ca.created_at LIMIT ?',
-                params + [min(remaining, new_limit)]
+                f'{base} AND (cs.card_id IS NULL OR cs.algorithm != ?) '
+                f'ORDER BY ca.created_at LIMIT ?',
+                params + [algorithm, new_slot]
             ).fetchall()
 
         out = []
@@ -409,12 +656,18 @@ def get_due_queue(user_id, deck_id=None, limit=20, new_limit=10):
             d = dict(r)
             d['tags'] = json.loads(d['tags']) if d['tags'] else []
             out.append(d)
-        return out
+
+        return {
+            'cards': out,
+            'caps': {
+                'new_shown_today': new_shown_today, 'new_cards_per_day': settings['new_cards_per_day'],
+                'new_cap_reached': new_allowance <= 0,
+                'reviews_done_today': reviews_done_today, 'max_reviews_per_day': settings['max_reviews_per_day'],
+                'review_cap_reached': review_allowance <= 0,
+            }
+        }
     finally:
         conn.close()
-
-
-RATING_MAP = {'again': fsrs.Rating.Again, 'hard': fsrs.Rating.Hard, 'good': fsrs.Rating.Good, 'easy': fsrs.Rating.Easy}
 
 
 def humanize_interval(due, from_iso=None):
@@ -436,6 +689,7 @@ def humanize_interval(due, from_iso=None):
 
 
 def preview_intervals(user_id, card_id):
+    settings = get_user_settings(user_id)
     conn = get_conn()
     try:
         state_row = conn.execute(
@@ -443,41 +697,37 @@ def preview_intervals(user_id, card_id):
         ).fetchone()
     finally:
         conn.close()
-    card = _row_to_fsrs_card(state_row)
     out = {}
-    for name, rating in RATING_MAP.items():
-        updated, _ = _scheduler.review_card(card, rating)
-        out[name] = humanize_interval(updated.due)
+    for name, rating_int in RATING_NAME_TO_INT.items():
+        new_state, _lapse = _schedule_review(state_row, rating_int, settings)
+        out[name] = humanize_interval(new_state['due'])
     return out
 
 
 def apply_review(user_id, card_id, rating_name, duration_ms=None):
-    rating = RATING_MAP.get(rating_name)
-    if rating is None:
+    rating_int = RATING_NAME_TO_INT.get(rating_name)
+    if rating_int is None:
         raise ValueError(f'Unknown rating: {rating_name}')
 
+    settings = get_user_settings(user_id)
     conn = get_conn()
     try:
         state_row = conn.execute(
             'SELECT * FROM card_state WHERE user_id = ? AND card_id = ?', (user_id, card_id)
         ).fetchone()
-        card = _row_to_fsrs_card(state_row)
-        was_review = state_row is not None and state_row['state'] == fsrs.State.Review.value
         prev_state_json = json.dumps(dict(state_row)) if state_row else None
 
-        updated, log = _scheduler.review_card(card, rating)
-        lapse = was_review and rating == fsrs.Rating.Again
-        _persist_card_state(conn, user_id, card_id, updated, reps_delta=1, lapse=lapse)
+        new_state, lapse = _schedule_review(state_row, rating_int, settings)
+        _persist_card_state(conn, user_id, card_id, new_state, settings['algorithm'], reps_delta=1, lapse=lapse)
 
         conn.execute(
             'INSERT INTO review_log (user_id, card_id, rating, reviewed_at, review_duration_ms, prev_state_json) '
             'VALUES (?, ?, ?, ?, ?, ?)',
-            (user_id, card_id, rating.value, now_iso(), duration_ms, prev_state_json)
+            (user_id, card_id, rating_int, now_iso(), duration_ms, prev_state_json)
         )
         conn.commit()
-        return {'due': updated.due.isoformat() if hasattr(updated.due, 'isoformat') else updated.due,
-                'state': updated.state.value, 'interval': humanize_interval(
-                    updated.due.isoformat() if hasattr(updated.due, 'isoformat') else updated.due)}
+        return {'due': new_state['due'], 'state': new_state['state'],
+                'interval': humanize_interval(new_state['due'])}
     finally:
         conn.close()
 
@@ -493,10 +743,11 @@ def undo_last_review(user_id):
         if row['prev_state_json']:
             prev = json.loads(row['prev_state_json'])
             conn.execute(
-                'UPDATE card_state SET state=?, step=?, stability=?, difficulty=?, due=?, last_review=?, reps=?, lapses=? '
-                'WHERE user_id=? AND card_id=?',
+                'UPDATE card_state SET state=?, step=?, stability=?, difficulty=?, due=?, last_review=?, '
+                'reps=?, lapses=?, algorithm=?, first_seen_at=? WHERE user_id=? AND card_id=?',
                 (prev['state'], prev['step'], prev['stability'], prev['difficulty'], prev['due'],
-                 prev['last_review'], prev['reps'], prev['lapses'], user_id, row['card_id'])
+                 prev['last_review'], prev['reps'], prev['lapses'], prev['algorithm'], prev['first_seen_at'],
+                 user_id, row['card_id'])
             )
         else:
             conn.execute('DELETE FROM card_state WHERE user_id = ? AND card_id = ?', (user_id, row['card_id']))
@@ -508,26 +759,29 @@ def undo_last_review(user_id):
 
 
 def get_stats(user_id):
+    settings = get_user_settings(user_id)
+    algorithm = settings['algorithm']
     conn = get_conn()
     try:
         total_cards = conn.execute('SELECT COUNT(*) c FROM cards WHERE deleted = 0').fetchone()['c']
         new_count = conn.execute(
             'SELECT COUNT(*) c FROM cards ca LEFT JOIN card_state cs ON cs.card_id = ca.id AND cs.user_id = ? '
-            'WHERE ca.deleted = 0 AND cs.card_id IS NULL', (user_id,)
+            'WHERE ca.deleted = 0 AND (cs.card_id IS NULL OR cs.algorithm != ?)', (user_id, algorithm)
         ).fetchone()['c']
         by_state = conn.execute(
-            'SELECT state, COUNT(*) c FROM card_state WHERE user_id = ? GROUP BY state', (user_id,)
+            'SELECT state, COUNT(*) c FROM card_state WHERE user_id = ? AND algorithm = ? GROUP BY state',
+            (user_id, algorithm)
         ).fetchall()
         state_counts = {row['state']: row['c'] for row in by_state}
         mastered = conn.execute(
-            'SELECT COUNT(*) c FROM card_state WHERE user_id = ? AND state = ? AND stability >= 21',
-            (user_id, fsrs.State.Review.value)
+            'SELECT COUNT(*) c FROM card_state WHERE user_id = ? AND algorithm = ? AND state = ? AND stability >= 21',
+            (user_id, algorithm, fsrs.State.Review.value)
         ).fetchone()['c']
 
         total_reviews = conn.execute('SELECT COUNT(*) c FROM review_log WHERE user_id = ?', (user_id,)).fetchone()['c']
         successful = conn.execute(
             'SELECT COUNT(*) c FROM review_log WHERE user_id = ? AND rating != ?',
-            (user_id, fsrs.Rating.Again.value)
+            (user_id, RATING_NAME_TO_INT['again'])
         ).fetchone()['c']
         retention = round(successful / total_reviews * 100, 1) if total_reviews else None
 
@@ -544,8 +798,8 @@ def get_stats(user_id):
         for i in range(14):
             day = (today + datetime.timedelta(days=i)).isoformat()
             forecast[day] = conn.execute(
-                'SELECT COUNT(*) c FROM card_state WHERE user_id = ? AND substr(due, 1, 10) = ?',
-                (user_id, day)
+                'SELECT COUNT(*) c FROM card_state WHERE user_id = ? AND algorithm = ? AND substr(due, 1, 10) = ?',
+                (user_id, algorithm, day)
             ).fetchone()['c']
 
         return {
@@ -559,6 +813,98 @@ def get_stats(user_id):
             'total_reviews': total_reviews,
             'activity_last_30_days': activity,
             'forecast_next_14_days': forecast,
+            'algorithm': algorithm,
         }
+    finally:
+        conn.close()
+
+
+# --------------------------------------------------------- Optimizer ----
+
+# fsrs.Optimizer has its own internal floor: it counts only non-same-day
+# reviews of cards already in the Review state (i.e. not their first
+# couple of learning-step reviews), and if that count is below its
+# mini_batch_size (512 as of py-fsrs 6.3.1) it silently returns the stock
+# DEFAULT_PARAMETERS unchanged -- no exception, no warning. A raw
+# review_log row count is a cheap pre-filter, not the real gate; the
+# authoritative check is comparing the output against the stock defaults
+# below, since that's the one signal the library actually gives us.
+MIN_REVIEWS_FOR_OPTIMIZATION = 200
+
+
+def optimize_user_parameters(user_id):
+    """Fits personalized FSRS-6 weights from this user's own review
+    history via fsrs.Optimizer (gradient descent, torch backend). This is
+    the actual point of FSRS over SM-2 — generic weights fit an average
+    student, personalized weights fit this one. Requires a substantial
+    review history; below that the stock defaults stay in use."""
+    conn = get_conn()
+    try:
+        rows = conn.execute(
+            'SELECT card_id, rating, reviewed_at, review_duration_ms FROM review_log '
+            'WHERE user_id = ? ORDER BY reviewed_at ASC', (user_id,)
+        ).fetchall()
+    finally:
+        conn.close()
+
+    if len(rows) < MIN_REVIEWS_FOR_OPTIMIZATION:
+        raise ValueError(
+            f'Need at least {MIN_REVIEWS_FOR_OPTIMIZATION} logged reviews before attempting '
+            f'optimization (you have {len(rows)}). Keep studying — stock FSRS-6 weights are used until then.'
+        )
+
+    # fsrs.ReviewLog wants an int card_id; ours are opaque strings. The
+    # mapping only needs to be internally consistent for this one run.
+    card_id_map = {}
+    review_logs = []
+    for row in rows:
+        cid = row['card_id']
+        if cid not in card_id_map:
+            card_id_map[cid] = len(card_id_map) + 1
+        review_logs.append(fsrs.ReviewLog(
+            card_id=card_id_map[cid],
+            rating=fsrs.Rating(row['rating']),
+            review_datetime=datetime.datetime.fromisoformat(row['reviewed_at']),
+            review_duration=row['review_duration_ms'],
+        ))
+
+    optimizer = fsrs.Optimizer(review_logs)
+    new_parameters = optimizer.compute_optimal_parameters()
+
+    if list(new_parameters) == DEFAULT_FSRS_PARAMETERS:
+        # The library's own 512-review-state-review floor wasn't met, so it
+        # silently declined to optimize. Surface that honestly instead of
+        # persisting a fake "personalized" result that's just the defaults.
+        raise ValueError(
+            'Not enough qualifying review history yet for FSRS to personalize your weights '
+            '(it needs several hundred non-same-day reviews of cards already in the Review '
+            'state, not just any reviews). Keep studying and try again later — stock FSRS-6 '
+            'weights are being used in the meantime.'
+        )
+
+    conn = get_conn()
+    try:
+        conn.execute(
+            'UPDATE user_settings SET fsrs_parameters = ?, fsrs_optimized_at = ?, '
+            'fsrs_optimized_review_count = ?, updated_at = ? WHERE user_id = ?',
+            (json.dumps(new_parameters), now_iso(), len(rows), now_iso(), user_id)
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    return {'parameters': new_parameters, 'review_count': len(rows)}
+
+
+def reset_fsrs_parameters(user_id):
+    """Drops back to stock FSRS-6 default weights."""
+    conn = get_conn()
+    try:
+        conn.execute(
+            'UPDATE user_settings SET fsrs_parameters = NULL, fsrs_optimized_at = NULL, '
+            'fsrs_optimized_review_count = NULL, updated_at = ? WHERE user_id = ?',
+            (now_iso(), user_id)
+        )
+        conn.commit()
     finally:
         conn.close()

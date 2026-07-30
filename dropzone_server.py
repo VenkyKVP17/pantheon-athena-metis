@@ -212,7 +212,7 @@ class SimpleUploadHandler(BaseHTTPRequestHandler):
         if path == '/api/metis/queue':
             deck_id = int(query['deck_id'][0]) if 'deck_id' in query else None
             limit = int(query.get('limit', [20])[0])
-            self.send_json({'cards': db.get_due_queue(user['id'], deck_id=deck_id, limit=limit)})
+            self.send_json(db.get_due_queue(user['id'], deck_id=deck_id, limit=limit))
             return
 
         if path == '/api/metis/preview':
@@ -225,6 +225,10 @@ class SimpleUploadHandler(BaseHTTPRequestHandler):
 
         if path == '/api/metis/stats':
             self.send_json(db.get_stats(user['id']))
+            return
+
+        if path == '/api/metis/settings':
+            self.send_json({'settings': db.get_user_settings(user['id'])})
             return
 
         self.send_json({'error': 'Not found'}, status=404)
@@ -329,6 +333,16 @@ class SimpleUploadHandler(BaseHTTPRequestHandler):
             self.send_json({'ok': ok})
             return
 
+        if path == '/api/metis/optimize':
+            result = db.optimize_user_parameters(user['id'])
+            self.send_json({'ok': True, 'review_count': result['review_count']})
+            return
+
+        if path == '/api/metis/optimize/reset':
+            db.reset_fsrs_parameters(user['id'])
+            self.send_json({'ok': True})
+            return
+
         if path == '/api/metis/cards':
             card_id = db.create_card(body['subject'], body['topic'], body['front'], body['back'], body.get('tags', []))
             self.send_json({'id': card_id})
@@ -424,7 +438,20 @@ class SimpleUploadHandler(BaseHTTPRequestHandler):
                 ok = db.update_card(card_id, front=body.get('front'), back=body.get('back'), tags=body.get('tags'))
                 self.send_json({'ok': ok}, status=200 if ok else 404)
                 return
+
+            if path == '/api/metis/settings':
+                user = self.get_current_user()
+                if not user:
+                    self.send_json({'error': 'Not authenticated'}, status=401)
+                    return
+                body = self.read_json_body()
+                settings = db.update_user_settings(user['id'], body)
+                self.send_json({'settings': settings})
+                return
+
             self.send_json({'error': 'Not found'}, status=404)
+        except ValueError as e:
+            self.send_json({'error': str(e)}, status=400)
         except Exception as e:
             traceback.print_exc()
             self.send_json({'error': str(e)}, status=500)

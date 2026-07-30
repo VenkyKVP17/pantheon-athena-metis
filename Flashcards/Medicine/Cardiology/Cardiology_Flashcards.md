@@ -332,3 +332,20 @@ What murmur combination represents combined Rheumatic Aortic & Mitral Regurgitat
 ?
 An **early diastolic murmur** at left sternal border (AR) + an **apical pansystolic murmur radiating to axilla** (MR).
 <!-- QBank ID: Q8546176 -->
+
+---
+
+Which type of arterial pulse mechanism is explained by the Frank-Starling Law, and what underlying pathology does it indicate?
+?
+**Pulsus Alternans** (alternating weak and strong beats). It indicates **severe left ventricular failure/dysfunction**, where a weak contraction leaves excess end-diastolic volume in the LV, triggering a stronger Frank-Starling contraction on the subsequent beat.
+tags: #flashcards/medicine/cardiology #neet-pg #inicet2025
+---
+
+Which component of the ECG best corresponds to the diastolic murmur of Mitral Stenosis?
+?
+**P wave** (corresponds to atrial contraction causing presystolic accentuation during ventricular diastole / TP segment).
+<!-- QBank ID: Q4115312 -->
+tags: #flashcards/medicine/cardiology #neet-pg #inicet2025
+---
+
+

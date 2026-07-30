@@ -72,7 +72,7 @@ def parse_markdown_flashcards():
                     in_question = True
                     continue
                 if in_question:
-                    if not stripped.startswith('---') and not stripped.startswith('tags:'):
+                    if not stripped.startswith('---') and not stripped.startswith('tags:') and not stripped.startswith('#'):
                         current_question.append(line.rstrip())
                 else:
                     current_answer.append(line.rstrip())

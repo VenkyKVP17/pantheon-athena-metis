@@ -4,6 +4,7 @@ import re
 import json
 import datetime
 import glob
+import sqlite3
 
 from question_classifier import classify_question, TYPE_LABELS
 
@@ -50,12 +51,12 @@ def scan_qbank_detailed():
                     topic_key = f"{subject}: {topic}"
                     topic_counts[topic_key] = topic_counts.get(topic_key, 0) + count
                     
-                    # Target floor 50 Qs per subtopic for 100% initial mastery score
-                    mastery = min(round((count / 50.0) * 100, 1), 100.0)
+                    # Target floor 50 Qs per subtopic for 100% volume coverage
+                    coverage = min(round((count / 50.0) * 100, 1), 100.0)
                     topic_mastery[topic_key] = {
                         "count": count,
-                        "mastery_percent": mastery,
-                        "status": "High Mastery" if mastery >= 75 else ("Solid" if mastery >= 40 else "Needs Focus")
+                        "mastery_percent": coverage,
+                        "status": "High Volume" if count >= 40 else ("Building Volume" if count >= 15 else "Starting Out")
                     }
 
     return total_questions, subject_counts, topic_counts, topic_mastery
@@ -156,11 +157,46 @@ def load_reference():
     ref.pop("_meta", None)
     return ref
 
-def compute_syllabus_insights(subject_counts, topic_counts, reference):
-    """Coverage % and exam-weighted priority per subject, using the researched
-    subject_topics_reference.json taxonomy as the ground truth checklist."""
-    subject_insights = {}
+def get_fsrs_metrics_by_subject():
+    """Queries metis.db for average FSRS stability and difficulty per subject."""
+    metrics = {}
+    db_path = '/home/ubuntu/pantheon-athena-metis/metis.db'
+    if not os.path.exists(db_path):
+        return metrics
+        
+    try:
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        # Get stats for the primary user 'venky'
+        query = '''
+        SELECT d.subject, AVG(cs.stability) as avg_stability, AVG(cs.difficulty) as avg_difficulty,
+               COUNT(cs.card_id) as card_count
+        FROM card_state cs
+        JOIN cards c ON cs.card_id = c.id
+        JOIN decks d ON c.deck_id = d.id
+        JOIN users u ON cs.user_id = u.id
+        WHERE u.username = 'venky'
+        GROUP BY d.subject;
+        '''
+        for row in conn.execute(query):
+            metrics[row['subject']] = {
+                'avg_stability': row['avg_stability'] or 0.0,
+                'avg_difficulty': row['avg_difficulty'] or 5.0,
+                'card_count': row['card_count']
+            }
+        conn.close()
+    except Exception as e:
+        print(f"Error reading FSRS metrics: {e}")
+    return metrics
 
+def compute_syllabus_insights(subject_counts, topic_counts, reference):
+    """Algorithmic insights: Coverage %, Retention Mastery, and Predictive Yield."""
+    subject_insights = {}
+    fsrs_metrics = get_fsrs_metrics_by_subject()
+    
+    # Target stability for "Mastered" before the exam
+    TARGET_STABILITY = 21.0 
+    
     for subject in ALL_19_SUBJECTS:
         ref = reference.get(subject, {})
         canonical_topics = ref.get("topics", [])
@@ -174,7 +210,40 @@ def compute_syllabus_insights(subject_counts, topic_counts, reference):
         canonical_set = set(canonical_topics)
         matched = attempted & canonical_set
         unmatched = attempted - canonical_set
-        coverage_pct = round(len(matched) / len(canonical_topics) * 100, 1) if canonical_topics else 0.0
+        
+        total_coverage = 0.0
+        for topic in canonical_topics:
+            topic_key = f"{subject}: {topic}"
+            count = topic_counts.get(topic_key, 0)
+            coverage = min((count / 50.0) * 100.0, 100.0)
+            total_coverage += coverage
+            
+        coverage_pct = round(total_coverage / len(canonical_topics), 1) if canonical_topics else 0.0
+        
+        # Pull FSRS data
+        subj_fsrs = fsrs_metrics.get(subject, {'avg_stability': 0.0, 'avg_difficulty': 5.0, 'card_count': 0})
+        avg_stability = subj_fsrs['avg_stability']
+        avg_difficulty = subj_fsrs['avg_difficulty']
+        
+        # Algorithmic Mastery (Coverage combined with Retention)
+        # If stability is 0, we assume base retention of 10% just from short-term memory if coverage is high
+        retention_factor = min(avg_stability / TARGET_STABILITY, 1.0)
+        
+        # User requested 60/40 split favoring retention of learned material over new material
+        mastery_pct = (0.4 * coverage_pct) + (0.6 * coverage_pct * retention_factor)
+        
+        # Difficulty Multiplier: harder subjects need higher priority
+        # Average difficulty in FSRS is around 5. 1-10 scale.
+        difficulty_multiplier = 1.0 + (avg_difficulty - 5.0) / 10.0
+        
+        # Dynamic Priority Score
+        priority_score = round((1 - mastery_pct / 100.0) * weightage_pct * difficulty_multiplier, 2)
+        
+        # Predictive Yield vs Effort (Marks gained per unit of study effort)
+        # Yield = (Weightage - (Mastery/100 * Weightage))
+        # Effort = max(1, avg_difficulty)
+        estimated_yield_marks = round(weightage_pct - (mastery_pct / 100.0 * weightage_pct), 2)
+        yield_effort_ratio = round(estimated_yield_marks / max(1.0, avg_difficulty), 2)
 
         subject_insights[subject] = {
             "weightage_pct_approx": weightage_pct,
@@ -182,21 +251,41 @@ def compute_syllabus_insights(subject_counts, topic_counts, reference):
             "topics_covered": sorted(matched),
             "topics_covered_count": len(matched),
             "coverage_pct": coverage_pct,
+            "mastery_pct": round(mastery_pct, 1),
+            "avg_stability": round(avg_stability, 2),
+            "avg_difficulty": round(avg_difficulty, 2),
             "questions_solved": subject_counts.get(subject, 0),
             "unmatched_topic_folders": sorted(unmatched),
-            # Higher = bigger gap in a heavier-weighted subject = solve here next.
-            "priority_score": round((1 - coverage_pct / 100.0) * weightage_pct, 2)
+            "priority_score": priority_score,
+            "estimated_yield_marks": estimated_yield_marks,
+            "yield_effort_ratio": yield_effort_ratio
         }
 
+    # Cross-subject penalty for Cascading Weaknesses
+    # Simple algorithm: if Renal/Medicine mastery is low, penalize Anatomy/Pharma
+    if subject_insights.get("Medicine", {}).get("mastery_pct", 100) < 40:
+        # Penalize Pharmacology and Anatomy
+        for s in ["Pharmacology", "Anatomy"]:
+            if s in subject_insights:
+                subject_insights[s]["priority_score"] += 1.5
+                subject_insights[s]["estimated_yield_marks"] += 0.5
+                
+    if subject_insights.get("Pathology", {}).get("mastery_pct", 100) < 40:
+        if "Medicine" in subject_insights:
+            subject_insights["Medicine"]["priority_score"] += 2.0
+
     total_weight = sum(s["weightage_pct_approx"] for s in subject_insights.values())
-    weighted_coverage = (
-        sum(s["coverage_pct"] * s["weightage_pct_approx"] for s in subject_insights.values()) / total_weight
+    weighted_mastery = (
+        sum(s["mastery_pct"] * s["weightage_pct_approx"] for s in subject_insights.values()) / total_weight
         if total_weight else 0.0
     )
 
     ranked_priority = sorted(subject_insights.items(), key=lambda kv: kv[1]["priority_score"], reverse=True)
+    # Highest yield-to-effort
+    ranked_yield = sorted(subject_insights.items(), key=lambda kv: kv[1]["yield_effort_ratio"], reverse=True)
+    
     touched = [(k, v) for k, v in subject_insights.items() if v["questions_solved"] > 0]
-    ranked_strength = sorted(touched, key=lambda kv: kv[1]["coverage_pct"], reverse=True)
+    ranked_strength = sorted(touched, key=lambda kv: kv[1]["mastery_pct"], reverse=True)
     untouched = sorted(
         [(k, v) for k, v in subject_insights.items() if v["questions_solved"] == 0],
         key=lambda kv: kv[1]["weightage_pct_approx"], reverse=True
@@ -208,8 +297,10 @@ def compute_syllabus_insights(subject_counts, topic_counts, reference):
 
     return {
         "subjects": subject_insights,
-        "overall_weighted_coverage_pct": round(weighted_coverage, 1),
+        "overall_weighted_coverage_pct": round(weighted_mastery, 1), # Backward compatibility name
+        "overall_weighted_mastery_pct": round(weighted_mastery, 1),
         "focus_next": [k for k, _ in ranked_priority[:5]],
+        "highest_yield_targets": [k for k, _ in ranked_yield[:3]],
         "strongest_subjects": [k for k, _ in ranked_strength[:3]],
         "untouched_high_yield_subjects": [k for k, _ in untouched],
         "data_quality_flags": data_quality_flags

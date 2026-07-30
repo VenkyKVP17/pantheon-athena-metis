@@ -605,3 +605,49 @@ Secondary Prophylaxis Regimens for Rheumatic Fever (Benzathine Penicillin G 1.2 
 Rheumatic heart disease frequently produces mixed and multi-valve lesions (mitral + aortic valve involvement).
 
 **Take Home Message:** Rheumatic disease often gives mixed lesions; an early diastolic murmur plus an apical pansystolic murmur to the axilla is combined aortic and mitral regurgitation.
+
+---
+
+## Q32. Type of Pulse Explained by Frank-Starling Law (Pulsus Alternans)
+**Question ID:** Q1552363
+**Question:** Identify the type of pulse whose mechanism is explained by the Frank-Starling Law? (INICET MAY 2025)
+- A) Pulsus Bisferiens
+- B) Pulsus Alternans
+- C) Pulsus Paradoxus
+- D) Pulsus Parvus
+
+**Answer:** B) Pulsus Alternans
+
+**Explanation:**
+Pulsus alternans is based on the Frank-Starling Law, which states that stroke volume and force of contractility are directly proportional to the end-diastolic volume or stretch of the myocardium at the end of diastole. Pulsus alternans presents as alternating weak and strong beating pulses and occurs in patients with severe left ventricular failure or dysfunction.
+
+In LV failure, the initial ventricular contraction is weak, producing a small volume pulse. Because insufficient blood is ejected, more blood accumulates in the ventricle, carrying over to the next cardiac cycle where the end-diastolic volume is very high. This activates the Frank-Starling mechanism, producing more stroke volume and stronger contraction, resulting in a strong beating pulse. This cycle continues, creating the alternating pattern. Note that pulsus alternans must be regular to diagnose LV failure.
+
+**Other Options:**
+- **Option A (Pulsus Bisferiens):** Occurs in hypertrophic obstructive cardiomyopathy (HOCM) or severe aortic regurgitation due to dynamic LVOT obstruction and Venturi/Bernoulli effects, producing two systolic peaks with a spike and dome appearance. It is not related to the Frank-Starling Law.
+- **Option C (Pulsus Paradoxus):** Exaggerated fall in systolic BP (>10 mmHg) during inspiration, typically seen in cardiac tamponade or status asthmaticus. Related to ventricular interdependence and respiratory variation, not the Frank-Starling Law.
+- **Option D (Pulsus Parvus):** Small volume pulse seen in conditions like aortic stenosis due to fixed LVOT obstruction, unrelated to the Frank-Starling mechanism.
+
+**Take Home Message:** Pulsus alternans is based on the Frank-Starling Law and indicates severe left ventricular failure with alternating weak and strong contractions.
+
+---
+
+## Q33. ECG Component Corresponding to Mitral Stenosis Murmur
+**Question ID:** Q4115312
+**Question:** The murmur of Mitral Stenosis corresponds to which of the following component of the ECG? (INICET MAY 2025)
+- A) QRS complex
+- B) T wave
+- C) P wave
+- D) ST segment
+
+**Answer:** C) P wave
+
+**Explanation:**
+The murmur of mitral stenosis corresponds to the P wave in the ECG. Mitral stenosis produces a mid-diastolic murmur with presystolic accentuation. Ideally, this murmur should correspond to the TQ segment or TP segment of the ECG, as this represents the diastolic period when the mitral valve is open and blood flows from the left atrium to the left ventricle. However, since the TQ/TP segment is not given as an option, the P wave is the best choice because it is located within the TP segment. The presystolic accentuation of the mitral stenosis murmur specifically corresponds to atrial contraction, which occurs during the P wave.
+
+**Other Options:**
+- **Option A (QRS complex):** The QRS complex corresponds to ventricular depolarization and the early part of ventricular systole (rapid ejection phase), which does not correspond to the diastolic murmur of mitral stenosis.
+- **Option B (T wave):** The T wave represents ventricular repolarization and occurs during ventricular systole, not during the diastolic period when the mitral stenosis murmur is heard.
+- **Option D (ST segment):** The ST segment represents early ventricular repolarization and occurs during ventricular systole, not during the diastolic filling period when mitral stenosis produces its characteristic murmur.
+
+**Take Home Message:** Mitral stenosis causes a mid-diastolic murmur with presystolic accentuation during atrial contraction; among ECG components, it best corresponds to the P wave (located within the TP diastolic filling segment).

@@ -835,7 +835,7 @@
 
       <!-- 19 NEET PG SUBJECT MATRIX -->
       <div class="card two-third-card">
-        <div class="section-title">📚 High-Yield 19 NEET PG Subjects Matrix <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">— mastery % (coverage + retention)</span></div>
+        <div class="section-title">📚 High-Yield 19 NEET PG Subjects Matrix <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">— coverage % vs researched topic taxonomy</span></div>
         <div class="subject-matrix-grid" id="matrixGrid"></div>
       </div>
 
@@ -1071,10 +1071,10 @@
         if (!s) return '';
         const label = SUBJECT_ABBR[name] || name;
         const active = s.questions_solved > 0;
-        const tier = s.mastery_pct >= 50 ? '#34d399' : s.mastery_pct >= 20 ? '#c084fc' : active ? '#fbbf24' : null;
-        const style = tier ? `background: rgba(${tier === '#34d399' ? '52,211,153' : tier === '#c084fc' ? '192,132,252' : '251,191,36'}, 0.1); border-color: ${tier};` : '';
-        const title = `${name}: ${s.questions_solved} Qs solved · ${s.mastery_pct}% Mastery (${s.coverage_pct}% cov, ${s.avg_stability} FSRS) · ~${s.weightage_pct_approx}% of exam`;
-        return `<div class="matrix-cell${active ? ' active' : ''}" style="${style}" title="${title}"><span>${label}</span><span>${s.mastery_pct}% mast</span></div>`;
+        const tier = s.coverage_pct >= 50 ? '#34d399' : s.coverage_pct >= 20 ? '#c084fc' : active ? '#fbbf24' : null;
+        const style = tier ? `border-color:${tier}66;background:${tier}1a;color:${tier};` : '';
+        const title = `${name}: ${s.questions_solved} Qs solved · ${s.coverage_pct}% topic coverage (${s.topics_covered_count}/${s.canonical_topic_count}) · ~${s.weightage_pct_approx}% of exam`;
+        return `<div class="matrix-cell${active ? ' active' : ''}" style="${style}" title="${title}"><span>${label}</span><span>${s.coverage_pct}% cov</span></div>`;
       }).join('');
     }
 
@@ -1148,12 +1148,12 @@
       if (!insights) { el.innerHTML = 'No syllabus insights yet — run athena_metrics.py once.'; return; }
       const lines = [];
 
-      lines.push(`<strong>Algorithmic Mastery:</strong> <strong>${insights.overall_weighted_mastery_pct || insights.overall_weighted_coverage_pct}%</strong> of the NEET PG syllabus is mastered so far, weighted by exam share and FSRS retention stability (not just static coverage).`);
+      lines.push(`<strong>Syllabus Coverage:</strong> <strong>${insights.overall_weighted_coverage_pct}%</strong> of the NEET PG syllabus is covered so far, weighted by each subject's researched exam share (not a flat topic count — heavier subjects count more).`);
 
       if (insights.focus_next && insights.focus_next.length) {
         const items = insights.focus_next.slice(0, 3).map(name => {
           const s = insights.subjects[name];
-          return `${SUBJECT_ABBR[name] || name} (${s.mastery_pct}% mastery, ${s.avg_stability} stability)`;
+          return `${SUBJECT_ABBR[name] || name} (${s.coverage_pct}% covered, ~${s.weightage_pct_approx}% of exam)`;
         }).join(', ');
         lines.push(`<strong>Highest-Priority Gaps:</strong> ${items} — biggest gap × exam weight, solve here next.`);
       }
@@ -1161,17 +1161,9 @@
       if (insights.strongest_subjects && insights.strongest_subjects.length) {
         const items = insights.strongest_subjects.map(name => {
           const s = insights.subjects[name];
-          return `${SUBJECT_ABBR[name] || name} (${s.mastery_pct}%)`;
+          return `${SUBJECT_ABBR[name] || name} (${s.coverage_pct}%)`;
         }).join(', ');
         lines.push(`<strong>Strongest So Far:</strong> ${items}.`);
-      }
-
-      if (insights.highest_yield_targets && insights.highest_yield_targets.length) {
-        const yieldText = insights.highest_yield_targets.map(name => {
-          const s = insights.subjects[name];
-          return `${SUBJECT_ABBR[name] || name} (+${s.estimated_yield_marks}m yield)`;
-        }).join(', ');
-        lines.push(`<strong>Highest Yield / Lowest Effort Targets:</strong> ${yieldText}`);
       }
 
       if (insights.untouched_high_yield_subjects && insights.untouched_high_yield_subjects.length) {
