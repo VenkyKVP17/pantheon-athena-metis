@@ -212,7 +212,8 @@ class SimpleUploadHandler(BaseHTTPRequestHandler):
         if path == '/api/metis/queue':
             deck_id = int(query['deck_id'][0]) if 'deck_id' in query else None
             limit = int(query.get('limit', [20])[0])
-            self.send_json(db.get_due_queue(user['id'], deck_id=deck_id, limit=limit))
+            due_only = query.get('due_only', ['0'])[0] == '1'
+            self.send_json(db.get_due_queue(user['id'], deck_id=deck_id, limit=limit, due_only=due_only))
             return
 
         if path == '/api/metis/preview':
@@ -346,6 +347,12 @@ class SimpleUploadHandler(BaseHTTPRequestHandler):
         if path == '/api/metis/cards':
             card_id = db.create_card(body['subject'], body['topic'], body['front'], body['back'], body.get('tags', []))
             self.send_json({'id': card_id})
+            return
+
+        if path.startswith('/api/metis/cards/') and path.endswith('/archive'):
+            card_id = path[len('/api/metis/cards/'):-len('/archive')].rstrip('/')
+            db.archive_card(user['id'], card_id)
+            self.send_json({'ok': True})
             return
 
         self.send_json({'error': 'Not found'}, status=404)

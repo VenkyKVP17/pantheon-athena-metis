@@ -2105,7 +2105,7 @@
         "last_review": null
       }
     },
-    "last_updated": "2026-07-31T00:38:25.622563"
+    "last_updated": "2026-07-31T00:46:34.936244"
   },
   "syllabus_insights": {
     "subjects": {
@@ -2125,9 +2125,9 @@
         "unmatched_topic_folders": [
           "Arrhythmias"
         ],
-        "priority_score": 12.41,
+        "priority_score": 12.4,
         "estimated_yield_marks": 14.63,
-        "yield_effort_ratio": 6.92
+        "yield_effort_ratio": 6.93
       },
       "Surgery": {
         "weightage_pct_approx": 11.5,
@@ -2136,15 +2136,15 @@
         "topics_covered_count": 0,
         "coverage_pct": 0.0,
         "mastery_pct": 0.0,
-        "avg_stability": 1.8,
-        "avg_difficulty": 3.64,
+        "avg_stability": 2.24,
+        "avg_difficulty": 4.4,
         "questions_solved": 1,
         "unmatched_topic_folders": [
           "Head_and_Neck"
         ],
-        "priority_score": 9.94,
+        "priority_score": 10.82,
         "estimated_yield_marks": 11.5,
-        "yield_effort_ratio": 3.16
+        "yield_effort_ratio": 2.61
       },
       "Obstetrics & Gynecology": {
         "weightage_pct_approx": 9.5,
@@ -2237,15 +2237,15 @@
         "topics_covered_count": 6,
         "coverage_pct": 4.8,
         "mastery_pct": 2.3,
-        "avg_stability": 2.47,
-        "avg_difficulty": 3.88,
+        "avg_stability": 2.63,
+        "avg_difficulty": 4.15,
         "questions_solved": 48,
         "unmatched_topic_folders": [
           "General_Anatomy"
         ],
-        "priority_score": 5.84,
+        "priority_score": 5.97,
         "estimated_yield_marks": 5.39,
-        "yield_effort_ratio": 1.26
+        "yield_effort_ratio": 1.18
       },
       "Physiology": {
         "weightage_pct_approx": 5.0,
@@ -2290,13 +2290,13 @@
         "topics_covered_count": 1,
         "coverage_pct": 0.2,
         "mastery_pct": 0.1,
-        "avg_stability": 1.29,
-        "avg_difficulty": 5.11,
+        "avg_stability": 0.0,
+        "avg_difficulty": 5.0,
         "questions_solved": 1,
         "unmatched_topic_folders": [],
-        "priority_score": 6.06,
-        "estimated_yield_marks": 5.99,
-        "yield_effort_ratio": 1.17
+        "priority_score": 6.0,
+        "estimated_yield_marks": 6.0,
+        "yield_effort_ratio": 1.2
       },
       "Forensic Medicine": {
         "weightage_pct_approx": 2.5,

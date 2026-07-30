@@ -64,7 +64,7 @@
       }
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
 
     body {
       background: var(--bg-gradient);
@@ -160,7 +160,9 @@
     .flashcard-hint { font-size: 13px; color: var(--text-muted); }
     .flashcard-divider { width: 60%; height: 1px; background: var(--card-border); }
 
-    .rate-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .rate-row { display: none; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .rate-row.visible { display: grid; }
+    .flip-col { display: none; }
     .btn-rate {
       padding: 14px 8px; border-radius: 14px; border: 1px solid var(--card-border); cursor: pointer;
       display: flex; flex-direction: column; gap: 4px; align-items: center; background: var(--inset-soft);
@@ -242,6 +244,72 @@
       .rate-row { grid-template-columns: repeat(2, 1fr); }
       .card-row { grid-template-columns: 1fr; }
     }
+
+    /* ---------- Kiosk mode (?kiosk=1) — handheld/dedicated-device use ----------
+       Landscape, no scrolling, no deck picker, rate buttons pinned to the
+       right edge for one-thumb reach. */
+    .rotate-prompt { display: none; }
+
+    body.kiosk-mode { padding: 0; height: 100dvh; overflow: hidden; }
+    body.kiosk-mode header,
+    body.kiosk-mode .tabs-bar,
+    body.kiosk-mode #studyToolbarCard,
+    body.kiosk-mode .study-spacer,
+    body.kiosk-mode .study-footer,
+    body.kiosk-mode .flashcard-label,
+    body.kiosk-mode .flashcard-hint { display: none !important; }
+
+    body.kiosk-mode .container { max-width: none; height: 100dvh; padding: 0; gap: 0; }
+    body.kiosk-mode #app { height: 100%; gap: 0; }
+    body.kiosk-mode .panel { display: none !important; }
+    body.kiosk-mode .panel#panel-study { display: flex !important; height: 100%; gap: 0; }
+
+    body.kiosk-mode #studyCardWrap {
+      display: flex; flex-direction: row; height: 100%; width: 100%;
+      padding: 10px; border-radius: 0; gap: 10px;
+      /* Reverse-landscape puts the punch-hole camera on the right; keep the
+         button column clear of it instead of overlapping the cutout. */
+      padding-right: max(10px, env(safe-area-inset-right));
+    }
+    body.kiosk-mode #flashcard {
+      flex: 1; min-width: 0; min-height: 0; height: 100%;
+      overflow-y: auto; margin: 0;
+    }
+    body.kiosk-mode .flashcard-text { font-size: 20px; max-width: none; }
+    /* True flip instead of append-below: swap front for back so the box's
+       content size (and scroll position) stays stable across the flip. */
+    body.kiosk-mode .flashcard.flipped #cardFront,
+    body.kiosk-mode .flashcard.flipped #cardDivider { display: none !important; }
+
+    /* Right-hand column is always present at the same width — Flip (before
+       reveal) or the 4 rating buttons (after) — so the card itself never
+       resizes between front and back. */
+    body.kiosk-mode .rate-row.visible,
+    body.kiosk-mode .flip-col.visible {
+      display: flex; flex-direction: column; width: 92px; flex-shrink: 0; height: 100%; gap: 8px;
+    }
+    /* Rating order top-to-bottom: Easy, Good, Hard, Again (reverse of the
+       Again/Hard/Good/Easy DOM order used by the desktop grid layout). */
+    body.kiosk-mode .rate-row.visible { flex-direction: column-reverse; }
+    body.kiosk-mode .btn-rate { flex: 1; justify-content: center; }
+
+    body.kiosk-mode .flip-col-flip,
+    body.kiosk-mode .flip-col-archive {
+      border-radius: 14px; border: 1px solid var(--card-border); background: var(--inset-soft);
+      color: var(--text-main); font-weight: 700; font-size: 14px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.6;
+    }
+    body.kiosk-mode .flip-col-flip { flex: 3; }
+    body.kiosk-mode .flip-col-archive { flex: 1; font-size: 12px; border-color: rgba(251,113,133,0.4); }
+
+    @media (orientation: portrait) {
+      body.kiosk-mode .rotate-prompt {
+        display: flex; position: fixed; inset: 0; z-index: 999;
+        background: #05070c; color: #f1f5f9; align-items: center; justify-content: center;
+        text-align: center; padding: 32px; font-size: 17px; font-weight: 600; gap: 10px;
+      }
+      body.kiosk-mode #app { display: none !important; }
+    }
   </style>
   <script>
     (function () {
@@ -251,6 +319,7 @@
   </script>
 </head>
 <body>
+  <div class="rotate-prompt" id="rotatePrompt">🔄 Rotate your device to landscape to study.</div>
   <div class="container">
 
     <header>
@@ -303,7 +372,7 @@
 
       <!-- ---- Study ---- -->
       <div class="panel active" id="panel-study">
-        <div class="card">
+        <div class="card" id="studyToolbarCard">
           <div class="study-toolbar">
             <select class="deck-select" id="studyDeckSelect" onchange="loadQueue()">
               <option value="">All decks (due today)</option>
@@ -320,9 +389,13 @@
             <div class="flashcard-text" id="cardBack" style="display:none;"></div>
             <div class="flashcard-hint" id="cardHint">Click or press Space to flip</div>
           </div>
+          <div class="flip-col" id="flipCol">
+            <button class="flip-col-flip" onclick="flipCard()">👁️<br>Flip</button>
+            <button class="flip-col-archive" onclick="archiveCurrentCard(event)">🗄️<br>Archive</button>
+          </div>
 
-          <div style="height:14px;"></div>
-          <div class="rate-row" id="rateRow" style="display:none;">
+          <div class="study-spacer" style="height:14px;"></div>
+          <div class="rate-row" id="rateRow">
             <button class="btn-rate again" onclick="rateCard('again', event)"><span>Again</span><span class="rate-time" id="lblAgain">1</span></button>
             <button class="btn-rate hard" onclick="rateCard('hard', event)"><span>Hard</span><span class="rate-time" id="lblHard">2</span></button>
             <button class="btn-rate good" onclick="rateCard('good', event)"><span>Good</span><span class="rate-time" id="lblGood">3</span></button>
@@ -504,6 +577,56 @@
     let currentUser = null;
     let authMode = 'login';
 
+    // ---------------- Handheld device support ----------------
+    const KIOSK_MODE = new URLSearchParams(location.search).get('kiosk') === '1';
+    if (KIOSK_MODE) document.body.classList.add('kiosk-mode');
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      });
+    }
+
+    let wakeLock = null;
+    async function requestWakeLock() {
+      if (!('wakeLock' in navigator)) return;
+      try { wakeLock = await navigator.wakeLock.request('screen'); } catch (e) { /* denied or unsupported here */ }
+    }
+    function releaseWakeLock() {
+      if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && currentUser &&
+          document.getElementById('panel-study').classList.contains('active')) {
+        requestWakeLock();
+      }
+    });
+
+    // Reverse landscape (landscape-secondary) — puts the front camera cutout
+    // on the right instead of the left. Only forced in kiosk mode; the
+    // regular dashboard doesn't lock orientation.
+    if (KIOSK_MODE && screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock('landscape-secondary').catch(() => {
+        // Only allowed in fullscreen/installed-standalone contexts; the manifest's
+        // "orientation": "landscape-secondary" is the real fallback when this rejects.
+      });
+    }
+
+    if (KIOSK_MODE) {
+      // requestFullscreen (hides the browser/status bar) needs a user gesture;
+      // the manifest's "display": "fullscreen" covers the installed-app case,
+      // this is the fallback for when it's just opened as a regular tab.
+      document.addEventListener('click', function goFullscreen() {
+        document.removeEventListener('click', goFullscreen);
+        if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        }
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape-secondary').catch(() => {});
+        }
+      }, { once: true });
+    }
+
     // ---------------- Theme ----------------
     function effectiveTheme() {
       const explicit = document.documentElement.getAttribute('data-theme');
@@ -600,6 +723,7 @@
       document.getElementById('whoami').innerText = '👤 ' + currentUser.username;
       document.getElementById('logoutBtn').style.display = 'flex';
       initApp();
+      requestWakeLock();
     }
 
     async function checkSession() {
@@ -619,6 +743,7 @@
       if (name === 'browse') loadBrowse();
       if (name === 'stats') loadStats();
       if (name === 'settings') loadSettings();
+      if (name === 'study') requestWakeLock(); else releaseWakeLock();
     }
 
     let appInitialized = false;
@@ -657,10 +782,12 @@
     }
 
     let lastCaps = null;
+    let kioskShowNew = false; // priority (due) cards first; new cards only once explicitly requested
 
     async function loadQueue(deckIdOverride) {
       const deckId = deckIdOverride !== undefined ? deckIdOverride : document.getElementById('studyDeckSelect').value;
-      const url = '/api/metis/queue?limit=20' + (deckId ? `&deck_id=${deckId}` : '');
+      const dueOnly = KIOSK_MODE && !kioskShowNew;
+      const url = '/api/metis/queue?limit=20' + (deckId ? `&deck_id=${deckId}` : '') + (dueOnly ? '&due_only=1' : '');
       const data = await apiGet(url);
       queue = data.cards;
       lastCaps = data.caps;
@@ -670,14 +797,17 @@
     function showCurrentCard() {
       const wrap = document.getElementById('studyCardWrap');
       const rateRow = document.getElementById('rateRow');
+      const flipCol = document.getElementById('flipCol');
       flipped = false;
+      document.getElementById('flashcard').classList.remove('flipped');
       document.getElementById('cardBack').style.display = 'none';
       document.getElementById('cardDivider').style.display = 'none';
       document.getElementById('cardHint').style.display = 'block';
+      rateRow.classList.remove('visible');
+      flipCol.classList.remove('visible');
 
       if (!queue.length) {
         currentCard = null;
-        rateRow.style.display = 'none';
         document.getElementById('cardHint').style.display = 'none';
         document.getElementById('studyProgress').innerText = '';
         const capHit = lastCaps && (lastCaps.new_cap_reached || lastCaps.review_cap_reached);
@@ -687,6 +817,10 @@
           if (lastCaps.review_cap_reached) bits.push(`${lastCaps.reviews_done_today}/${lastCaps.max_reviews_per_day} reviews`);
           if (lastCaps.new_cap_reached) bits.push(`${lastCaps.new_shown_today}/${lastCaps.new_cards_per_day} new cards`);
           document.getElementById('cardFront').innerHTML = `✅ Hit today's cap (${bits.join(', ')}). Raise it in ⚙️ Settings if you want more.`;
+        } else if (KIOSK_MODE && !kioskShowNew) {
+          document.getElementById('cardDeckLabel').innerText = "Priority cards done";
+          document.getElementById('cardFront').innerHTML =
+            '🎉 All due cards cleared for today.<br><button class="btn-primary" style="margin-top:16px;" onclick="kioskShowNewCards()">Study new cards →</button>';
         } else {
           document.getElementById('cardDeckLabel').innerText = "You're all caught up";
           document.getElementById('cardFront').innerHTML = '🎉 No cards due right now.';
@@ -699,7 +833,7 @@
       document.getElementById('cardDeckLabel').innerText = `${currentCard.subject} — ${currentCard.topic}`;
       document.getElementById('cardFront').innerHTML = mdLite(currentCard.front);
       document.getElementById('cardBack').innerHTML = mdLite(currentCard.back);
-      rateRow.style.display = 'none';
+      flipCol.classList.add('visible');
       document.getElementById('studyProgress').innerText = `${queue.length} card${queue.length === 1 ? '' : 's'} in this batch`;
 
       apiGet('/api/metis/preview?card_id=' + encodeURIComponent(currentCard.id)).then(d => {
@@ -711,12 +845,31 @@
     }
 
     function flipCard() {
-      if (!currentCard || flipped) return;
-      flipped = true;
-      document.getElementById('cardBack').style.display = 'block';
-      document.getElementById('cardDivider').style.display = 'block';
-      document.getElementById('cardHint').style.display = 'none';
-      document.getElementById('rateRow').style.display = 'grid';
+      if (!currentCard) return;
+      flipped = !flipped;
+      document.getElementById('flashcard').classList.toggle('flipped', flipped);
+      document.getElementById('cardBack').style.display = flipped ? 'block' : 'none';
+      document.getElementById('cardDivider').style.display = flipped ? 'block' : 'none';
+      document.getElementById('cardHint').style.display = flipped ? 'none' : 'block';
+      document.getElementById('rateRow').classList.toggle('visible', flipped);
+      document.getElementById('flipCol').classList.toggle('visible', !flipped);
+    }
+
+    function kioskShowNewCards() {
+      kioskShowNew = true;
+      loadQueue(document.getElementById('studyDeckSelect').value);
+    }
+
+    async function archiveCurrentCard(evt) {
+      if (evt) evt.stopPropagation();
+      if (!currentCard) return;
+      const cardId = currentCard.id;
+      try {
+        await apiPost(`/api/metis/cards/${encodeURIComponent(cardId)}/archive`);
+        toast('Archived — won’t show again');
+        await loadQueue(document.getElementById('studyDeckSelect').value);
+        loadDeckSelect();
+      } catch (e) { toast('Archive failed: ' + e.message); }
     }
 
     async function rateCard(rating, evt) {

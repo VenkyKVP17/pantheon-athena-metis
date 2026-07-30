@@ -1,4 +1,4 @@
-const CACHE_NAME = 'metis-anki-v2';
+const CACHE_NAME = 'metis-anki-v7';
 const ASSETS_TO_CACHE = [
   './metis_dashboard.html',
   './athena_dashboard.html',

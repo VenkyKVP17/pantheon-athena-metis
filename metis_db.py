@@ -103,6 +103,14 @@ CREATE TABLE IF NOT EXISTS user_settings (
     FOREIGN KEY(user_id) REFERENCES users(id)
 );
 
+CREATE TABLE IF NOT EXISTS card_archive (
+    user_id INTEGER NOT NULL,
+    card_id TEXT NOT NULL,
+    archived_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, card_id),
+    FOREIGN KEY(card_id) REFERENCES cards(id)
+);
+
 CREATE INDEX IF NOT EXISTS idx_cards_deck ON cards(deck_id);
 CREATE INDEX IF NOT EXISTS idx_review_log_user_time ON review_log(user_id, reviewed_at);
 """
@@ -300,6 +308,18 @@ def update_card(card_id, front=None, back=None, tags=None):
 def delete_card(card_id):
     conn = get_conn()
     conn.execute('UPDATE cards SET deleted = 1, updated_at = ? WHERE id = ?', (now_iso(), card_id))
+    conn.commit()
+    conn.close()
+
+
+def archive_card(user_id, card_id):
+    """Per-user 'never show me this again' — unlike delete_card, doesn't
+    touch the shared card so other users' decks are unaffected."""
+    conn = get_conn()
+    conn.execute(
+        'INSERT OR IGNORE INTO card_archive (user_id, card_id, archived_at) VALUES (?, ?, ?)',
+        (user_id, card_id, now_iso())
+    )
     conn.commit()
     conn.close()
 
@@ -598,7 +618,7 @@ def _persist_card_state(conn, user_id, card_id, new_state, algorithm, reps_delta
     )
 
 
-def get_due_queue(user_id, deck_id=None, limit=20, new_limit=10):
+def get_due_queue(user_id, deck_id=None, limit=20, new_limit=10, due_only=False):
     settings = get_user_settings(user_id)
     algorithm = settings['algorithm']
     conn = get_conn()
@@ -621,9 +641,10 @@ def get_due_queue(user_id, deck_id=None, limit=20, new_limit=10):
         base = (
             'FROM cards ca JOIN decks d ON d.id = ca.deck_id '
             'LEFT JOIN card_state cs ON cs.card_id = ca.id AND cs.user_id = ? '
-            'WHERE ca.deleted = 0'
+            'WHERE ca.deleted = 0 '
+            'AND ca.id NOT IN (SELECT card_id FROM card_archive WHERE user_id = ?)'
         )
-        params = [user_id]
+        params = [user_id, user_id]
         if deck_id:
             base += ' AND ca.deck_id = ?'
             params.append(deck_id)
@@ -641,7 +662,7 @@ def get_due_queue(user_id, deck_id=None, limit=20, new_limit=10):
         # New cards have their own daily allowance, independent of the
         # review cap — hitting one cap shouldn't block the other queue.
         remaining_batch = max(limit - len(due_rows), 0)
-        new_slot = min(new_limit, new_allowance, remaining_batch)
+        new_slot = 0 if due_only else min(new_limit, new_allowance, remaining_batch)
         new_rows = []
         if new_slot > 0:
             new_rows = conn.execute(

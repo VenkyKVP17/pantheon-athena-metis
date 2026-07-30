@@ -2,8 +2,10 @@
   "name": "PANTHEON | METIS Anki Flashcards",
   "short_name": "METIS Anki",
   "description": "Pantheon METIS Spaced Repetition Flashcard PWA for NEET PG Exam Mastery",
-  "start_url": "./metis_dashboard.html",
-  "display": "standalone",
+  "start_url": "./metis_dashboard.html?kiosk=1",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "landscape-secondary",
   "background_color": "#090d16",
   "theme_color": "#00f2fe",
   "icons": [
