@@ -12,6 +12,7 @@ import datetime
 import glob
 
 import metis_db as db
+import homepage_api as hp
 
 VAULT_DIR = '/home/ubuntu/vp'
 NEET_PG_DIR = '/home/ubuntu/vp/NEET_PG'
@@ -19,6 +20,7 @@ DROPZONE = '/home/ubuntu/vp/NEET_PG/Dropzone'
 DASHBOARD_FILE = '/home/ubuntu/vp/NEET_PG/athena_dashboard.html'
 METRICS_FILE = '/home/ubuntu/vp/NEET_PG/study_metrics.json'
 SESSION_COOKIE = 'metis_session'
+VERIFIED_PANTHEON_SESSIONS = {}
 
 # NEET_PG/ is the effective webroot (dashboard, PWA manifest, service worker
 # all live there). VAULT_DIR is a fallback for the METIS report link, which
@@ -89,8 +91,43 @@ class SimpleUploadHandler(BaseHTTPRequestHandler):
         morsel = cookie.get(SESSION_COOKIE)
         return morsel.value if morsel else None
 
+    def verify_vikunja_session(self, token):
+        import urllib.request
+        global VERIFIED_PANTHEON_SESSIONS
+        now = time.time()
+        if token in VERIFIED_PANTHEON_SESSIONS:
+            user, exp = VERIFIED_PANTHEON_SESSIONS[token]
+            if exp > now:
+                return user
+        try:
+            req = urllib.request.Request(
+                'http://localhost:3456/api/v1/user',
+                headers={'Authorization': f'Bearer {token}'}
+            )
+            with urllib.request.urlopen(req, timeout=2) as response:
+                if response.status == 200:
+                    data = json.loads(response.read().decode())
+                    if data.get('username') == 'vpk':
+                        user = {'id': 1, 'username': 'venky'}
+                        VERIFIED_PANTHEON_SESSIONS[token] = (user, now + 300)  # cache for 5 minutes
+                        return user
+        except Exception as e:
+            print(f"Error verifying pantheon_session against Vikunja: {e}")
+        return None
+
     def get_current_user(self):
-        return db.get_user_from_session(self.get_session_token())
+        user = db.get_user_from_session(self.get_session_token())
+        if user:
+            return user
+        # Check pantheon_session cookie fallback
+        header = self.headers.get('Cookie')
+        if header:
+            cookie = SimpleCookie()
+            cookie.load(header)
+            p_morsel = cookie.get('pantheon_session')
+            if p_morsel:
+                return self.verify_vikunja_session(p_morsel.value)
+        return None
 
     def session_cookie_header(self, token):
         return f'{SESSION_COOKIE}={token}; Path=/; Max-Age=2592000; HttpOnly; SameSite=Lax'
@@ -134,6 +171,46 @@ class SimpleUploadHandler(BaseHTTPRequestHandler):
         if path == '/api/dropzone/companions':
             try:
                 self.send_json({'companions': list_companions()})
+            except Exception as e:
+                traceback.print_exc()
+                self.send_json({'error': str(e)}, status=500)
+            return
+
+        if path == '/api/homepage/today':
+            try:
+                self.send_json(hp.get_today_data())
+            except Exception as e:
+                traceback.print_exc()
+                self.send_json({'error': str(e)}, status=500)
+            return
+
+        if path == '/api/homepage/status':
+            try:
+                self.send_json(hp.get_service_status())
+            except Exception as e:
+                traceback.print_exc()
+                self.send_json({'error': str(e)}, status=500)
+            return
+
+        if path == '/api/homepage/weather':
+            try:
+                self.send_json(hp.get_weather())
+            except Exception as e:
+                traceback.print_exc()
+                self.send_json({'error': str(e)}, status=500)
+            return
+
+        if path == '/api/homepage/finance':
+            try:
+                self.send_json(hp.get_finance_snapshot())
+            except Exception as e:
+                traceback.print_exc()
+                self.send_json({'error': str(e)}, status=500)
+            return
+
+        if path == '/api/homepage/wellness':
+            try:
+                self.send_json(hp.get_wellness_snapshot())
             except Exception as e:
                 traceback.print_exc()
                 self.send_json({'error': str(e)}, status=500)
@@ -232,6 +309,10 @@ class SimpleUploadHandler(BaseHTTPRequestHandler):
             self.send_json({'settings': db.get_user_settings(user['id'])})
             return
 
+        if path == '/api/metis/flags':
+            self.send_json({'flags': db.list_flags(status='open')})
+            return
+
         self.send_json({'error': 'Not found'}, status=404)
 
     # -------------------------------------------------------------- POST ---
@@ -250,6 +331,43 @@ class SimpleUploadHandler(BaseHTTPRequestHandler):
             except sqlite3.IntegrityError:
                 self.send_json({'error': 'Username already taken'}, status=409)
             except ValueError as e:
+                self.send_json({'error': str(e)}, status=400)
+            except Exception as e:
+                traceback.print_exc()
+                self.send_json({'error': str(e)}, status=500)
+            return
+
+        if path == '/api/homepage/task/toggle':
+            try:
+                body = self.read_json_body()
+                result = hp.toggle_task(body.get('date'), body.get('line_no'),
+                                         body.get('text', ''), bool(body.get('done')))
+                self.send_json({'ok': True, 'task': result})
+            except hp.TaskConflict as e:
+                self.send_json({'error': str(e)}, status=409)
+            except Exception as e:
+                traceback.print_exc()
+                self.send_json({'error': str(e)}, status=500)
+            return
+
+        if path == '/api/homepage/vikunja/toggle':
+            try:
+                body = self.read_json_body()
+                result = hp.toggle_vikunja_task(body.get('id'), bool(body.get('done')))
+                self.send_json({'ok': True, 'task': result})
+            except hp.TaskConflict as e:
+                self.send_json({'error': str(e)}, status=409)
+            except Exception as e:
+                traceback.print_exc()
+                self.send_json({'error': str(e)}, status=500)
+            return
+
+        if path == '/api/homepage/quickadd':
+            try:
+                body = self.read_json_body()
+                result = hp.quick_add_task(body.get('text', ''))
+                self.send_json({'ok': True, **result})
+            except hp.QuickAddError as e:
                 self.send_json({'error': str(e)}, status=400)
             except Exception as e:
                 traceback.print_exc()
@@ -353,6 +471,18 @@ class SimpleUploadHandler(BaseHTTPRequestHandler):
             card_id = path[len('/api/metis/cards/'):-len('/archive')].rstrip('/')
             db.archive_card(user['id'], card_id)
             self.send_json({'ok': True})
+            return
+
+        if path.startswith('/api/metis/flags/') and path.endswith('/dismiss'):
+            flag_id = int(path[len('/api/metis/flags/'):-len('/dismiss')].rstrip('/'))
+            ok = db.set_flag_status(flag_id, 'dismissed')
+            self.send_json({'ok': ok}, status=200 if ok else 404)
+            return
+
+        if path.startswith('/api/metis/flags/') and path.endswith('/resolve'):
+            flag_id = int(path[len('/api/metis/flags/'):-len('/resolve')].rstrip('/'))
+            ok = db.set_flag_status(flag_id, 'resolved')
+            self.send_json({'ok': ok}, status=200 if ok else 404)
             return
 
         self.send_json({'error': 'Not found'}, status=404)

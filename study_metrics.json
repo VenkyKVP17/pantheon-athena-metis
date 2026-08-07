@@ -206,15 +206,15 @@
     },
     "2026-07-31": {
       "date": "2026-07-31",
-      "questions_completed": 1,
-      "cumulative_total": 131,
+      "questions_completed": 5,
+      "cumulative_total": 135,
       "subject_breakdown": {
         "Biochemistry": 2,
         "Microbiology": 1,
         "Obstetrics_and_Gynecology": 3,
-        "Physiology": 1,
+        "Physiology": 3,
         "Pediatrics": 1,
-        "Anatomy": 48,
+        "Anatomy": 50,
         "ENT": 1,
         "Surgery": 1,
         "Medicine": 73
@@ -223,14 +223,15 @@
         "Biochemistry: Acid_Base_and_Electrolyte_Balance": 2,
         "Microbiology: Mycology": 1,
         "Obstetrics_and_Gynecology: Basic_Obstetrics": 3,
+        "Physiology: General_Physiology_and_Cell": 2,
         "Physiology: Endocrine_Physiology": 1,
         "Pediatrics: Pediatric_Hematology_and_Oncology": 1,
         "Anatomy: Lower_Limb": 2,
         "Anatomy: Pelvis_and_Perineum": 1,
         "Anatomy: Embryology": 1,
-        "Anatomy: Upper_Limb": 11,
+        "Anatomy: Upper_Limb": 12,
         "Anatomy: Head_and_Neck": 6,
-        "Anatomy: Neuroanatomy": 3,
+        "Anatomy: Neuroanatomy": 4,
         "Anatomy: General_Anatomy": 24,
         "ENT: Ear_Diseases_and_Hearing_Loss": 1,
         "Surgery: Head_and_Neck": 1,
@@ -241,109 +242,1058 @@
       "topic_mastery": {
         "Biochemistry: Acid_Base_and_Electrolyte_Balance": {
           "count": 2,
-          "mastery_percent": 4.0,
+          "depth_pct": 4.0,
           "status": "Starting Out"
         },
         "Microbiology: Mycology": {
           "count": 1,
-          "mastery_percent": 2.0,
+          "depth_pct": 2.0,
           "status": "Starting Out"
         },
         "Obstetrics_and_Gynecology: Basic_Obstetrics": {
           "count": 3,
-          "mastery_percent": 6.0,
+          "depth_pct": 6.0,
+          "status": "Starting Out"
+        },
+        "Physiology: General_Physiology_and_Cell": {
+          "count": 2,
+          "depth_pct": 4.0,
           "status": "Starting Out"
         },
         "Physiology: Endocrine_Physiology": {
           "count": 1,
-          "mastery_percent": 2.0,
+          "depth_pct": 2.0,
           "status": "Starting Out"
         },
         "Pediatrics: Pediatric_Hematology_and_Oncology": {
           "count": 1,
-          "mastery_percent": 2.0,
+          "depth_pct": 2.0,
           "status": "Starting Out"
         },
         "Anatomy: Lower_Limb": {
           "count": 2,
-          "mastery_percent": 4.0,
+          "depth_pct": 4.0,
           "status": "Starting Out"
         },
         "Anatomy: Pelvis_and_Perineum": {
           "count": 1,
-          "mastery_percent": 2.0,
+          "depth_pct": 2.0,
           "status": "Starting Out"
         },
         "Anatomy: Embryology": {
           "count": 1,
-          "mastery_percent": 2.0,
+          "depth_pct": 2.0,
           "status": "Starting Out"
         },
         "Anatomy: Upper_Limb": {
-          "count": 11,
-          "mastery_percent": 22.0,
+          "count": 12,
+          "depth_pct": 24.0,
           "status": "Starting Out"
         },
         "Anatomy: Head_and_Neck": {
           "count": 6,
-          "mastery_percent": 12.0,
+          "depth_pct": 12.0,
           "status": "Starting Out"
         },
         "Anatomy: Neuroanatomy": {
-          "count": 3,
-          "mastery_percent": 6.0,
+          "count": 4,
+          "depth_pct": 8.0,
           "status": "Starting Out"
         },
         "Anatomy: General_Anatomy": {
           "count": 24,
-          "mastery_percent": 48.0,
+          "depth_pct": 48.0,
           "status": "Building Volume"
         },
         "ENT: Ear_Diseases_and_Hearing_Loss": {
           "count": 1,
-          "mastery_percent": 2.0,
+          "depth_pct": 2.0,
           "status": "Starting Out"
         },
         "Surgery: Head_and_Neck": {
           "count": 1,
-          "mastery_percent": 2.0,
+          "depth_pct": 2.0,
           "status": "Starting Out"
         },
         "Medicine: Cardiology": {
           "count": 31,
-          "mastery_percent": 62.0,
+          "depth_pct": 62.0,
           "status": "Building Volume"
         },
         "Medicine: Arrhythmias": {
           "count": 41,
-          "mastery_percent": 82.0,
+          "depth_pct": 82.0,
           "status": "High Volume"
         },
         "Medicine: Neurology": {
           "count": 1,
-          "mastery_percent": 2.0,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        }
+      },
+      "sessions": [
+        {
+          "task": "(untitled session)",
+          "link": "",
+          "session_type": "focus",
+          "planned_minutes": 25,
+          "start_time": "2026-07-31T14:22:52.093Z",
+          "end_time": "2026-07-31T14:22:57.941Z",
+          "completed": false,
+          "tab_switches": 0,
+          "blur_seconds": 0,
+          "concentration_score": 100
+        }
+      ],
+      "active_hours": 0.0,
+      "speed_q_per_hour": 3078.0,
+      "endurance_score": 16,
+      "concentration_score": 100.0
+    },
+    "2026-08-01": {
+      "date": "2026-08-01",
+      "questions_completed": 0,
+      "cumulative_total": 135,
+      "subject_breakdown": {
+        "Biochemistry": 2,
+        "Microbiology": 1,
+        "Obstetrics_and_Gynecology": 3,
+        "Physiology": 3,
+        "Pediatrics": 1,
+        "Anatomy": 50,
+        "ENT": 1,
+        "Surgery": 1,
+        "Medicine": 73
+      },
+      "topic_breakdown": {
+        "Biochemistry: Acid_Base_and_Electrolyte_Balance": 2,
+        "Microbiology: Mycology": 1,
+        "Obstetrics_and_Gynecology: Basic_Obstetrics": 3,
+        "Physiology: General_Physiology_and_Cell": 2,
+        "Physiology: Endocrine_Physiology": 1,
+        "Pediatrics: Pediatric_Hematology_and_Oncology": 1,
+        "Anatomy: Lower_Limb": 2,
+        "Anatomy: Pelvis_and_Perineum": 1,
+        "Anatomy: Embryology": 1,
+        "Anatomy: Upper_Limb": 12,
+        "Anatomy: Head_and_Neck": 6,
+        "Anatomy: Neuroanatomy": 4,
+        "Anatomy: General_Anatomy": 24,
+        "ENT: Ear_Diseases_and_Hearing_Loss": 1,
+        "Surgery: Head_and_Neck": 1,
+        "Medicine: Cardiology": 31,
+        "Medicine: Arrhythmias": 41,
+        "Medicine: Neurology": 1
+      },
+      "topic_mastery": {
+        "Biochemistry: Acid_Base_and_Electrolyte_Balance": {
+          "count": 2,
+          "depth_pct": 4.0,
+          "status": "Starting Out"
+        },
+        "Microbiology: Mycology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Obstetrics_and_Gynecology: Basic_Obstetrics": {
+          "count": 3,
+          "depth_pct": 6.0,
+          "status": "Starting Out"
+        },
+        "Physiology: General_Physiology_and_Cell": {
+          "count": 2,
+          "depth_pct": 4.0,
+          "status": "Starting Out"
+        },
+        "Physiology: Endocrine_Physiology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Pediatrics: Pediatric_Hematology_and_Oncology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Lower_Limb": {
+          "count": 2,
+          "depth_pct": 4.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Pelvis_and_Perineum": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Embryology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Upper_Limb": {
+          "count": 12,
+          "depth_pct": 24.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Head_and_Neck": {
+          "count": 6,
+          "depth_pct": 12.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Neuroanatomy": {
+          "count": 4,
+          "depth_pct": 8.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: General_Anatomy": {
+          "count": 24,
+          "depth_pct": 48.0,
+          "status": "Building Volume"
+        },
+        "ENT: Ear_Diseases_and_Hearing_Loss": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Surgery: Head_and_Neck": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Medicine: Cardiology": {
+          "count": 31,
+          "depth_pct": 62.0,
+          "status": "Building Volume"
+        },
+        "Medicine: Arrhythmias": {
+          "count": 41,
+          "depth_pct": 82.0,
+          "status": "High Volume"
+        },
+        "Medicine: Neurology": {
+          "count": 1,
+          "depth_pct": 2.0,
           "status": "Starting Out"
         }
       },
       "sessions": [],
-      "active_hours": 0.03,
-      "speed_q_per_hour": 33.3,
-      "endurance_score": 12,
+      "active_hours": 0,
+      "speed_q_per_hour": 0,
+      "endurance_score": 0,
+      "concentration_score": null
+    },
+    "2026-08-02": {
+      "date": "2026-08-02",
+      "questions_completed": 0,
+      "cumulative_total": 135,
+      "subject_breakdown": {
+        "Biochemistry": 2,
+        "Microbiology": 1,
+        "Obstetrics_and_Gynecology": 3,
+        "Physiology": 3,
+        "Pediatrics": 1,
+        "Anatomy": 50,
+        "ENT": 1,
+        "Surgery": 1,
+        "Medicine": 73
+      },
+      "topic_breakdown": {
+        "Biochemistry: Acid_Base_and_Electrolyte_Balance": 2,
+        "Microbiology: Mycology": 1,
+        "Obstetrics_and_Gynecology: Basic_Obstetrics": 3,
+        "Physiology: General_Physiology_and_Cell": 2,
+        "Physiology: Endocrine_Physiology": 1,
+        "Pediatrics: Pediatric_Hematology_and_Oncology": 1,
+        "Anatomy: Lower_Limb": 2,
+        "Anatomy: Pelvis_and_Perineum": 1,
+        "Anatomy: Embryology": 1,
+        "Anatomy: Upper_Limb": 12,
+        "Anatomy: Head_and_Neck": 6,
+        "Anatomy: Neuroanatomy": 4,
+        "Anatomy: General_Anatomy": 24,
+        "ENT: Ear_Diseases_and_Hearing_Loss": 1,
+        "Surgery: Head_and_Neck": 1,
+        "Medicine: Cardiology": 31,
+        "Medicine: Arrhythmias": 41,
+        "Medicine: Neurology": 1
+      },
+      "topic_mastery": {
+        "Biochemistry: Acid_Base_and_Electrolyte_Balance": {
+          "count": 2,
+          "depth_pct": 4.0,
+          "status": "Starting Out"
+        },
+        "Microbiology: Mycology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Obstetrics_and_Gynecology: Basic_Obstetrics": {
+          "count": 3,
+          "depth_pct": 6.0,
+          "status": "Starting Out"
+        },
+        "Physiology: General_Physiology_and_Cell": {
+          "count": 2,
+          "depth_pct": 4.0,
+          "status": "Starting Out"
+        },
+        "Physiology: Endocrine_Physiology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Pediatrics: Pediatric_Hematology_and_Oncology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Lower_Limb": {
+          "count": 2,
+          "depth_pct": 4.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Pelvis_and_Perineum": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Embryology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Upper_Limb": {
+          "count": 12,
+          "depth_pct": 24.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Head_and_Neck": {
+          "count": 6,
+          "depth_pct": 12.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Neuroanatomy": {
+          "count": 4,
+          "depth_pct": 8.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: General_Anatomy": {
+          "count": 24,
+          "depth_pct": 48.0,
+          "status": "Building Volume"
+        },
+        "ENT: Ear_Diseases_and_Hearing_Loss": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Surgery: Head_and_Neck": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Medicine: Cardiology": {
+          "count": 31,
+          "depth_pct": 62.0,
+          "status": "Building Volume"
+        },
+        "Medicine: Arrhythmias": {
+          "count": 41,
+          "depth_pct": 82.0,
+          "status": "High Volume"
+        },
+        "Medicine: Neurology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        }
+      },
+      "sessions": [],
+      "active_hours": 0,
+      "speed_q_per_hour": 0,
+      "endurance_score": 0,
+      "concentration_score": null
+    },
+    "2026-08-03": {
+      "date": "2026-08-03",
+      "questions_completed": 0,
+      "cumulative_total": 135,
+      "subject_breakdown": {
+        "Biochemistry": 2,
+        "Microbiology": 1,
+        "Obstetrics_and_Gynecology": 3,
+        "Physiology": 3,
+        "Pediatrics": 1,
+        "Anatomy": 50,
+        "ENT": 1,
+        "Surgery": 1,
+        "Medicine": 73
+      },
+      "topic_breakdown": {
+        "Biochemistry: Acid_Base_and_Electrolyte_Balance": 2,
+        "Microbiology: Mycology": 1,
+        "Obstetrics_and_Gynecology: Basic_Obstetrics": 3,
+        "Physiology: General_Physiology_and_Cell": 2,
+        "Physiology: Endocrine_Physiology": 1,
+        "Pediatrics: Pediatric_Hematology_and_Oncology": 1,
+        "Anatomy: Lower_Limb": 2,
+        "Anatomy: Pelvis_and_Perineum": 1,
+        "Anatomy: Embryology": 1,
+        "Anatomy: Upper_Limb": 12,
+        "Anatomy: Head_and_Neck": 6,
+        "Anatomy: Neuroanatomy": 4,
+        "Anatomy: General_Anatomy": 24,
+        "ENT: Ear_Diseases_and_Hearing_Loss": 1,
+        "Surgery: Head_and_Neck": 1,
+        "Medicine: Cardiology": 31,
+        "Medicine: Arrhythmias": 41,
+        "Medicine: Neurology": 1
+      },
+      "topic_mastery": {
+        "Biochemistry: Acid_Base_and_Electrolyte_Balance": {
+          "count": 2,
+          "depth_pct": 4.0,
+          "status": "Starting Out"
+        },
+        "Microbiology: Mycology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Obstetrics_and_Gynecology: Basic_Obstetrics": {
+          "count": 3,
+          "depth_pct": 6.0,
+          "status": "Starting Out"
+        },
+        "Physiology: General_Physiology_and_Cell": {
+          "count": 2,
+          "depth_pct": 4.0,
+          "status": "Starting Out"
+        },
+        "Physiology: Endocrine_Physiology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Pediatrics: Pediatric_Hematology_and_Oncology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Lower_Limb": {
+          "count": 2,
+          "depth_pct": 4.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Pelvis_and_Perineum": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Embryology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Upper_Limb": {
+          "count": 12,
+          "depth_pct": 24.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Head_and_Neck": {
+          "count": 6,
+          "depth_pct": 12.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Neuroanatomy": {
+          "count": 4,
+          "depth_pct": 8.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: General_Anatomy": {
+          "count": 24,
+          "depth_pct": 48.0,
+          "status": "Building Volume"
+        },
+        "ENT: Ear_Diseases_and_Hearing_Loss": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Surgery: Head_and_Neck": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Medicine: Cardiology": {
+          "count": 31,
+          "depth_pct": 62.0,
+          "status": "Building Volume"
+        },
+        "Medicine: Arrhythmias": {
+          "count": 41,
+          "depth_pct": 82.0,
+          "status": "High Volume"
+        },
+        "Medicine: Neurology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        }
+      },
+      "sessions": [],
+      "active_hours": 0,
+      "speed_q_per_hour": 0,
+      "endurance_score": 0,
+      "concentration_score": null
+    },
+    "2026-08-04": {
+      "date": "2026-08-04",
+      "questions_completed": 0,
+      "cumulative_total": 135,
+      "subject_breakdown": {
+        "Biochemistry": 2,
+        "Microbiology": 1,
+        "Obstetrics_and_Gynecology": 3,
+        "Physiology": 3,
+        "Pediatrics": 1,
+        "Anatomy": 50,
+        "ENT": 1,
+        "Surgery": 1,
+        "Medicine": 73
+      },
+      "topic_breakdown": {
+        "Biochemistry: Acid_Base_and_Electrolyte_Balance": 2,
+        "Microbiology: Mycology": 1,
+        "Obstetrics_and_Gynecology: Basic_Obstetrics": 3,
+        "Physiology: General_Physiology_and_Cell": 2,
+        "Physiology: Endocrine_Physiology": 1,
+        "Pediatrics: Pediatric_Hematology_and_Oncology": 1,
+        "Anatomy: Lower_Limb": 2,
+        "Anatomy: Pelvis_and_Perineum": 1,
+        "Anatomy: Embryology": 1,
+        "Anatomy: Upper_Limb": 12,
+        "Anatomy: Head_and_Neck": 6,
+        "Anatomy: Neuroanatomy": 4,
+        "Anatomy: General_Anatomy": 24,
+        "ENT: Ear_Diseases_and_Hearing_Loss": 1,
+        "Surgery: Head_and_Neck": 1,
+        "Medicine: Cardiology": 31,
+        "Medicine: Arrhythmias": 41,
+        "Medicine: Neurology": 1
+      },
+      "topic_mastery": {
+        "Biochemistry: Acid_Base_and_Electrolyte_Balance": {
+          "count": 2,
+          "depth_pct": 4.0,
+          "status": "Starting Out"
+        },
+        "Microbiology: Mycology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Obstetrics_and_Gynecology: Basic_Obstetrics": {
+          "count": 3,
+          "depth_pct": 6.0,
+          "status": "Starting Out"
+        },
+        "Physiology: General_Physiology_and_Cell": {
+          "count": 2,
+          "depth_pct": 4.0,
+          "status": "Starting Out"
+        },
+        "Physiology: Endocrine_Physiology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Pediatrics: Pediatric_Hematology_and_Oncology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Lower_Limb": {
+          "count": 2,
+          "depth_pct": 4.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Pelvis_and_Perineum": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Embryology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Upper_Limb": {
+          "count": 12,
+          "depth_pct": 24.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Head_and_Neck": {
+          "count": 6,
+          "depth_pct": 12.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Neuroanatomy": {
+          "count": 4,
+          "depth_pct": 8.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: General_Anatomy": {
+          "count": 24,
+          "depth_pct": 48.0,
+          "status": "Building Volume"
+        },
+        "ENT: Ear_Diseases_and_Hearing_Loss": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Surgery: Head_and_Neck": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Medicine: Cardiology": {
+          "count": 31,
+          "depth_pct": 62.0,
+          "status": "Building Volume"
+        },
+        "Medicine: Arrhythmias": {
+          "count": 41,
+          "depth_pct": 82.0,
+          "status": "High Volume"
+        },
+        "Medicine: Neurology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        }
+      },
+      "sessions": [],
+      "active_hours": 0,
+      "speed_q_per_hour": 0,
+      "endurance_score": 0,
+      "concentration_score": null
+    },
+    "2026-08-05": {
+      "date": "2026-08-05",
+      "questions_completed": 0,
+      "cumulative_total": 135,
+      "subject_breakdown": {
+        "Biochemistry": 2,
+        "Microbiology": 1,
+        "Obstetrics_and_Gynecology": 3,
+        "Physiology": 3,
+        "Pediatrics": 1,
+        "Anatomy": 50,
+        "ENT": 1,
+        "Surgery": 1,
+        "Medicine": 73
+      },
+      "topic_breakdown": {
+        "Biochemistry: Acid_Base_and_Electrolyte_Balance": 2,
+        "Microbiology: Mycology": 1,
+        "Obstetrics_and_Gynecology: Basic_Obstetrics": 3,
+        "Physiology: General_Physiology_and_Cell": 2,
+        "Physiology: Endocrine_Physiology": 1,
+        "Pediatrics: Pediatric_Hematology_and_Oncology": 1,
+        "Anatomy: Lower_Limb": 2,
+        "Anatomy: Pelvis_and_Perineum": 1,
+        "Anatomy: Embryology": 1,
+        "Anatomy: Upper_Limb": 12,
+        "Anatomy: Head_and_Neck": 6,
+        "Anatomy: Neuroanatomy": 4,
+        "Anatomy: General_Anatomy": 24,
+        "ENT: Ear_Diseases_and_Hearing_Loss": 1,
+        "Surgery: Head_and_Neck": 1,
+        "Medicine: Cardiology": 31,
+        "Medicine: Arrhythmias": 41,
+        "Medicine: Neurology": 1
+      },
+      "topic_mastery": {
+        "Biochemistry: Acid_Base_and_Electrolyte_Balance": {
+          "count": 2,
+          "depth_pct": 4.0,
+          "status": "Starting Out"
+        },
+        "Microbiology: Mycology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Obstetrics_and_Gynecology: Basic_Obstetrics": {
+          "count": 3,
+          "depth_pct": 6.0,
+          "status": "Starting Out"
+        },
+        "Physiology: General_Physiology_and_Cell": {
+          "count": 2,
+          "depth_pct": 4.0,
+          "status": "Starting Out"
+        },
+        "Physiology: Endocrine_Physiology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Pediatrics: Pediatric_Hematology_and_Oncology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Lower_Limb": {
+          "count": 2,
+          "depth_pct": 4.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Pelvis_and_Perineum": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Embryology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Upper_Limb": {
+          "count": 12,
+          "depth_pct": 24.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Head_and_Neck": {
+          "count": 6,
+          "depth_pct": 12.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Neuroanatomy": {
+          "count": 4,
+          "depth_pct": 8.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: General_Anatomy": {
+          "count": 24,
+          "depth_pct": 48.0,
+          "status": "Building Volume"
+        },
+        "ENT: Ear_Diseases_and_Hearing_Loss": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Surgery: Head_and_Neck": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Medicine: Cardiology": {
+          "count": 31,
+          "depth_pct": 62.0,
+          "status": "Building Volume"
+        },
+        "Medicine: Arrhythmias": {
+          "count": 41,
+          "depth_pct": 82.0,
+          "status": "High Volume"
+        },
+        "Medicine: Neurology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        }
+      },
+      "sessions": [],
+      "active_hours": 0,
+      "speed_q_per_hour": 0,
+      "endurance_score": 0,
+      "concentration_score": null
+    },
+    "2026-08-06": {
+      "date": "2026-08-06",
+      "questions_completed": 0,
+      "cumulative_total": 135,
+      "subject_breakdown": {
+        "Biochemistry": 2,
+        "Microbiology": 1,
+        "Obstetrics_and_Gynecology": 3,
+        "Physiology": 3,
+        "Pediatrics": 1,
+        "Anatomy": 50,
+        "ENT": 1,
+        "Surgery": 1,
+        "Medicine": 73
+      },
+      "topic_breakdown": {
+        "Biochemistry: Acid_Base_and_Electrolyte_Balance": 2,
+        "Microbiology: Mycology": 1,
+        "Obstetrics_and_Gynecology: Basic_Obstetrics": 3,
+        "Physiology: General_Physiology_and_Cell": 2,
+        "Physiology: Endocrine_Physiology": 1,
+        "Pediatrics: Pediatric_Hematology_and_Oncology": 1,
+        "Anatomy: Lower_Limb": 2,
+        "Anatomy: Pelvis_and_Perineum": 1,
+        "Anatomy: Embryology": 1,
+        "Anatomy: Upper_Limb": 12,
+        "Anatomy: Head_and_Neck": 6,
+        "Anatomy: Neuroanatomy": 4,
+        "Anatomy: General_Anatomy": 24,
+        "ENT: Ear_Diseases_and_Hearing_Loss": 1,
+        "Surgery: Head_and_Neck": 1,
+        "Medicine: Cardiology": 31,
+        "Medicine: Arrhythmias": 41,
+        "Medicine: Neurology": 1
+      },
+      "topic_mastery": {
+        "Biochemistry: Acid_Base_and_Electrolyte_Balance": {
+          "count": 2,
+          "depth_pct": 4.0,
+          "status": "Starting Out"
+        },
+        "Microbiology: Mycology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Obstetrics_and_Gynecology: Basic_Obstetrics": {
+          "count": 3,
+          "depth_pct": 6.0,
+          "status": "Starting Out"
+        },
+        "Physiology: General_Physiology_and_Cell": {
+          "count": 2,
+          "depth_pct": 4.0,
+          "status": "Starting Out"
+        },
+        "Physiology: Endocrine_Physiology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Pediatrics: Pediatric_Hematology_and_Oncology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Lower_Limb": {
+          "count": 2,
+          "depth_pct": 4.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Pelvis_and_Perineum": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Embryology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Upper_Limb": {
+          "count": 12,
+          "depth_pct": 24.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Head_and_Neck": {
+          "count": 6,
+          "depth_pct": 12.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Neuroanatomy": {
+          "count": 4,
+          "depth_pct": 8.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: General_Anatomy": {
+          "count": 24,
+          "depth_pct": 48.0,
+          "status": "Building Volume"
+        },
+        "ENT: Ear_Diseases_and_Hearing_Loss": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Surgery: Head_and_Neck": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Medicine: Cardiology": {
+          "count": 31,
+          "depth_pct": 62.0,
+          "status": "Building Volume"
+        },
+        "Medicine: Arrhythmias": {
+          "count": 41,
+          "depth_pct": 82.0,
+          "status": "High Volume"
+        },
+        "Medicine: Neurology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        }
+      },
+      "sessions": [],
+      "active_hours": 0,
+      "speed_q_per_hour": 0,
+      "endurance_score": 0,
+      "concentration_score": null
+    },
+    "2026-08-07": {
+      "date": "2026-08-07",
+      "questions_completed": 0,
+      "cumulative_total": 135,
+      "subject_breakdown": {
+        "Biochemistry": 2,
+        "Microbiology": 1,
+        "Obstetrics_and_Gynecology": 3,
+        "Physiology": 3,
+        "Pediatrics": 1,
+        "Anatomy": 50,
+        "ENT": 1,
+        "Surgery": 1,
+        "Medicine": 73
+      },
+      "topic_breakdown": {
+        "Biochemistry: Acid_Base_and_Electrolyte_Balance": 2,
+        "Microbiology: Mycology": 1,
+        "Obstetrics_and_Gynecology: Basic_Obstetrics": 3,
+        "Physiology: General_Physiology_and_Cell": 2,
+        "Physiology: Endocrine_Physiology": 1,
+        "Pediatrics: Pediatric_Hematology_and_Oncology": 1,
+        "Anatomy: Lower_Limb": 2,
+        "Anatomy: Pelvis_and_Perineum": 1,
+        "Anatomy: Embryology": 1,
+        "Anatomy: Upper_Limb": 12,
+        "Anatomy: Head_and_Neck": 6,
+        "Anatomy: Neuroanatomy": 4,
+        "Anatomy: General_Anatomy": 24,
+        "ENT: Ear_Diseases_and_Hearing_Loss": 1,
+        "Surgery: Head_and_Neck": 1,
+        "Medicine: Cardiology": 31,
+        "Medicine: Arrhythmias": 41,
+        "Medicine: Neurology": 1
+      },
+      "topic_mastery": {
+        "Biochemistry: Acid_Base_and_Electrolyte_Balance": {
+          "count": 2,
+          "depth_pct": 4.0,
+          "status": "Starting Out"
+        },
+        "Microbiology: Mycology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Obstetrics_and_Gynecology: Basic_Obstetrics": {
+          "count": 3,
+          "depth_pct": 6.0,
+          "status": "Starting Out"
+        },
+        "Physiology: General_Physiology_and_Cell": {
+          "count": 2,
+          "depth_pct": 4.0,
+          "status": "Starting Out"
+        },
+        "Physiology: Endocrine_Physiology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Pediatrics: Pediatric_Hematology_and_Oncology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Lower_Limb": {
+          "count": 2,
+          "depth_pct": 4.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Pelvis_and_Perineum": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Embryology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Upper_Limb": {
+          "count": 12,
+          "depth_pct": 24.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Head_and_Neck": {
+          "count": 6,
+          "depth_pct": 12.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: Neuroanatomy": {
+          "count": 4,
+          "depth_pct": 8.0,
+          "status": "Starting Out"
+        },
+        "Anatomy: General_Anatomy": {
+          "count": 24,
+          "depth_pct": 48.0,
+          "status": "Building Volume"
+        },
+        "ENT: Ear_Diseases_and_Hearing_Loss": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Surgery: Head_and_Neck": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        },
+        "Medicine: Cardiology": {
+          "count": 31,
+          "depth_pct": 62.0,
+          "status": "Building Volume"
+        },
+        "Medicine: Arrhythmias": {
+          "count": 41,
+          "depth_pct": 82.0,
+          "status": "High Volume"
+        },
+        "Medicine: Neurology": {
+          "count": 1,
+          "depth_pct": 2.0,
+          "status": "Starting Out"
+        }
+      },
+      "sessions": [],
+      "active_hours": 0,
+      "speed_q_per_hour": 0,
+      "endurance_score": 0,
       "concentration_score": null
     }
   },
   "flashcard_metrics": {
-    "total_cards": 216,
-    "due_today": 216,
+    "total_cards": 220,
+    "due_today": 220,
     "mastered_cards": 0,
     "retention_rate": 88.5,
     "subject_breakdown": {
       "Biochemistry": 2,
       "Microbiology": 1,
       "Obstetrics_and_Gynecology": 10,
-      "Physiology": 1,
+      "Physiology": 3,
       "Pediatrics": 1,
-      "Anatomy": 67,
+      "Anatomy": 69,
       "ENT": 1,
       "Surgery": 5,
       "Medicine": 128
@@ -352,15 +1302,16 @@
       "Biochemistry: Acid_Base_and_Electrolyte_Balance": 2,
       "Microbiology: Mycology": 1,
       "Obstetrics_and_Gynecology: Basic_Obstetrics_Flashcards.md": 10,
+      "Physiology: General_Physiology_and_Cell": 2,
       "Physiology: Endocrine_Physiology": 1,
       "Pediatrics: Pediatric_Hematology_and_Oncology": 1,
       "Anatomy: General_Anatomy_Flashcards.md": 40,
       "Anatomy: Lower_Limb": 2,
       "Anatomy: Pelvis_and_Perineum": 2,
       "Anatomy: Embryology": 1,
-      "Anatomy: Upper_Limb": 13,
+      "Anatomy: Upper_Limb": 14,
       "Anatomy: Head_and_Neck": 6,
-      "Anatomy: Neuroanatomy": 3,
+      "Anatomy: Neuroanatomy": 4,
       "ENT: Ear_Diseases_and_Hearing_Loss": 1,
       "Surgery: Head_and_Neck_Flashcards.md": 5,
       "Medicine: Arrhythmias_Flashcards.md": 72,
@@ -2103,9 +3054,41 @@
         "repetitions": 0,
         "due_date": "2026-07-31",
         "last_review": null
+      },
+      "card_7570399dce59": {
+        "state": "new",
+        "interval": 0,
+        "ease": 2.5,
+        "repetitions": 0,
+        "due_date": "2026-07-31",
+        "last_review": null
+      },
+      "card_2c1884a167bd": {
+        "state": "new",
+        "interval": 0,
+        "ease": 2.5,
+        "repetitions": 0,
+        "due_date": "2026-07-31",
+        "last_review": null
+      },
+      "card_387178a9f535": {
+        "state": "new",
+        "interval": 0,
+        "ease": 2.5,
+        "repetitions": 0,
+        "due_date": "2026-07-31",
+        "last_review": null
+      },
+      "card_00f1a113ceda": {
+        "state": "new",
+        "interval": 0,
+        "ease": 2.5,
+        "repetitions": 0,
+        "due_date": "2026-07-31",
+        "last_review": null
       }
     },
-    "last_updated": "2026-07-31T00:46:34.936244"
+    "last_updated": "2026-07-31T20:04:28.990749"
   },
   "syllabus_insights": {
     "subjects": {
@@ -2118,16 +3101,18 @@
         ],
         "topics_covered_count": 2,
         "coverage_pct": 5.3,
-        "mastery_pct": 2.5,
-        "avg_stability": 2.31,
-        "avg_difficulty": 2.11,
+        "coverage_basis": "estimated_floor",
+        "real_bank_total": null,
+        "mastery_pct": 4.2,
+        "avg_stability": 13.81,
+        "avg_difficulty": 4.75,
         "questions_solved": 73,
         "unmatched_topic_folders": [
           "Arrhythmias"
         ],
-        "priority_score": 12.4,
-        "estimated_yield_marks": 14.63,
-        "yield_effort_ratio": 6.93
+        "priority_score": 16.009999999999998,
+        "estimated_yield_marks": 14.37,
+        "yield_effort_ratio": 3.03
       },
       "Surgery": {
         "weightage_pct_approx": 11.5,
@@ -2135,16 +3120,18 @@
         "topics_covered": [],
         "topics_covered_count": 0,
         "coverage_pct": 0.0,
+        "coverage_basis": "estimated_floor",
+        "real_bank_total": null,
         "mastery_pct": 0.0,
-        "avg_stability": 2.24,
-        "avg_difficulty": 4.4,
+        "avg_stability": 3.31,
+        "avg_difficulty": 4.76,
         "questions_solved": 1,
         "unmatched_topic_folders": [
           "Head_and_Neck"
         ],
-        "priority_score": 10.82,
+        "priority_score": 11.23,
         "estimated_yield_marks": 11.5,
-        "yield_effort_ratio": 2.61
+        "yield_effort_ratio": 2.42
       },
       "Obstetrics & Gynecology": {
         "weightage_pct_approx": 9.5,
@@ -2152,6 +3139,8 @@
         "topics_covered": [],
         "topics_covered_count": 0,
         "coverage_pct": 0.0,
+        "coverage_basis": "estimated_floor",
+        "real_bank_total": null,
         "mastery_pct": 0.0,
         "avg_stability": 0.0,
         "avg_difficulty": 5.0,
@@ -2169,6 +3158,8 @@
         ],
         "topics_covered_count": 1,
         "coverage_pct": 0.2,
+        "coverage_basis": "estimated_floor",
+        "real_bank_total": null,
         "mastery_pct": 0.1,
         "avg_stability": 0.0,
         "avg_difficulty": 5.0,
@@ -2184,6 +3175,8 @@
         "topics_covered": [],
         "topics_covered_count": 0,
         "coverage_pct": 0.0,
+        "coverage_basis": "real_bank_total",
+        "real_bank_total": 891,
         "mastery_pct": 0.0,
         "avg_stability": 0.0,
         "avg_difficulty": 5.0,
@@ -2199,6 +3192,8 @@
         "topics_covered": [],
         "topics_covered_count": 0,
         "coverage_pct": 0.0,
+        "coverage_basis": "estimated_floor",
+        "real_bank_total": null,
         "mastery_pct": 0.0,
         "avg_stability": 0.0,
         "avg_difficulty": 5.0,
@@ -2214,6 +3209,8 @@
         "topics_covered": [],
         "topics_covered_count": 0,
         "coverage_pct": 0.0,
+        "coverage_basis": "real_bank_total",
+        "real_bank_total": 425,
         "mastery_pct": 0.0,
         "avg_stability": 0.0,
         "avg_difficulty": 5.0,
@@ -2235,30 +3232,35 @@
           "Upper_Limb"
         ],
         "topics_covered_count": 6,
-        "coverage_pct": 4.8,
-        "mastery_pct": 2.3,
-        "avg_stability": 2.63,
-        "avg_difficulty": 4.15,
-        "questions_solved": 48,
+        "coverage_pct": 4.81,
+        "coverage_basis": "real_bank_total",
+        "real_bank_total": 1040,
+        "mastery_pct": 2.7,
+        "avg_stability": 5.49,
+        "avg_difficulty": 4.54,
+        "questions_solved": 50,
         "unmatched_topic_folders": [
           "General_Anatomy"
         ],
-        "priority_score": 5.97,
-        "estimated_yield_marks": 5.39,
-        "yield_effort_ratio": 1.18
+        "priority_score": 6.14,
+        "estimated_yield_marks": 5.37,
+        "yield_effort_ratio": 1.07
       },
       "Physiology": {
         "weightage_pct_approx": 5.0,
         "canonical_topic_count": 11,
         "topics_covered": [
-          "Endocrine_Physiology"
+          "Endocrine_Physiology",
+          "General_Physiology_and_Cell"
         ],
-        "topics_covered_count": 1,
-        "coverage_pct": 0.2,
+        "topics_covered_count": 2,
+        "coverage_pct": 0.24,
+        "coverage_basis": "real_bank_total",
+        "real_bank_total": 1248,
         "mastery_pct": 0.1,
         "avg_stability": 0.0,
         "avg_difficulty": 5.0,
-        "questions_solved": 1,
+        "questions_solved": 3,
         "unmatched_topic_folders": [],
         "priority_score": 5.0,
         "estimated_yield_marks": 5.0,
@@ -2271,14 +3273,16 @@
           "Acid_Base_and_Electrolyte_Balance"
         ],
         "topics_covered_count": 1,
-        "coverage_pct": 0.4,
-        "mastery_pct": 0.2,
+        "coverage_pct": 0.16,
+        "coverage_basis": "real_bank_total",
+        "real_bank_total": 1220,
+        "mastery_pct": 0.1,
         "avg_stability": 0.0,
         "avg_difficulty": 5.0,
         "questions_solved": 2,
         "unmatched_topic_folders": [],
-        "priority_score": 4.49,
-        "estimated_yield_marks": 4.49,
+        "priority_score": 4.5,
+        "estimated_yield_marks": 4.5,
         "yield_effort_ratio": 0.9
       },
       "Microbiology": {
@@ -2288,8 +3292,10 @@
           "Mycology"
         ],
         "topics_covered_count": 1,
-        "coverage_pct": 0.2,
-        "mastery_pct": 0.1,
+        "coverage_pct": 0.1,
+        "coverage_basis": "real_bank_total",
+        "real_bank_total": 968,
+        "mastery_pct": 0.0,
         "avg_stability": 0.0,
         "avg_difficulty": 5.0,
         "questions_solved": 1,
@@ -2304,6 +3310,8 @@
         "topics_covered": [],
         "topics_covered_count": 0,
         "coverage_pct": 0.0,
+        "coverage_basis": "estimated_floor",
+        "real_bank_total": null,
         "mastery_pct": 0.0,
         "avg_stability": 0.0,
         "avg_difficulty": 5.0,
@@ -2321,6 +3329,8 @@
         ],
         "topics_covered_count": 1,
         "coverage_pct": 0.2,
+        "coverage_basis": "estimated_floor",
+        "real_bank_total": null,
         "mastery_pct": 0.1,
         "avg_stability": 0.0,
         "avg_difficulty": 5.0,
@@ -2336,6 +3346,8 @@
         "topics_covered": [],
         "topics_covered_count": 0,
         "coverage_pct": 0.0,
+        "coverage_basis": "estimated_floor",
+        "real_bank_total": null,
         "mastery_pct": 0.0,
         "avg_stability": 0.0,
         "avg_difficulty": 5.0,
@@ -2351,6 +3363,8 @@
         "topics_covered": [],
         "topics_covered_count": 0,
         "coverage_pct": 0.0,
+        "coverage_basis": "estimated_floor",
+        "real_bank_total": null,
         "mastery_pct": 0.0,
         "avg_stability": 0.0,
         "avg_difficulty": 5.0,
@@ -2366,6 +3380,8 @@
         "topics_covered": [],
         "topics_covered_count": 0,
         "coverage_pct": 0.0,
+        "coverage_basis": "estimated_floor",
+        "real_bank_total": null,
         "mastery_pct": 0.0,
         "avg_stability": 0.0,
         "avg_difficulty": 5.0,
@@ -2381,6 +3397,8 @@
         "topics_covered": [],
         "topics_covered_count": 0,
         "coverage_pct": 0.0,
+        "coverage_basis": "estimated_floor",
+        "real_bank_total": null,
         "mastery_pct": 0.0,
         "avg_stability": 0.0,
         "avg_difficulty": 5.0,
@@ -2396,6 +3414,8 @@
         "topics_covered": [],
         "topics_covered_count": 0,
         "coverage_pct": 0.0,
+        "coverage_basis": "estimated_floor",
+        "real_bank_total": null,
         "mastery_pct": 0.0,
         "avg_stability": 0.0,
         "avg_difficulty": 5.0,
@@ -2411,6 +3431,8 @@
         "topics_covered": [],
         "topics_covered_count": 0,
         "coverage_pct": 0.0,
+        "coverage_basis": "estimated_floor",
+        "real_bank_total": null,
         "mastery_pct": 0.0,
         "avg_stability": 0.0,
         "avg_difficulty": 5.0,
@@ -2421,8 +3443,8 @@
         "yield_effort_ratio": 0.6
       }
     },
-    "overall_weighted_coverage_pct": 0.5,
-    "overall_weighted_mastery_pct": 0.5,
+    "overall_weighted_coverage_pct": 0.8,
+    "overall_weighted_mastery_pct": 0.8,
     "focus_next": [
       "Medicine",
       "Surgery",
@@ -2438,7 +3460,7 @@
     "strongest_subjects": [
       "Medicine",
       "Anatomy",
-      "Biochemistry"
+      "Pediatrics"
     ],
     "untouched_high_yield_subjects": [
       "Obstetrics & Gynecology",
@@ -2472,15 +3494,17 @@
           "General_Anatomy"
         ]
       }
-    ]
+    ],
+    "ai_commentary": "**ATHENA Diagnostic Run [2026-08-07 21:00 IST]**\n\nOverall syllabus mastery is critically low at 0.8%. **Surgery** represents the most immediate retention collapse; with an FSRS stability of just 3.31 days, memory decay is accelerating. \n\nTo optimize performance, VPK should immediately bypass the massive Medicine volume and execute targeted runs on:\n1. **Surgery** (Yield-to-effort ratio: 2.42, 11.5 marks): Prioritize to arrest decay before total memory reset.\n2. **Obstetrics & Gynecology** (Yield-to-effort ratio: 1.90, 9.5 marks): Currently untouched (0.0% coverage). Offers the lowest barrier to entry among high-yield subjects.\n\n*Recommendation:* Allocate next QBank sprints exclusively to Surgery retention reviews and Obs & Gyn foundation cards to maximize incremental mark velocity.",
+    "ai_commentary_generated_at": "2026-08-07T21:00:17.786280+05:30"
   },
   "question_type_distribution": {
-    "total": 132,
+    "total": 136,
     "by_type": {
       "Clinical_Vignette": 47,
       "Except_Negative": 23,
       "Multi_Statement_Evaluation": 17,
-      "Simple_Direct_Recall": 45
+      "Simple_Direct_Recall": 49
     },
     "by_type_labels": {
       "Clinical_Vignette": "Clinical Vignette",
@@ -2511,7 +3535,7 @@
         "Clinical_Vignette": 0,
         "Except_Negative": 0,
         "Multi_Statement_Evaluation": 0,
-        "Simple_Direct_Recall": 1
+        "Simple_Direct_Recall": 3
       },
       "Pediatrics": {
         "Clinical_Vignette": 1,
@@ -2523,7 +3547,7 @@
         "Clinical_Vignette": 7,
         "Except_Negative": 8,
         "Multi_Statement_Evaluation": 6,
-        "Simple_Direct_Recall": 28
+        "Simple_Direct_Recall": 30
       },
       "ENT": {
         "Clinical_Vignette": 1,

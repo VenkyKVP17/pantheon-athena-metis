@@ -1,0 +1,20 @@
+{
+  "name": "PANTHEON | Homepage",
+  "short_name": "Home",
+  "description": "Personal homepage dashboard — clock, weather, exam countdown, today's tasks, METIS study stats, service status.",
+  "id": "/homepage.html",
+  "start_url": "./homepage.html",
+  "scope": "./homepage.html",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "background_color": "#05070c",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "./homepage_icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

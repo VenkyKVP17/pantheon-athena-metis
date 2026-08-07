@@ -222,3 +222,28 @@ Both FPL and lateral half of FDP are innervated by the **Anterior Interosseous N
 
 **Take Home Message:** Inability to form an "OK" sign after a pediatric supracondylar humerus fracture indicates anterior interosseous nerve (AIN) injury, paralyzing flexor pollicis longus (FPL) and flexor digitorum profundus (FDP, index finger).
 
+---
+
+## Q12. Erb's Palsy (Upper Trunk Brachial Plexus Injury)
+**Question ID:** Q4859201
+**Question:** A newborn infant presents after a difficult vertex delivery with shoulder dystocia. The newborn's arm is held adducted, internally rotated at the shoulder, with the elbow extended and forearm pronated ("waiter's tip" deformity). Which nerve roots are damaged in this condition?
+- A) C5, C6
+- B) C8, T1
+- C) C7, C8
+- D) C5, C6, C7
+
+**Answer:** A) C5, C6
+
+**Explanation:**
+**Erb's Palsy (Erb-Duchenne Palsy)** is an upper trunk brachial plexus lesion involving the **C5 and C6 nerve roots**. It commonly occurs due to excessive increase in the angle between the head and shoulder (e.g., birth trauma/shoulder dystocia or falling on the shoulder).
+
+**Paralyzed Muscles & Clinical Features:**
+1. **Supraspinatus & Infraspinatus (Suprascapular nerve C5-C6):** Loss of shoulder abduction & external rotation -> Arm is **adducted & internally rotated**.
+2. **Biceps brachii & Brachialis (Musculocutaneous nerve C5-C6):** Loss of elbow flexion & forearm supination -> Elbow is **extended** and forearm is **pronated**.
+3. **Brachioradialis & Subclavius:** Loss of auxiliary flexion and stabilization.
+
+The classic appearance is the **"Waiter's Tip" (Policeman's Tip)** position: adducted arm, internally rotated shoulder, extended elbow, and pronated forearm. The Moro reflex is absent on the affected side, but finger grasp reflex remains intact (C8-T1 normal).
+
+**Take Home Message:** Erb's palsy results from C5-C6 upper trunk brachial plexus injury, presenting as a "waiter's tip" deformity with adducted, internally rotated shoulder, extended elbow, and pronated forearm.
+
+

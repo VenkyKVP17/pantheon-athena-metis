@@ -1,8 +1,8 @@
-const CACHE_NAME = 'metis-anki-v8';
+const CACHE_NAME = 'pantheon-homepage-v6';
 const ASSETS_TO_CACHE = [
-  './metis_dashboard.html',
-  './athena_dashboard.html',
-  './manifest.json',
+  './homepage.html',
+  './homepage_manifest.json',
+  './homepage_icon.png',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap'
 ];
 
@@ -25,11 +25,9 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Never cache the API: login/session state, live decks/cards/reviews must
-  // always hit the server. This is the fix for progress silently failing to
-  // save/sync — caching a review POST (or serving a stale GET) here would be
-  // exactly that bug again.
-  if (url.pathname.startsWith('/api/') || url.pathname === '/session' || url.pathname === '/metrics') {
+  // Tasks/stats/status/weather must always be live — never serve a stale
+  // cached copy of anything dynamic (same reasoning as the METIS sw.js).
+  if (url.pathname.startsWith('/api/')) {
     event.respondWith(fetch(event.request));
     return;
   }
@@ -44,7 +42,7 @@ self.addEventListener('fetch', (event) => {
       return cached || fetch(event.request).catch(() => {
         const accept = event.request.headers.get('accept') || '';
         if (accept.includes('text/html')) {
-          return caches.match('./metis_dashboard.html');
+          return caches.match('./homepage.html');
         }
       });
     })

@@ -76,3 +76,23 @@ The posterior aspect of the brainstem displays key anatomical landmarks of the m
 
 ---
 
+## Q4. Vestibulocerebellum and Balance Control (Get The Balance Right)
+**Question ID:** Q6317_14
+**Question:** Which anatomical division of the cerebellum is primarily responsible for maintaining equilibrium, posture, and body balance by receiving direct afferent inputs from the vestibular apparatus and vestibular nuclei?
+- A) Flocculonodular lobe (Vestibulocerebellum)
+- B) Anterior lobe (Spinocerebellum)
+- C) Posterior lobe (Cerebrocerebellum)
+- D) Vermal zone of posterior lobe
+
+**Answer:** A) Flocculonodular lobe (Vestibulocerebellum)
+
+**Explanation:**
+The cerebellum is divided functional-anatomically into three primary lobes/functional divisions:
+1. **Vestibulocerebellum (Archicerebellum):** Consists of the **flocculonodular lobe** and fastigial nucleus. It receives direct sensory input from the vestibular apparatus (semicircular canals and otolith organs: utricle and saccule) as well as the vestibular nuclei in the brainstem. Its primary roles are governing **body balance, equilibrium, gait stability, and vestibulo-ocular reflexes (VOR)**.
+2. **Spinocerebellum (Paleocerebellum):** Comprises the vermis and intermediate (paravermal) zone; receives proprioceptive and spinal afferents to regulate muscle tone and execution of ongoing limb movements.
+3. **Cerebrocerebellum (Neocerebellum):** Comprises the lateral cerebellar hemispheres; receives cerebral cortical input via pontine nuclei and plans complex, skilled voluntary movements.
+
+**Take Home Message:** The vestibulocerebellum (flocculonodular lobe) is the functional division of the cerebellum dedicated to maintaining balance, equilibrium, and posture through direct vestibular connections.
+
+---
+

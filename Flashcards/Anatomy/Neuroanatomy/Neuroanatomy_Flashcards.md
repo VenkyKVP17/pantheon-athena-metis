@@ -25,3 +25,10 @@ Which cerebellar peduncle is the largest and connects the pons to the cerebellum
 tags: #flashcards/anatomy/neuroanatomy #neet-pg
 ---
 
+Which cerebellar division (flocculonodular lobe) is primarily responsible for maintaining equilibrium, posture, and body balance?
+?
+**Vestibulocerebellum** (Archicerebellum / Flocculonodular Lobe).
+<!-- QBank ID: Q6317_14 -->
+tags: #flashcards/anatomy/neuroanatomy #neet-pg
+---
+

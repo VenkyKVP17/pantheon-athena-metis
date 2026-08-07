@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personal Finance Transaction Review — VPK</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --success: #16a34a;
+      --success-bg: #f0fdf4;
+      --badge-bg: #f1f5f9;
+      --table-header: #f1f5f9;
+      --input-bg: #ffffff;
+      --input-border: #cbd5e1;
+      --row-hover: #f8fafc;
+      --shadow: 0 1px 3px rgba(0,0,0,0.1);
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --card-bg: #1e293b;
+        --text: #f8fafc;
+        --text-muted: #94a3b8;
+        --border: #334155;
+        --accent: #3b82f6;
+        --accent-hover: #60a5fa;
+        --success: #22c55e;
+        --success-bg: #052e16;
+        --badge-bg: #334155;
+        --table-header: #0f172a;
+        --input-bg: #0f172a;
+        --input-border: #475569;
+        --row-hover: #182234;
+        --shadow: 0 1px 3px rgba(0,0,0,0.4);
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 1.5rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 1.5rem;
+    }
+
+    .top-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 0.5rem 0.875rem;
+      border-radius: 0.375rem;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+    }
+
+    button:hover {
+      background: var(--border);
+    }
+
+    button.btn-primary {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    button.btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    button.btn-danger {
+      color: #ef4444;
+      border-color: var(--border);
+    }
+
+    button.btn-danger:hover {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: #ef4444;
+    }
+
+    /* Stats Panel */
+    .stats-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 1rem 1.25rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+
+    .progress-bar-container {
+      grid-column: 1 / -1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--success);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* Search & Filter bar */
+    .filter-bar {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .search-wrapper {
+      flex: 1;
+      min-width: 280px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      font-family: inherit;
+      font-size: 0.875rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.375rem;
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text);
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+    }
+
+    .group-count-badge {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* Groups list */
+    .groups-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .group-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .group-header {
+      padding: 1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      cursor: pointer;
+      user-select: none;
+      background: var(--card-bg);
+    }
+
+    .group-header:hover {
+      background: var(--row-hover);
+    }
+
+    .group-main-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .group-title-area {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .toggle-icon {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      width: 1rem;
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+
+    .group-card.expanded .toggle-icon {
+      transform: rotate(90deg);
+    }
+
+    .group-key {
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      word-break: break-all;
+    }
+
+    .group-key.unlabeled {
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      background: var(--badge-bg);
+      color: var(--text-muted);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .group-amount {
+      font-size: 1.125rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .sample-desc {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 100%;
+    }
+
+    /* Bulk inputs in group header */
+    .group-inputs {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+      padding-top: 0.5rem;
+      border-top: 1px dashed var(--border);
+    }
+
+    .input-group {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .input-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    /* Group Details (Transactions Table) */
+    .group-details {
+      display: none;
+      border-top: 1px solid var(--border);
+      background: var(--card-bg);
+      overflow-x: auto;
+    }
+
+    .group-card.expanded .group-details {
+      display: block;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+    }
+
+    th {
+      background: var(--table-header);
+      padding: 0.625rem 0.75rem;
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 0.625rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: var(--row-hover);
+    }
+
+    .cell-mono {
+      font-family: var(--font-mono);
+    }
+
+    .cell-desc {
+      font-family: var(--font-mono);
+      min-width: 240px;
+      max-width: 400px;
+      word-break: break-word;
+    }
+
+    .cell-inputs {
+      display: flex;
+      gap: 0.375rem;
+      min-width: 280px;
+    }
+
+    .cell-inputs input {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: #1e293b;
+      color: white;
+      padding: 0.75rem 1.25rem;
+      border-radius: 0.375rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+      font-size: 0.875rem;
+      z-index: 1000;
+      opacity: 0;
+      transform: translateY(1rem);
+      transition: all 0.2s ease;
+      pointer-events: none;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .toast {
+        background: #f8fafc;
+        color: #0f172a;
+      }
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <datalist id="category-datalist">
+  </datalist>
+
+  <header>
+    <div class="top-title">
+      <h1>Personal Finance Transaction Review</h1>
+      <div class="header-actions">
+        <button class="btn-primary" onclick="copyAssignmentsToClipboard()">
+          📋 Copy Assignments JSON
+        </button>
+        <button onclick="expandAllGroups()">Expand All</button>
+        <button onclick="collapseAllGroups()">Collapse All</button>
+        <button class="btn-danger" onclick="resetAllAssignments()">Reset</button>
+      </div>
+    </div>
+
+    <!-- Stats Card -->
+    <div class="stats-card">
+      <div class="stat-item">
+        <span class="stat-label">Total Transactions</span>
+        <span class="stat-value" id="stat-total-txns">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Categorized Count</span>
+        <span class="stat-value" id="stat-cat-txns">0 / 0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Categorized Amount</span>
+        <span class="stat-value" id="stat-cat-amount">₹0.00</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Progress</span>
+        <span class="stat-value" id="stat-progress-pct">0.0%</span>
+      </div>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="progress-bar"></div>
+      </div>
+    </div>
+
+    <!-- Filter & Search Bar -->
+    <div class="filter-bar">
+      <div class="search-wrapper">
+        <input type="text" id="search-input" placeholder="Search by merchant key, account, or description..." oninput="applyFilter()">
+      </div>
+      <span class="group-count-badge" id="visible-count">Showing 0 groups</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="groups-list" id="groups-container">
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const DATA = [{"key": "jupiterbillpay1", "count": 3, "total": 27078.17, "accounts": ["Jupiter Savings"], "txns": [{"id": 1099, "date": "2026-01-31", "time": "", "account": "Jupiter Savings", "description": "FEDERAL BANK - XX 3899 Utility & Bill Payment Utilities UPIOUT/294381910316/ jupiterbillpay1@fbl/Sen", "amount": 23923.17, "type": "expense"}, {"id": 1100, "date": "2026-01-31", "time": "", "account": "Jupiter Savings", "description": "FEDERAL BANK - XX 3899 Utility & Bill Payment Utilities UPIOUT/294465330316/ jupiterbillpay1@fbl/Sen", "amount": 1635.0, "type": "expense"}, {"id": 978, "date": "2025-12-31", "time": "", "account": "Jupiter Savings", "description": "FEDERAL BANK - XX 3899 Utility & Bill Payment Utilities UPIOUT/872802753655/ jupiterbillpay1@fbl/Sen", "amount": 1520.0, "type": "expense"}]}, {"key": "canara bank debit", "count": 1, "total": 14000.0, "accounts": ["Canara Savings"], "txns": [{"id": 1334, "date": "2026-03-18", "time": "", "account": "Canara Savings", "description": "Canara Bank Debit", "amount": 14000.0, "type": "expense"}]}, {"key": "debit to account", "count": 1, "total": 14000.0, "accounts": ["Canara Bank Savings"], "txns": [{"id": 1335, "date": "2026-03-18", "time": "", "account": "Canara Bank Savings", "description": "Debit to account", "amount": 14000.0, "type": "expense"}]}, {"key": "debit", "count": 3, "total": 11685.0, "accounts": ["Canara Bank Savings", "Edge Credit Card", "PayZapp Wallet"], "txns": [{"id": 1749, "date": "2026-06-05", "time": "", "account": "Canara Bank Savings", "description": "Debit", "amount": 10950.0, "type": "expense"}, {"id": 1310, "date": "2026-03-14", "time": "22:00:05", "account": "PayZapp Wallet", "description": "Debit", "amount": 558.0, "type": "expense"}, {"id": 1252, "date": "2026-03-09", "time": "23:16", "account": "Edge Credit Card", "description": "Debit", "amount": 177.0, "type": "expense"}]}, {"key": "upi transfer to dummy name", "count": 1, "total": 10000.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1466, "date": "2026-04-01", "time": "10:04", "account": "Jupiter Savings", "description": "UPI transfer to DUMMY NAME", "amount": 10000.0, "type": "expense"}]}, {"key": "atm cash 50892 woraiyur tiruchirap", "count": 1, "total": 10000.0, "accounts": ["SBI Savings"], "txns": [{"id": 3080, "date": "2025-03-30", "time": "", "account": "SBI Savings", "description": "ATM CASH 50892 WORAIYUR TIRUCHIRAPAL", "amount": 10000.0, "type": "expense"}]}, {"key": "upi transaction", "count": 32, "total": 8576.38, "accounts": ["Edge Credit Card"], "txns": [{"id": 1976, "date": "2026-07-31", "time": "09:48", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 315.0, "type": "expense"}, {"id": 1974, "date": "2026-07-30", "time": "20:48", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 70.0, "type": "expense"}, {"id": 1973, "date": "2026-07-30", "time": "15:36", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 45.0, "type": "expense"}, {"id": 1971, "date": "2026-07-29", "time": "10:27", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 50.0, "type": "expense"}, {"id": 1969, "date": "2026-07-26", "time": "14:32", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 65.0, "type": "expense"}, {"id": 1968, "date": "2026-07-25", "time": "22:26", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 238.98, "type": "expense"}, {"id": 1966, "date": "2026-07-24", "time": "12:48", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 70.0, "type": "expense"}, {"id": 1964, "date": "2026-07-23", "time": "15:58", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 180.0, "type": "expense"}, {"id": 1962, "date": "2026-07-23", "time": "10:24", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 50.0, "type": "expense"}, {"id": 1961, "date": "2026-07-22", "time": "12:44", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 780.0, "type": "expense"}, {"id": 1960, "date": "2026-07-22", "time": "10:46", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 40.0, "type": "expense"}, {"id": 1956, "date": "2026-07-19", "time": "22:24", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 361.0, "type": "expense"}, {"id": 1954, "date": "2026-07-19", "time": "15:53", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 30.0, "type": "expense"}, {"id": 1953, "date": "2026-07-18", "time": "21:36", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 226.0, "type": "expense"}, {"id": 1951, "date": "2026-07-17", "time": "22:10", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 369.0, "type": "expense"}, {"id": 1950, "date": "2026-07-17", "time": "21:53", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 110.0, "type": "expense"}, {"id": 1949, "date": "2026-07-17", "time": "17:00", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 70.0, "type": "expense"}, {"id": 1947, "date": "2026-07-16", "time": "20:14", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 353.0, "type": "expense"}, {"id": 1946, "date": "2026-07-16", "time": "19:45", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 60.0, "type": "expense"}, {"id": 1944, "date": "2026-07-16", "time": "12:58", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 40.0, "type": "expense"}, {"id": 1939, "date": "2026-07-15", "time": "14:30", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 90.0, "type": "expense"}, {"id": 1938, "date": "2026-07-15", "time": "10:47", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 60.0, "type": "expense"}, {"id": 1937, "date": "2026-07-15", "time": "10:34", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 100.0, "type": "expense"}, {"id": 1936, "date": "2026-07-14", "time": "22:06", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 330.0, "type": "expense"}, {"id": 1932, "date": "2026-07-14", "time": "14:32", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 30.0, "type": "expense"}, {"id": 1928, "date": "2026-07-13", "time": "19:46", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 515.0, "type": "expense"}, {"id": 1927, "date": "2026-07-13", "time": "19:44", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 2082.0, "type": "expense"}, {"id": 1924, "date": "2026-07-13", "time": "17:48", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 40.0, "type": "expense"}, {"id": 1846, "date": "2026-06-23", "time": "18:18", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 70.0, "type": "expense"}, {"id": 1843, "date": "2026-06-22", "time": "18:11", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 20.0, "type": "expense"}, {"id": 1828, "date": "2026-06-17", "time": "23:41", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 767.4, "type": "expense"}, {"id": 1812, "date": "2026-06-14", "time": "23:42", "account": "Edge Credit Card", "description": "UPI transaction", "amount": 949.0, "type": "expense"}]}, {"key": "mangal mangal in", "count": 1, "total": 7267.0, "accounts": ["SBI BPCL Credit Card"], "txns": [{"id": 3216, "date": "2025-08-16", "time": "", "account": "SBI BPCL Credit Card", "description": "MANGAL MANGAL IN", "amount": 7267.0, "type": "expense"}]}, {"key": "federal bank - xx 3899 utilities u", "count": 3, "total": 5483.98, "accounts": ["Jupiter Savings"], "txns": [{"id": 1568, "date": "2026-04-21", "time": "", "account": "Jupiter Savings", "description": "FEDERAL BANK - XX 3899 Utilities Utilities UPIOUT/724998321116/ paytm.d13684247028@ pty/S/5541 S6139", "amount": 2983.98, "type": "expense"}, {"id": 472, "date": "2025-06-10", "time": "", "account": "Jupiter Savings", "description": "FEDERAL BANK - XX 3899 Utilities Utilities UPIOUT/552705947407/ paytmqr281005050101lz ume/5541 S2772", "amount": 1000.0, "type": "expense"}, {"id": 459, "date": "2025-06-07", "time": "", "account": "Jupiter Savings", "description": "FEDERAL BANK - XX 3899 Utilities Utilities UPIOUT/552420419447/ paytmqr2810050501011 1i98/5541 S5689", "amount": 1500.0, "type": "expense"}]}, {"key": "debit of inr 5,300.00", "count": 1, "total": 5300.0, "accounts": ["Canara Bank Savings"], "txns": [{"id": 1738, "date": "2026-06-03", "time": "", "account": "Canara Bank Savings", "description": "Debit of INR 5,300.00", "amount": 5300.0, "type": "expense"}]}, {"key": "federal bank - xx 3899 merchant ex", "count": 4, "total": 5055.98, "accounts": ["Jupiter Savings"], "txns": [{"id": 1410, "date": "2026-03-25", "time": "", "account": "Jupiter Savings", "description": "FEDERAL BANK - XX 3899 Merchant Expenditure Merchant Expenditure UPIOUT/645074139817/ paytm-81406295", "amount": 1600.0, "type": "expense"}, {"id": 1158, "date": "2026-02-18", "time": "", "account": "Jupiter Savings", "description": "FEDERAL BANK - XX 3899 Merchant Expenditure Merchant Expenditure UPIOUT/963135470496/ fsv.4700000992", "amount": 2242.41, "type": "expense"}, {"id": 839, "date": "2025-11-16", "time": "", "account": "Jupiter Savings", "description": "FEDERAL BANK - XX 3899 Merchant Expenditure Merchant Expenditure UPIOUT/357738273205/ paytm-17731298", "amount": 132.0, "type": "expense"}, {"id": 780, "date": "2025-10-18", "time": "", "account": "Jupiter Savings", "description": "FEDERAL BANK - XX 3899 Merchant Expenditure Merchant Expenditure UPIOUT/565703400199/ tickertape5495", "amount": 1081.57, "type": "expense"}]}, {"key": "state bank of india - xx 9420 merc", "count": 26, "total": 4677.43, "accounts": ["SBI Savings"], "txns": [{"id": 758, "date": "2025-10-13", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/565229615079", "amount": 500.0, "type": "expense"}, {"id": 761, "date": "2025-10-13", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/565202697040", "amount": 148.43, "type": "expense"}, {"id": 697, "date": "2025-09-13", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/562225787276", "amount": 60.0, "type": "expense"}, {"id": 633, "date": "2025-08-15", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/559300973431", "amount": 15.0, "type": "expense"}, {"id": 627, "date": "2025-08-11", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/558906409311", "amount": 119.0, "type": "expense"}, {"id": 571, "date": "2025-07-18", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/556511414478", "amount": 10.0, "type": "expense"}, {"id": 537, "date": "2025-07-05", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/292609134033", "amount": 64.0, "type": "expense"}, {"id": 464, "date": "2025-06-07", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/552430494349", "amount": 104.0, "type": "expense"}, {"id": 370, "date": "2025-04-25", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/511525386658", "amount": 60.0, "type": "expense"}, {"id": 339, "date": "2025-04-06", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/546233812909", "amount": 45.0, "type": "expense"}, {"id": 331, "date": "2025-04-05", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/546148696184", "amount": 20.0, "type": "expense"}, {"id": 333, "date": "2025-04-05", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/509584345338", "amount": 70.0, "type": "expense"}, {"id": 334, "date": "2025-04-05", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/102671646059", "amount": 80.0, "type": "expense"}, {"id": 296, "date": "2025-03-21", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/508055659196", "amount": 2163.0, "type": "expense"}, {"id": 254, "date": "2025-02-23", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/505449282982", "amount": 50.0, "type": "expense"}, {"id": 195, "date": "2025-01-22", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/502285127586", "amount": 500.0, "type": "expense"}, {"id": 155, "date": "2024-12-31", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/436666408565", "amount": 60.0, "type": "expense"}, {"id": 91, "date": "2024-09-27", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/427175321465", "amount": 20.0, "type": "expense"}, {"id": 73, "date": "2024-09-02", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/424619611592", "amount": 95.0, "type": "expense"}, {"id": 68, "date": "2024-08-31", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/424493910756", "amount": 37.0, "type": "expense"}, {"id": 47, "date": "2024-08-07", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/422050739877", "amount": 20.0, "type": "expense"}, {"id": 46, "date": "2024-08-05", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/421832243593", "amount": 60.0, "type": "expense"}, {"id": 39, "date": "2024-07-26", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/420835584804", "amount": 20.0, "type": "expense"}, {"id": 37, "date": "2024-07-25", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/420722819041", "amount": 65.0, "type": "expense"}, {"id": 21, "date": "2024-07-13", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/419596780903", "amount": 30.0, "type": "expense"}, {"id": 14, "date": "2024-07-11", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Merchant Expenditure Merchant Expenditure WDL TFR  UPI/DR/419380734075", "amount": 262.0, "type": "expense"}]}, {"key": "bmr enterprises tiruchirapall ind", "count": 3, "total": 3791.28, "accounts": ["HDFC Pixel"], "txns": [{"id": 3448, "date": "2026-05-18", "time": "09:05", "account": "HDFC Pixel", "description": "BMR ENTERPRISES TIRUCHIRAPALL IND", "amount": 517.33, "type": "expense"}, {"id": 3446, "date": "2026-05-17", "time": "15:30", "account": "HDFC Pixel", "description": "BMR ENTERPRISES TIRUCHIRAPALL IND", "amount": 2967.13, "type": "expense"}, {"id": 3439, "date": "2026-05-07", "time": "14:58", "account": "HDFC Pixel", "description": "BMR ENTERPRISES TIRUCHIRAPALL IND", "amount": 306.82, "type": "expense"}]}, {"key": "k selvam - upi payment", "count": 1, "total": 3000.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1806, "date": "2026-06-01", "time": "", "account": "Jupiter Savings", "description": "K SELVAM - UPI payment", "amount": 3000.0, "type": "expense"}]}, {"key": "upi-cred", "count": 1, "total": 2990.0, "accounts": ["SBI BPCL Credit Card"], "txns": [{"id": 3258, "date": "2025-09-30", "time": "", "account": "SBI BPCL Credit Card", "description": "UPI-CRED", "amount": 2990.0, "type": "expense"}]}, {"key": "t p s sekar in", "count": 1, "total": 2877.05, "accounts": ["SBI BPCL Credit Card"], "txns": [{"id": 3298, "date": "2025-12-04", "time": "", "account": "SBI BPCL Credit Card", "description": "T P S SEKAR IN", "amount": 2877.05, "type": "expense"}]}, {"key": "upi transfer", "count": 2, "total": 2813.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1403, "date": "2026-03-23", "time": "21:32", "account": "Jupiter Savings", "description": "UPI transfer", "amount": 60.0, "type": "expense"}, {"id": 1306, "date": "2026-03-14", "time": "21:57:42", "account": "Jupiter Savings", "description": "UPI transfer", "amount": 2753.0, "type": "expense"}]}, {"key": "r venugopal reddiar in", "count": 1, "total": 2801.99, "accounts": ["SBI BPCL Credit Card"], "txns": [{"id": 3164, "date": "2026-01-30", "time": "", "account": "SBI BPCL Credit Card", "description": "R VENUGOPAL REDDIAR IN", "amount": 2801.99, "type": "expense"}]}, {"key": "grs agencies in", "count": 1, "total": 2780.42, "accounts": ["SBI BPCL Credit Card"], "txns": [{"id": 3148, "date": "2025-12-21", "time": "", "account": "SBI BPCL Credit Card", "description": "GRS AGENCIES IN", "amount": 2780.42, "type": "expense"}]}, {"key": "nagal rai delhi cantt.delhi canton", "count": 1, "total": 2500.0, "accounts": ["SBI Savings"], "txns": [{"id": 2824, "date": "2025-07-03", "time": "", "account": "SBI Savings", "description": "NAGAL RAI DELHI CANTT.DELHI CANTON", "amount": 2500.0, "type": "expense"}]}, {"key": "xsenthil2101-2", "count": 1, "total": 2000.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2704, "date": "2026-05-14", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/650020690940/ma- xsenthil2101-2@okhdfcb- /0000", "amount": 2000.0, "type": "expense"}]}, {"key": "418386286664", "count": 1, "total": 2000.0, "accounts": ["SBI Savings"], "txns": [{"id": 3083, "date": "2024-07-01", "time": "", "account": "SBI Savings", "description": "UPI/DR/418386286664/VENKATES/FDRL/9976997668/ADDMO", "amount": 2000.0, "type": "expense"}]}, {"key": "the scarlet srirangam", "count": 1, "total": 1500.0, "accounts": ["Edge Credit Card"], "txns": [{"id": 2229, "date": "2025-04-26", "time": "21:02", "account": "Edge Credit Card", "description": "the scarlet srirangam", "amount": 1500.0, "type": "expense"}]}, {"key": "upi-aarna creations", "count": 1, "total": 1300.0, "accounts": ["SBI BPCL Credit Card"], "txns": [{"id": 3257, "date": "2025-09-29", "time": "", "account": "SBI BPCL Credit Card", "description": "UPI-AARNA CREATIONS", "amount": 1300.0, "type": "expense"}]}, {"key": "account opening charges ma6041348 ", "count": 1, "total": 1178.82, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2958, "date": "2025-01-05", "time": "", "account": "Mirae Asset (mstock)", "description": "ACCOUNT OPENING CHARGES MA6041348 ITAPK4149H", "amount": 1178.82, "type": "expense"}]}, {"key": "upi payment", "count": 8, "total": 1040.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1920, "date": "2026-07-06", "time": "", "account": "Jupiter Savings", "description": "UPI payment", "amount": 40.0, "type": "expense"}, {"id": 1916, "date": "2026-07-05", "time": "", "account": "Jupiter Savings", "description": "UPI payment", "amount": 400.0, "type": "expense"}, {"id": 1918, "date": "2026-07-05", "time": "", "account": "Jupiter Savings", "description": "UPI payment", "amount": 100.0, "type": "expense"}, {"id": 1906, "date": "2026-06-30", "time": "", "account": "Jupiter Savings", "description": "UPI payment", "amount": 15.0, "type": "expense"}, {"id": 1902, "date": "2026-06-29", "time": "", "account": "Jupiter Savings", "description": "UPI payment", "amount": 100.0, "type": "expense"}, {"id": 1903, "date": "2026-06-29", "time": "", "account": "Jupiter Savings", "description": "UPI payment", "amount": 130.0, "type": "expense"}, {"id": 1897, "date": "2026-06-28", "time": "", "account": "Jupiter Savings", "description": "UPI payment", "amount": 220.0, "type": "expense"}, {"id": 1892, "date": "2026-06-26", "time": "", "account": "Jupiter Savings", "description": "UPI payment", "amount": 35.0, "type": "expense"}]}, {"key": "upi payment to jeevitha v", "count": 1, "total": 1000.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1842, "date": "2026-06-22", "time": "17:12", "account": "Jupiter Savings", "description": "UPI payment to JEEVITHA V", "amount": 1000.0, "type": "expense"}]}, {"key": "spent on sbi bpcl credit card", "count": 1, "total": 838.79, "accounts": ["SBI BPCL Credit Card"], "txns": [{"id": 1692, "date": "2026-05-25", "time": "", "account": "SBI BPCL Credit Card", "description": "Spent on SBI BPCL Credit Card", "amount": 838.79, "type": "expense"}]}, {"key": "avenue supermarts ltd in", "count": 1, "total": 796.05, "accounts": ["SBI BPCL Credit Card"], "txns": [{"id": 3214, "date": "2025-08-15", "time": "", "account": "SBI BPCL Credit Card", "description": "AVENUE SUPERMARTS LTD IN", "amount": 796.05, "type": "expense"}]}, {"key": "avenue supermarts ltd", "count": 1, "total": 758.0, "accounts": ["Edge Credit Card"], "txns": [{"id": 2142, "date": "2025-08-21", "time": "12:51", "account": "Edge Credit Card", "description": "AVENUE SUPERMARTS LTD", "amount": 758.0, "type": "expense"}]}, {"key": "ytm-", "count": 2, "total": 699.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2645, "date": "2026-04-01", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/609110957937/pa- ytm-80820048@ptys/UPI/- 5541", "amount": 500.0, "type": "expense"}, {"id": 2506, "date": "2026-03-04", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/606300758308/pa- ytm-80954864@ptybl/ Oid- /5192", "amount": 199.0, "type": "expense"}]}, {"key": "upi-m s h k enterprises", "count": 1, "total": 699.0, "accounts": ["SBI BPCL Credit Card"], "txns": [{"id": 3259, "date": "2025-09-30", "time": "", "account": "SBI BPCL Credit Card", "description": "UPI-M S H K ENTERPRISES", "amount": 699.0, "type": "expense"}]}, {"key": "canara bank - xx 6949 merchant exp", "count": 1, "total": 650.4, "accounts": ["Canara Bank Savings"], "txns": [{"id": 639, "date": "2025-08-19", "time": "", "account": "Canara Bank Savings", "description": "Canara Bank - XX 6949 Merchant Expenditure Merchant Expenditure UPI/DR/559712537235/ One Sigma/INDB/", "amount": 650.4, "type": "expense"}]}, {"key": "", "count": 3, "total": 620.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2526, "date": "2026-06-11", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/164560181626/99- 76094044@superyes/ Sent- /0000", "amount": 500.0, "type": "expense"}, {"id": 2751, "date": "2026-05-24", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/614492495363/90- 25727019@axl/UPI/0000", "amount": 20.0, "type": "expense"}, {"id": 2570, "date": "2026-03-11", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/607083137401/88- 83108069@goaxb/UPI/000- 0", "amount": 100.0, "type": "expense"}]}, {"key": "upi transfer to rajesh kumar m", "count": 1, "total": 600.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1475, "date": "2026-04-02", "time": "13:35", "account": "Jupiter Savings", "description": "UPI transfer to RAJESH KUMAR M", "amount": 600.0, "type": "expense"}]}, {"key": "eternal limited", "count": 4, "total": 597.12, "accounts": ["Edge Credit Card", "HDFC Card"], "txns": [{"id": 1257, "date": "2026-03-10", "time": "19:34", "account": "HDFC Card", "description": "ETERNAL LIMITED", "amount": 152.81, "type": "expense"}, {"id": 2051, "date": "2026-01-06", "time": "23:27", "account": "Edge Credit Card", "description": "ETERNAL LIMITED", "amount": 172.45, "type": "expense"}, {"id": 2140, "date": "2025-08-18", "time": "22:41", "account": "Edge Credit Card", "description": "ETERNAL LIMITED", "amount": 146.66, "type": "expense"}, {"id": 2139, "date": "2025-08-17", "time": "22:53", "account": "Edge Credit Card", "description": "ETERNAL LIMITED", "amount": 125.2, "type": "expense"}]}, {"key": "tc.cf", "count": 1, "total": 575.0, "accounts": ["Canara Bank Savings"], "txns": [{"id": 668, "date": "2025-09-01", "time": "", "account": "Canara Bank Savings", "description": "Canara Bank - XX 6949 Refund Refund UPI/CR/101339801082/I RCTC CF/HDFC/**tc.cf@hdfcb ank/UPI Refund/", "amount": 575.0, "type": "income"}]}, {"key": "20- 2509prt9nhhvjqivnpstqr-", "count": 3, "total": 570.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2711, "date": "2026-05-15", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/113682761356/20- 2509PRT9nHHVjQIvnpstqr- /5451", "amount": 170.0, "type": "expense"}, {"id": 2685, "date": "2026-05-10", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/880343691306/20- 2509PRT9nHHVjQIvnpstqr- /5451", "amount": 140.0, "type": "expense"}, {"id": 2680, "date": "2026-05-09", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/739018801296/20- 2509PRT9nHHVjQIvnpstqr- /5451", "amount": 260.0, "type": "expense"}]}, {"key": "upi transfer to eo ttd", "count": 1, "total": 550.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1484, "date": "2026-04-03", "time": "18:47", "account": "Jupiter Savings", "description": "UPI transfer to EO TTD", "amount": 550.0, "type": "expense"}]}, {"key": "upi transfer to yanamala  mural", "count": 1, "total": 550.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1496, "date": "2026-04-04", "time": "21:07", "account": "Jupiter Savings", "description": "UPI transfer to YANAMALA  MURAL", "amount": 550.0, "type": "expense"}]}, {"key": "ytm.s1tmjb9", "count": 3, "total": 545.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2716, "date": "2026-05-16", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/293525011366/pa- ytm.s1tmjb9@pty/Sent v/5411", "amount": 280.0, "type": "expense"}, {"id": 2690, "date": "2026-05-11", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/196149671316/pa- ytm.s1tmjb9@pty/Sent v/5411", "amount": 190.0, "type": "expense"}, {"id": 2422, "date": "2026-05-07", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/267504291276/pa- ytm.s1tmjb9@pty/Sent v/5411", "amount": 75.0, "type": "expense"}]}, {"key": "mohamed ariff benazir trichy ind", "count": 1, "total": 510.0, "accounts": ["HDFC Pixel"], "txns": [{"id": 2921, "date": "2025-07-11", "time": "14:30", "account": "HDFC Pixel", "description": "MOHAMED ARIFF BENAZIR TRICHY IND", "amount": 510.0, "type": "expense"}]}, {"key": "subagha agencies", "count": 1, "total": 505.9, "accounts": ["Edge Credit Card"], "txns": [{"id": 2291, "date": "2025-01-17", "time": "06:55", "account": "Edge Credit Card", "description": "Subagha Agencies", "amount": 505.9, "type": "expense"}]}, {"key": "upi-mohamed ariff benaz", "count": 1, "total": 505.9, "accounts": ["SBI BPCL Credit Card"], "txns": [{"id": 3224, "date": "2025-08-28", "time": "", "account": "SBI BPCL Credit Card", "description": "UPI-MOHAMED ARIFF BENAZ", "amount": 505.9, "type": "expense"}]}, {"key": "upi-bp trichy city", "count": 1, "total": 505.9, "accounts": ["SBI BPCL Credit Card"], "txns": [{"id": 3243, "date": "2025-09-15", "time": "", "account": "SBI BPCL Credit Card", "description": "UPI-BP Trichy city", "amount": 505.9, "type": "expense"}]}, {"key": "upi transfer to mohamed ariff b", "count": 1, "total": 500.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1443, "date": "2026-03-29", "time": "20:11", "account": "Jupiter Savings", "description": "UPI transfer to MOHAMED ARIFF B", "amount": 500.0, "type": "expense"}]}, {"key": "upi transfer to veerapur  periy", "count": 1, "total": 500.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1467, "date": "2026-04-01", "time": "14:35", "account": "Jupiter Savings", "description": "UPI transfer to Veerapur  Periy", "amount": 500.0, "type": "expense"}]}, {"key": "upi payment to yogisnathan m", "count": 1, "total": 500.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1776, "date": "2026-06-11", "time": "08:27", "account": "Jupiter Savings", "description": "UPI payment to YOGISNATHAN M", "amount": 500.0, "type": "expense"}]}, {"key": "iyagu12112004-2", "count": 1, "total": 500.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2341, "date": "2026-04-19", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/610915244351/th- iyagu12112004-2@oksbi/- /0000", "amount": 500.0, "type": "expense"}]}, {"key": "ytm.s1l7x7j", "count": 1, "total": 500.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2673, "date": "2026-05-08", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/423322911286/pa- ytm.s1l7x7j@pty/Sent v/5541", "amount": 500.0, "type": "expense"}]}, {"key": "njith2014sk", "count": 1, "total": 500.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2726, "date": "2026-05-19", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/650566689869/ra- njith2014sk@okaxis/ UPI- /0000", "amount": 500.0, "type": "expense"}]}, {"key": "sbiya25023085302610287673-ppf", "count": 1, "total": 500.0, "accounts": ["SBI Savings"], "txns": [{"id": 3077, "date": "2025-01-23", "time": "", "account": "SBI Savings", "description": "SBIYA25023085302610287673-PPF", "amount": 500.0, "type": "expense"}]}, {"key": "418731116370", "count": 1, "total": 500.0, "accounts": ["SBI Savings"], "txns": [{"id": 3086, "date": "2024-07-05", "time": "", "account": "SBI Savings", "description": "UPI/DR/418731116370/DR NALIN/CNRB/9443814536/UPI", "amount": 500.0, "type": "expense"}]}, {"key": "atm cash 41881 bsnl office nilgiri", "count": 1, "total": 500.0, "accounts": ["SBI Savings"], "txns": [{"id": 3088, "date": "2024-07-06", "time": "", "account": "SBI Savings", "description": "ATM CASH 41881 BSNL OFFICE NILGIRIS", "amount": 500.0, "type": "expense"}]}, {"key": "credit card upgrade fee", "count": 1, "total": 499.0, "accounts": ["Edge Credit Card"], "txns": [{"id": 2207, "date": "2025-05-10", "time": "08:09", "account": "Edge Credit Card", "description": "Credit card upgrade fee", "amount": 499.0, "type": "expense"}]}, {"key": "annual fee charged (excl tax 89.82", "count": 1, "total": 499.0, "accounts": ["SBI BPCL Credit Card"], "txns": [{"id": 3202, "date": "2025-08-19", "time": "", "account": "SBI BPCL Credit Card", "description": "ANNUAL FEE CHARGED (EXCL TAX 89.82)", "amount": 499.0, "type": "expense"}]}, {"key": "themancompany", "count": 1, "total": 485.55, "accounts": ["Edge Credit Card"], "txns": [{"id": 2252, "date": "2025-03-14", "time": "19:02", "account": "Edge Credit Card", "description": "THEMANCOMPANY", "amount": 485.55, "type": "expense"}]}, {"key": "federal bank - xx 3899 professiona", "count": 2, "total": 453.12, "accounts": ["Jupiter Savings"], "txns": [{"id": 975, "date": "2025-12-30", "time": "", "account": "Jupiter Savings", "description": "FEDERAL BANK - XX 3899 Professional Services Professional Services UPIOUT/536428617272/ cca.3431008@", "amount": 293.82, "type": "expense"}, {"id": 844, "date": "2025-11-17", "time": "", "account": "Jupiter Savings", "description": "FEDERAL BANK - XX 3899 Professional Services Professional Services UPIOUT/532206119523/ razorhost771", "amount": 159.3, "type": "expense"}]}, {"key": "q", "count": 1, "total": 450.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 991, "date": "2026-01-02", "time": "", "account": "Jupiter Savings", "description": "FEDERAL BANK - XX 3899 Utilities Utilities UPIOUT/357283220026/ Q045958879@ybl/Sent via /7538 S54116", "amount": 450.0, "type": "expense"}]}, {"key": "upi-pizza hut", "count": 1, "total": 449.0, "accounts": ["SBI BPCL Credit Card"], "txns": [{"id": 3263, "date": "2025-10-11", "time": "", "account": "SBI BPCL Credit Card", "description": "UPI-PIZZA HUT", "amount": 449.0, "type": "expense"}]}, {"key": "xfurbishcom", "count": 1, "total": 447.0, "accounts": ["Edge Credit Card"], "txns": [{"id": 2069, "date": "2025-12-09", "time": "21:56", "account": "Edge Credit Card", "description": "Xfurbishcom", "amount": 447.0, "type": "expense"}]}, {"key": "vetri pannai paal", "count": 3, "total": 420.0, "accounts": ["Edge Credit Card"], "txns": [{"id": 3358, "date": "2026-05-08", "time": "13:34", "account": "Edge Credit Card", "description": "VETRI PANNAI PAAL", "amount": 120.0, "type": "expense"}, {"id": 2002, "date": "2026-05-07", "time": "19:26", "account": "Edge Credit Card", "description": "VETRI PANNAI PAAL", "amount": 160.0, "type": "expense"}, {"id": 2029, "date": "2026-05-05", "time": "23:02", "account": "Edge Credit Card", "description": "VETRI PANNAI PAAL", "amount": 140.0, "type": "expense"}]}, {"key": "paytm-", "count": 2, "total": 418.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1183, "date": "2026-02-26", "time": "", "account": "Jupiter Savings", "description": "FEDERAL BANK - XX 3899 Personal Care Beauty Salon UPIOUT/612666190576/ paytm-72256455@ptys/ Sent/723", "amount": 209.0, "type": "expense"}, {"id": 1078, "date": "2026-01-28", "time": "", "account": "Jupiter Savings", "description": "FEDERAL BANK - XX 3899 Personal Care Beauty Salon UPIOUT/548282910286/ paytm-72256455@ptys/ Sent/723", "amount": 209.0, "type": "expense"}]}, {"key": "google payment", "count": 1, "total": 400.9, "accounts": ["SBI Savings"], "txns": [{"id": 3332, "date": "2026-07-30", "time": "22:32:00", "account": "SBI Savings", "description": "Google Payment", "amount": 400.9, "type": "expense"}]}, {"key": "tam il nadu state transpor chennai", "count": 1, "total": 391.0, "accounts": ["HDFC Pixel"], "txns": [{"id": 3309, "date": "2024-12-27", "time": "14:47", "account": "HDFC Pixel", "description": "Tam il Nadu State Transpor Chennai IND", "amount": 391.0, "type": "expense"}]}, {"key": "ytmqr6611od", "count": 2, "total": 390.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2691, "date": "2026-05-11", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/242072051316/pa- ytmqr6611od@ptys/ Sent /5812", "amount": 260.0, "type": "expense"}, {"id": 2686, "date": "2026-05-10", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/931123071306/pa- ytmqr6611od@ptys/ Sent /5812", "amount": 130.0, "type": "expense"}]}, {"key": "apar.", "count": 2, "total": 380.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 3390, "date": "2026-06-01", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/879303111526/Vy- apar.175693235511@hdfc- /7011", "amount": 250.0, "type": "expense"}, {"id": 2423, "date": "2026-05-07", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/331931801276/Vy- apar.175693235511@hdfc- /7011", "amount": 130.0, "type": "expense"}]}, {"key": "ezham suvai trichy ind", "count": 1, "total": 369.0, "accounts": ["HDFC Pixel"], "txns": [{"id": 2897, "date": "2025-04-27", "time": "12:24", "account": "HDFC Pixel", "description": "EZHAM SUVAI TRICHY IND", "amount": 369.0, "type": "expense"}]}, {"key": "federal bank - xx 3899 bank charge", "count": 1, "total": 353.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 173, "date": "2025-01-07", "time": "", "account": "Jupiter Savings", "description": "FEDERAL BANK - XX 3899 Bank Charges Bank Charges CHRG/DEBIT CARD AMC/XX1863/FY024 S1342099", "amount": 353.0, "type": "expense"}]}, {"key": "amica financial technologies priva", "count": 1, "total": 350.0, "accounts": ["Edge Credit Card"], "txns": [{"id": 2044, "date": "2026-02-12", "time": "14:38", "account": "Edge Credit Card", "description": "AMICA FINANCIAL TECHNOLOGIES PRIVATE LIMITED", "amount": 350.0, "type": "expense"}]}, {"key": "upi-harish r", "count": 1, "total": 349.0, "accounts": ["SBI BPCL Credit Card"], "txns": [{"id": 3233, "date": "2025-09-07", "time": "", "account": "SBI BPCL Credit Card", "description": "UPI-Harish R", "amount": 349.0, "type": "expense"}]}, {"key": "upi transfer to mr kumarakannan", "count": 2, "total": 340.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1367, "date": "2026-03-20", "time": "21:49:56", "account": "Jupiter Savings", "description": "UPI transfer to MR KUMARAKANNAN", "amount": 280.0, "type": "expense"}, {"id": 1353, "date": "2026-03-19", "time": "23:33:31", "account": "Jupiter Savings", "description": "UPI transfer to MR KUMARAKANNAN", "amount": 60.0, "type": "transfer"}]}, {"key": "upi payment to mekala m", "count": 1, "total": 330.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1832, "date": "2026-06-19", "time": "18:14", "account": "Jupiter Savings", "description": "UPI payment to MEKALA M", "amount": 330.0, "type": "expense"}]}, {"key": "kfc", "count": 1, "total": 314.01, "accounts": ["Edge Credit Card"], "txns": [{"id": 2076, "date": "2025-12-17", "time": "19:56", "account": "Edge Credit Card", "description": "KFC", "amount": 314.01, "type": "expense"}]}, {"key": "smart point tiruchirappalli u419", "count": 2, "total": 313.14, "accounts": ["Edge Credit Card"], "txns": [{"id": 2147, "date": "2025-08-26", "time": "15:31", "account": "Edge Credit Card", "description": "Smart Point Tiruchirappalli U419", "amount": 170.9, "type": "expense"}, {"id": 2171, "date": "2025-07-20", "time": "18:49", "account": "Edge Credit Card", "description": "Smart Point Tiruchirappalli U419", "amount": 142.24, "type": "expense"}]}, {"key": "upi-beauty land corpora", "count": 1, "total": 309.0, "accounts": ["SBI BPCL Credit Card"], "txns": [{"id": 3262, "date": "2025-10-08", "time": "", "account": "SBI BPCL Credit Card", "description": "UPI-BEAUTY LAND CORPORA", "amount": 309.0, "type": "expense"}]}, {"key": "debit to euronet serv via upi", "count": 1, "total": 300.9, "accounts": ["Jupiter Savings"], "txns": [{"id": 1838, "date": "2026-06-21", "time": "09:45", "account": "Jupiter Savings", "description": "Debit to Euronet Serv via UPI", "amount": 300.9, "type": "expense"}]}, {"key": "upi payment to ranjith2014sk", "count": 1, "total": 300.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1785, "date": "2026-06-12", "time": "23:16", "account": "Jupiter Savings", "description": "UPI payment to ranjith2014sk", "amount": 300.0, "type": "expense"}]}, {"key": "karthi m - upi payment", "count": 1, "total": 300.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1797, "date": "2026-06-06", "time": "", "account": "Jupiter Savings", "description": "KARTHI M - UPI payment", "amount": 300.0, "type": "expense"}]}, {"key": "mckingstown men", "count": 1, "total": 299.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1787, "date": "2026-06-13", "time": "09:52", "account": "Jupiter Savings", "description": "MCKINGSTOWN MEN", "amount": 299.0, "type": "expense"}]}, {"key": "mckingstown mens grooming - upi pa", "count": 1, "total": 299.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1809, "date": "2026-05-30", "time": "", "account": "Jupiter Savings", "description": "MCKINGSTOWN MENS GROOMING - UPI payment", "amount": 299.0, "type": "expense"}]}, {"key": "jupiterbillpay2", "count": 3, "total": 291.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1126, "date": "2026-02-08", "time": "", "account": "Jupiter Savings", "description": "FEDERAL BANK - XX 3899 Utilities Utilities UPIOUT/961247780406/ jupiterbillpay2@fbl/Sent/ 4814 S3833", "amount": 33.0, "type": "expense"}, {"id": 1122, "date": "2026-02-07", "time": "", "account": "Jupiter Savings", "description": "FEDERAL BANK - XX 3899 Utilities Utilities UPIOUT/698557630386/ jupiterbillpay2@fbl/Sent/ 4814 S1496", "amount": 33.0, "type": "expense"}, {"id": 831, "date": "2025-11-09", "time": "", "account": "Jupiter Savings", "description": "FEDERAL BANK - XX 3899 Utilities Utilities UPIOUT/898893913145/ jupiterbillpay2@fbl/Sent/ 4814 C2181", "amount": 225.0, "type": "expense"}]}, {"key": "state bank of india - xx 9420 othe", "count": 1, "total": 283.2, "accounts": ["SBI Savings"], "txns": [{"id": 675, "date": "2025-09-02", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Others Others WDL TFR  SBIYA25245102203936 167481-0209259383102 239394", "amount": 283.2, "type": "expense"}]}, {"key": "upi transfer to madhava reddy m", "count": 2, "total": 280.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1494, "date": "2026-04-04", "time": "19:49", "account": "Jupiter Savings", "description": "UPI transfer to MADHAVA REDDY M", "amount": 150.0, "type": "expense"}, {"id": 1483, "date": "2026-04-03", "time": "11:49", "account": "Jupiter Savings", "description": "UPI transfer to MADHAVA REDDY M", "amount": 130.0, "type": "expense"}]}, {"key": "upi payment to karthikeyan sa", "count": 1, "total": 280.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1770, "date": "2026-06-07", "time": "21:28:59", "account": "Jupiter Savings", "description": "UPI payment to KARTHIKEYAN SA", "amount": 280.0, "type": "expense"}]}, {"key": "surfboats solutions private limite", "count": 1, "total": 269.0, "accounts": ["Edge Credit Card"], "txns": [{"id": 2211, "date": "2025-05-30", "time": "22:13", "account": "Edge Credit Card", "description": "SURFBOATS SOLUTIONS PRIVATE LIMITED", "amount": 269.0, "type": "expense"}]}, {"key": "manivel krishna (upi)", "count": 1, "total": 262.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1358, "date": "2026-03-20", "time": "07:27", "account": "Jupiter Savings", "description": "Manivel Krishna (UPI)", "amount": 262.0, "type": "expense"}]}, {"key": "upi transfer to manivel krishna", "count": 1, "total": 262.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1359, "date": "2026-03-20", "time": "07:27:30", "account": "Jupiter Savings", "description": "UPI transfer to Manivel Krishna", "amount": 262.0, "type": "expense"}]}, {"key": "raz*betterme india mum bai mh ind", "count": 1, "total": 249.0, "accounts": ["HDFC Pixel"], "txns": [{"id": 2893, "date": "2025-04-15", "time": "12:49", "account": "HDFC Pixel", "description": "RAZ*BetterMe India Mum bai MH IND", "amount": 249.0, "type": "expense"}]}, {"key": "st- aticbp.a00000000002248-", "count": 1, "total": 245.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 3382, "date": "2026-05-17", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/515396351376/st- aticbp.a00000000002248- /5462", "amount": 245.0, "type": "expense"}]}, {"key": "karthick g - upi payment", "count": 1, "total": 240.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1807, "date": "2026-05-31", "time": "", "account": "Jupiter Savings", "description": "KARTHICK G - UPI payment", "amount": 240.0, "type": "expense"}]}, {"key": "ytm.d", "count": 3, "total": 239.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2400, "date": "2026-05-04", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/581031421246/pa- ytm.d89257548@pta/ Sent- /8062", "amount": 40.0, "type": "expense"}, {"id": 2392, "date": "2026-05-03", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/412488051236/pa- ytm.d00289712039@pty/ S- /5812", "amount": 99.0, "type": "expense"}, {"id": 2469, "date": "2026-02-20", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/371766430516/pa- ytm.d14489257548@pty/ S- /8062", "amount": 100.0, "type": "expense"}]}, {"key": "blink commerce private limited", "count": 1, "total": 235.01, "accounts": ["Edge Credit Card"], "txns": [{"id": 2041, "date": "2026-02-07", "time": "00:15", "account": "Edge Credit Card", "description": "Blink Commerce Private Limited", "amount": 235.01, "type": "expense"}]}, {"key": "ilayaraja m", "count": 1, "total": 230.0, "accounts": ["Edge Credit Card"], "txns": [{"id": 2013, "date": "2026-04-12", "time": "15:21", "account": "Edge Credit Card", "description": "ILAYARAJA M", "amount": 230.0, "type": "expense"}]}, {"key": "debit of rs.228.00", "count": 1, "total": 228.0, "accounts": ["Edge Credit Card"], "txns": [{"id": 1677, "date": "2026-05-19", "time": "21:27", "account": "Edge Credit Card", "description": "Debit of Rs.228.00", "amount": 228.0, "type": "expense"}]}, {"key": "grofers india private limited", "count": 1, "total": 222.0, "accounts": ["Edge Credit Card"], "txns": [{"id": 2167, "date": "2025-07-16", "time": "23:49", "account": "Edge Credit Card", "description": "GROFERS INDIA PRIVATE LIMITED", "amount": 222.0, "type": "expense"}]}, {"key": "tamilselvan", "count": 1, "total": 220.0, "accounts": ["Edge Credit Card"], "txns": [{"id": 2192, "date": "2025-06-07", "time": "16:14", "account": "Edge Credit Card", "description": "Tamilselvan", "amount": 220.0, "type": "expense"}]}, {"key": "blink commerce pvt ltd bangalore k", "count": 1, "total": 218.0, "accounts": ["Edge Credit Card"], "txns": [{"id": 2022, "date": "2026-04-25", "time": "14:26", "account": "Edge Credit Card", "description": "BLINK COMMERCE PVT LTD BANGALORE KAIN", "amount": 218.0, "type": "expense"}]}, {"key": "upi transfer to ilayaraja", "count": 1, "total": 210.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1380, "date": "2026-03-21", "time": "14:32:16", "account": "Jupiter Savings", "description": "UPI transfer to ILAYARAJA", "amount": 210.0, "type": "expense"}]}, {"key": "paytm.d", "count": 1, "total": 209.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 920, "date": "2025-12-15", "time": "", "account": "Jupiter Savings", "description": "FEDERAL BANK - XX 3899 Personal Care Beauty Salon UPIOUT/904081543495/ paytm.d72256455@pta/ Sent/723", "amount": 209.0, "type": "expense"}]}, {"key": "pa- yzappwallet.75084735@h-", "count": 1, "total": 208.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2415, "date": "2026-05-06", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/956001965011/pa- yzappwallet.75084735@h- /6540", "amount": 208.0, "type": "expense"}]}, {"key": "upi transfer to auto idea emiss", "count": 1, "total": 200.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1422, "date": "2026-03-26", "time": "10:29", "account": "Jupiter Savings", "description": "UPI transfer to AUTO IDEA EMISS", "amount": 200.0, "type": "expense"}]}, {"key": "upi transfer to d  kiran", "count": 1, "total": 200.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1482, "date": "2026-04-03", "time": "09:56", "account": "Jupiter Savings", "description": "UPI transfer to D  Kiran", "amount": 200.0, "type": "expense"}]}, {"key": "ilayaraja  m", "count": 2, "total": 200.0, "accounts": ["Edge Credit Card"], "txns": [{"id": 1866, "date": "2026-07-03", "time": "14:51", "account": "Edge Credit Card", "description": "ILAYARAJA  M", "amount": 110.0, "type": "expense"}, {"id": 1862, "date": "2026-07-02", "time": "15:06", "account": "Edge Credit Card", "description": "ILAYARAJA  M", "amount": 90.0, "type": "expense"}]}, {"key": "retail cc mumbai ind", "count": 1, "total": 200.0, "accounts": ["HDFC Pixel"], "txns": [{"id": 2926, "date": "2025-06-21", "time": "20:59", "account": "HDFC Pixel", "description": "RETAIL CC MUMBAI IND", "amount": 200.0, "type": "expense"}]}, {"key": "achdr yesb00709000028661 indian cl", "count": 2, "total": 200.0, "accounts": ["SBI Savings"], "txns": [{"id": 3085, "date": "2024-07-05", "time": "", "account": "SBI Savings", "description": "ACHDr YESB00709000028661 INDIAN CLEARIN", "amount": 100.0, "type": "expense"}, {"id": 3084, "date": "2024-07-02", "time": "", "account": "SBI Savings", "description": "ACHDr YESB00709000028661 INDIAN CLEARIN", "amount": 100.0, "type": "expense"}]}, {"key": "upi payment to ilayaraja", "count": 3, "total": 190.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1826, "date": "2026-06-17", "time": "14:45", "account": "Jupiter Savings", "description": "UPI payment to ILAYARAJA", "amount": 60.0, "type": "expense"}, {"id": 1823, "date": "2026-06-16", "time": "16:51:02", "account": "Jupiter Savings", "description": "UPI payment to ILAYARAJA", "amount": 40.0, "type": "expense"}, {"id": 1766, "date": "2026-06-06", "time": "21:40:13", "account": "Jupiter Savings", "description": "UPI payment to ILAYARAJA", "amount": 90.0, "type": "expense"}]}, {"key": "iggy232061.rzp", "count": 1, "total": 183.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 3389, "date": "2026-06-01", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/854037131526/sw- iggy232061.rzp@hdfcban- /5811", "amount": 183.0, "type": "expense"}]}, {"key": "jupiter app upi transaction", "count": 1, "total": 180.0, "accounts": ["Edge Credit Card"], "txns": [{"id": 1972, "date": "2026-07-29", "time": "23:47", "account": "Edge Credit Card", "description": "Jupiter App UPI transaction", "amount": 180.0, "type": "expense"}]}, {"key": "fi- nzoominvestme376589.rz-", "count": 1, "total": 179.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 3380, "date": "2026-05-14", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/613427131242/fi- nzoominvestme376589.rz- /4814", "amount": 179.0, "type": "expense"}]}, {"key": "canara bank - xx 6949 bank charges", "count": 2, "total": 177.0, "accounts": ["Canara Bank Savings"], "txns": [{"id": 1282, "date": "2026-03-13", "time": "", "account": "Canara Bank Savings", "description": "Canara Bank - XX 6949 Bank Charges Bank Charges ECS MANDATE SC CNRB70205032620156 36Due Dt:06-MAR-26", "amount": 172.01, "type": "expense"}, {"id": 1225, "date": "2026-03-06", "time": "", "account": "Canara Bank Savings", "description": "Canara Bank - XX 6949 Bank Charges Bank Charges ECS MANDATE SC CNRB70205032620156 36 770351387731", "amount": 4.99, "type": "expense"}]}, {"key": "canara bank - xx 6949 entertainmen", "count": 1, "total": 175.0, "accounts": ["Canara Bank Savings"], "txns": [{"id": 509, "date": "2025-06-24", "time": "", "account": "Canara Bank Savings", "description": "Canara Bank - XX 6949 Entertainment Entertainment UPI/DR/554124929789/ GAMERSGIF/UTIB/**ia. cf@axisb", "amount": 175.0, "type": "expense"}]}, {"key": "upi transfer to bhaskar narasim", "count": 2, "total": 170.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1495, "date": "2026-04-04", "time": "20:00", "account": "Jupiter Savings", "description": "UPI transfer to BHASKAR NARASIM", "amount": 80.0, "type": "expense"}, {"id": 1487, "date": "2026-04-03", "time": "22:12", "account": "Jupiter Savings", "description": "UPI transfer to BHASKAR NARASIM", "amount": 90.0, "type": "expense"}]}, {"key": "j gnanasuresh", "count": 1, "total": 170.0, "accounts": ["Edge Credit Card"], "txns": [{"id": 2155, "date": "2025-07-06", "time": "00:56", "account": "Edge Credit Card", "description": "J GNANASURESH", "amount": 170.0, "type": "expense"}]}, {"key": "upi to rbml solutions", "count": 1, "total": 164.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1533, "date": "2026-04-09", "time": "20:16", "account": "Jupiter Savings", "description": "UPI to RBML Solutions ", "amount": 164.0, "type": "expense"}]}, {"key": "transaction on hdfc bank pixel car", "count": 1, "total": 161.0, "accounts": ["HDFC Pixel"], "txns": [{"id": 1673, "date": "2026-05-18", "time": "16:37", "account": "HDFC Pixel", "description": "Transaction on HDFC Bank PIXEL Card", "amount": 161.0, "type": "expense"}]}, {"key": "upi transfer to vaisanth1309200", "count": 2, "total": 150.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1442, "date": "2026-03-29", "time": "13:37", "account": "Jupiter Savings", "description": "UPI transfer to vaisanth1309200", "amount": 50.0, "type": "expense"}, {"id": 1441, "date": "2026-03-29", "time": "13:34", "account": "Jupiter Savings", "description": "UPI transfer to vaisanth1309200", "amount": 100.0, "type": "expense"}]}, {"key": "jeshrajesh", "count": 1, "total": 150.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2770, "date": "2026-05-27", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/614710512176/ra- jeshrajesh848989@oksbi- /0000", "amount": 150.0, "type": "expense"}]}, {"key": "debit to kumudham dep via upi", "count": 1, "total": 149.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1839, "date": "2026-06-21", "time": "12:31", "account": "Jupiter Savings", "description": "Debit to KUMUDHAM DEP via UPI", "amount": 149.0, "type": "expense"}]}, {"key": "tstaronline", "count": 1, "total": 149.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2762, "date": "2026-05-26", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/614616493897/ho- tstaronline@ybl/Subscr- /7993", "amount": 149.0, "type": "expense"}]}, {"key": "upi transfer to d muni krishna", "count": 2, "total": 125.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1486, "date": "2026-04-03", "time": "19:19", "account": "Jupiter Savings", "description": "UPI transfer to D MUNI KRISHNA", "amount": 65.0, "type": "expense"}, {"id": 1485, "date": "2026-04-03", "time": "19:02", "account": "Jupiter Savings", "description": "UPI transfer to D MUNI KRISHNA", "amount": 60.0, "type": "expense"}]}, {"key": "ytmqr6v125j", "count": 1, "total": 120.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2696, "date": "2026-05-12", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/380855601326/pa- ytmqr6v125j@ptys/Sent /5812", "amount": 120.0, "type": "expense"}]}, {"key": "ytm.s1tmn1j", "count": 1, "total": 120.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2757, "date": "2026-05-25", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/344177241456/pa- ytm.s1tmn1j@pty/Sent v/5411", "amount": 120.0, "type": "expense"}]}, {"key": "parameswaran k - upi payment", "count": 1, "total": 119.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1792, "date": "2026-06-11", "time": "", "account": "Jupiter Savings", "description": "Parameswaran K - UPI payment", "amount": 119.0, "type": "expense"}]}, {"key": "parameswaran k", "count": 1, "total": 119.0, "accounts": ["Edge Credit Card"], "txns": [{"id": 1853, "date": "2026-06-26", "time": "19:21", "account": "Edge Credit Card", "description": "Parameswaran K", "amount": 119.0, "type": "expense"}]}, {"key": "charges for enabling ddpi", "count": 1, "total": 118.0, "accounts": ["Zerodha Wallet"], "txns": [{"id": 3054, "date": "2026-05-25", "time": "", "account": "Zerodha Wallet", "description": "Charges for enabling DDPI", "amount": 118.0, "type": "expense"}]}, {"key": "upi transfer to sri padmavathi", "count": 1, "total": 115.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1477, "date": "2026-04-03", "time": "05:28", "account": "Jupiter Savings", "description": "UPI transfer to SRI PADMAVATHI", "amount": 115.0, "type": "expense"}]}, {"key": "upi transfer to singana jeevith", "count": 1, "total": 105.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1492, "date": "2026-04-04", "time": "10:31", "account": "Jupiter Savings", "description": "UPI transfer to SINGANA JEEVITH", "amount": 105.0, "type": "expense"}]}, {"key": "balamurugan (upi)", "count": 1, "total": 100.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1273, "date": "2026-03-11", "time": "22:17", "account": "Jupiter Savings", "description": "Balamurugan (UPI)", "amount": 100.0, "type": "expense"}]}, {"key": "upi transfer to mr vijayakumar", "count": 1, "total": 100.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1505, "date": "2026-04-05", "time": "21:06", "account": "Jupiter Savings", "description": "UPI transfer to Mr Vijayakumar", "amount": 100.0, "type": "expense"}]}, {"key": "ytm.s1pcf6t", "count": 1, "total": 100.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2330, "date": "2026-04-16", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/606126701066/pa- ytm.s1pcf6t@pty/Sent v/5411", "amount": 100.0, "type": "expense"}]}, {"key": "lanisakthi", "count": 1, "total": 100.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2479, "date": "2026-02-23", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/605401079397/pa- lanisakthi2015@oksbi/ U- /0000", "amount": 100.0, "type": "expense"}]}, {"key": "ominaloomina69-3", "count": 1, "total": 100.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2554, "date": "2026-07-05", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/618621850674/lo- ominaloomina69-3@okici- /0000", "amount": 100.0, "type": "expense"}]}, {"key": "isanth", "count": 1, "total": 100.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2633, "date": "2026-03-29", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/608841483353/va- isanth13092009@okaxis/- /0000", "amount": 100.0, "type": "expense"}]}, {"key": "ytmqr6d9r27", "count": 1, "total": 100.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2803, "date": "2026-06-07", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/279033321586/pa- ytmqr6d9r27@ptys/ Sent /5812", "amount": 100.0, "type": "expense"}]}, {"key": "upi transfer to srinallandvar19", "count": 1, "total": 91.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1469, "date": "2026-04-01", "time": "19:52", "account": "Jupiter Savings", "description": "UPI transfer to srinallandvar19", "amount": 91.0, "type": "expense"}]}, {"key": "upi transfer to new renga bhava", "count": 1, "total": 90.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1396, "date": "2026-03-22", "time": "10:43:46", "account": "Jupiter Savings", "description": "UPI transfer to NEW RENGA BHAVA", "amount": 90.0, "type": "expense"}]}, {"key": "tax on credit card upgrade fee", "count": 1, "total": 89.82, "accounts": ["Edge Credit Card"], "txns": [{"id": 2208, "date": "2025-05-10", "time": "08:09", "account": "Edge Credit Card", "description": "Tax on Credit card upgrade fee", "amount": 89.82, "type": "expense"}]}, {"key": "games", "count": 1, "total": 89.0, "accounts": ["Canara Bank Savings"], "txns": [{"id": 485, "date": "2025-06-14", "time": "", "account": "Canara Bank Savings", "description": "Canara Bank - XX 6949 Gaming Gaming UPI/DR/553109469063/ Google In/utib/**games@axisba nk/Paid via//", "amount": 89.0, "type": "expense"}]}, {"key": "ytm.s1ci04s", "count": 1, "total": 89.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 3381, "date": "2026-05-16", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/342727251366/pa- ytm.s1ci04s@pty/Sent v/5411", "amount": 89.0, "type": "expense"}]}, {"key": "amc for demat account for 07-10-20", "count": 1, "total": 88.5, "accounts": ["Zerodha Wallet"], "txns": [{"id": 2035, "date": "2026-02-19", "time": "", "account": "Zerodha Wallet", "description": "AMC for Demat Account for 07-10-2025 to 05-01-2026", "amount": 88.5, "type": "expense"}]}, {"key": "amc for demat account for 08-07-20", "count": 1, "total": 88.5, "accounts": ["Zerodha Wallet"], "txns": [{"id": 2067, "date": "2025-11-14", "time": "", "account": "Zerodha Wallet", "description": "AMC for Demat Account for 08-07-2025 to 06-10-2025", "amount": 88.5, "type": "expense"}]}, {"key": "amc for demat account for 08-04-20", "count": 1, "total": 88.5, "accounts": ["Zerodha Wallet"], "txns": [{"id": 2114, "date": "2025-08-23", "time": "", "account": "Zerodha Wallet", "description": "AMC for Demat Account for 08-04-2025 to 07-07-2025", "amount": 88.5, "type": "expense"}]}, {"key": "amc for demat account for 07-01-20", "count": 1, "total": 88.5, "accounts": ["Zerodha Wallet"], "txns": [{"id": 2188, "date": "2025-05-27", "time": "", "account": "Zerodha Wallet", "description": "AMC for Demat Account for 07-01-2025 to 07-04-2025", "amount": 88.5, "type": "expense"}]}, {"key": "amc for demat account for 09-04-20", "count": 1, "total": 88.5, "accounts": ["Zerodha Wallet"], "txns": [{"id": 2241, "date": "2025-02-06", "time": "", "account": "Zerodha Wallet", "description": "AMC for Demat Account for 09-04-2024 to 08-07-2024", "amount": 88.5, "type": "expense"}]}, {"key": "amc for demat account for 09-07-20", "count": 1, "total": 88.5, "accounts": ["Zerodha Wallet"], "txns": [{"id": 2244, "date": "2025-03-17", "time": "", "account": "Zerodha Wallet", "description": "AMC for Demat Account for 09-07-2024 to 07-10-2024", "amount": 88.5, "type": "expense"}]}, {"key": "amc for demat account for 08-10-20", "count": 1, "total": 88.5, "accounts": ["Zerodha Wallet"], "txns": [{"id": 2245, "date": "2025-03-25", "time": "", "account": "Zerodha Wallet", "description": "AMC for Demat Account for 08-10-2024 to 06-01-2025", "amount": 88.5, "type": "expense"}]}, {"key": "amc for demat account for 06-01-20", "count": 1, "total": 88.5, "accounts": ["Zerodha Wallet"], "txns": [{"id": 3053, "date": "2026-05-09", "time": "", "account": "Zerodha Wallet", "description": "AMC for Demat Account for 06-01-2026 to 06-04-2026", "amount": 88.5, "type": "expense"}]}, {"key": "[7777013817 3899] s69654261", "count": 1, "total": 82.0, "accounts": ["Unknown"], "txns": [{"id": 1426, "date": "2026-03-27", "time": "", "account": "Unknown", "description": "[7777013817 3899] S69654261", "amount": 82.0, "type": "expense"}]}, {"key": "upi payment to loganathan r", "count": 1, "total": 80.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1769, "date": "2026-06-07", "time": "21:06", "account": "Jupiter Savings", "description": "UPI payment to LOGANATHAN R", "amount": 80.0, "type": "expense"}]}, {"key": "[7777013817 3899] s58832192", "count": 1, "total": 77.0, "accounts": ["Unknown"], "txns": [{"id": 956, "date": "2025-12-26", "time": "", "account": "Unknown", "description": "[7777013817 3899] S58832192", "amount": 77.0, "type": "expense"}]}, {"key": "nby2xroe", "count": 1, "total": 70.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2798, "date": "2026-06-05", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/849499401566/h2- nby2xroe@postbank/ Sent- /7407", "amount": 70.0, "type": "expense"}]}, {"key": "ytmqrfwp7pb3xrf", "count": 1, "total": 65.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2734, "date": "2026-05-20", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/150704711406/pa- ytmqrfwp7pb3xrf@paytm/- /5411", "amount": 65.0, "type": "expense"}]}, {"key": "upi transfer to abishak b", "count": 1, "total": 60.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1474, "date": "2026-04-02", "time": "13:05", "account": "Jupiter Savings", "description": "UPI transfer to Abishak B", "amount": 60.0, "type": "expense"}]}, {"key": "upi payment to rajarethinam sa", "count": 1, "total": 60.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1779, "date": "2026-06-12", "time": "14:15", "account": "Jupiter Savings", "description": "UPI payment to Rajarethinam Sa", "amount": 60.0, "type": "expense"}]}, {"key": "upi payment to bharathkumar", "count": 1, "total": 60.0, "accounts": ["Federal Bank"], "txns": [{"id": 1963, "date": "2026-07-23", "time": "12:42", "account": "Federal Bank", "description": "UPI payment to BHARATHKUMAR", "amount": 60.0, "type": "expense"}]}, {"key": "refund", "count": 2, "total": 51.59, "accounts": ["Edge Credit Card"], "txns": [{"id": 1863, "date": "2026-07-02", "time": "16:30", "account": "Edge Credit Card", "description": "REFUND", "amount": 30.0, "type": "income"}, {"id": 1857, "date": "2026-06-28", "time": "16:30", "account": "Edge Credit Card", "description": "REFUND", "amount": 21.59, "type": "income"}]}, {"key": "cgst-vps2711467057531-rate 9.0 -33", "count": 1, "total": 50.22, "accounts": ["HDFC Moneyback+ Credit Card"], "txns": [{"id": 2308, "date": "2026-04-23", "time": "00:00", "account": "HDFC Moneyback+ Credit Card", "description": "CGST-VPS2711467057531-RATE 9.0 -33 (Ref# 09999999980423010207178)", "amount": 50.22, "type": "expense"}]}, {"key": "upi payment to sundar r", "count": 1, "total": 50.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1786, "date": "2026-06-13", "time": "08:24", "account": "Jupiter Savings", "description": "UPI payment to SUNDAR R", "amount": 50.0, "type": "expense"}]}, {"key": "upi payment to madasamy mu", "count": 1, "total": 50.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1834, "date": "2026-06-19", "time": "23:24", "account": "Jupiter Savings", "description": "UPI payment to MADASAMY MU", "amount": 50.0, "type": "expense"}]}, {"key": "upi-sriram p k", "count": 1, "total": 50.0, "accounts": ["SBI BPCL Credit Card"], "txns": [{"id": 3232, "date": "2025-09-07", "time": "", "account": "SBI BPCL Credit Card", "description": "UPI-Sriram p k", "amount": 50.0, "type": "expense"}]}, {"key": "cgst-vps2714465702398-rate 9.0 -33", "count": 1, "total": 46.35, "accounts": ["HDFC Moneyback+ Credit Card"], "txns": [{"id": 3404, "date": "2026-05-23", "time": "00:00", "account": "HDFC Moneyback+ Credit Card", "description": "CGST-VPS2714465702398-RATE 9.0 -33 (Ref# 09999999980523010800425)", "amount": 46.35, "type": "expense"}]}, {"key": "sgst-vps2714465702398-rate 9.0 -33", "count": 1, "total": 46.35, "accounts": ["HDFC Moneyback+ Credit Card"], "txns": [{"id": 3405, "date": "2026-05-23", "time": "00:00", "account": "HDFC Moneyback+ Credit Card", "description": "SGST-VPS2714465702398-RATE 9.0 -33 (Ref# 09999999980523010800425)", "amount": 46.35, "type": "expense"}]}, {"key": "cgst-vps2717566027661-rate 9.0 -33", "count": 1, "total": 42.39, "accounts": ["HDFC Moneyback+ Credit Card"], "txns": [{"id": 2311, "date": "2026-06-23", "time": "00:00", "account": "HDFC Moneyback+ Credit Card", "description": "CGST-VPS2717566027661-RATE 9.0 -33 (Ref# 09999999980623011104759)", "amount": 42.39, "type": "expense"}]}, {"key": "paytmqr6es4p1", "count": 1, "total": 40.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1549, "date": "2026-04-15", "time": "", "account": "Jupiter Savings", "description": "FEDERAL BANK - XX 3899 Entertainment Theatres UPIOUT/610533910391/ paytmqr6es4p1@ptys/U PI/7832 S668", "amount": 40.0, "type": "expense"}]}, {"key": "upi payment to mrs s susaia", "count": 1, "total": 40.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1831, "date": "2026-06-19", "time": "12:11", "account": "Jupiter Savings", "description": "UPI payment to Mrs S Susaia", "amount": 40.0, "type": "expense"}]}, {"key": "kuthbudeen farook", "count": 1, "total": 40.0, "accounts": ["Edge Credit Card"], "txns": [{"id": 2215, "date": "2025-06-03", "time": "21:37", "account": "Edge Credit Card", "description": "KUTHBUDEEN FAROOK", "amount": 40.0, "type": "expense"}]}, {"key": "saravana kumar s", "count": 1, "total": 40.0, "accounts": ["Edge Credit Card"], "txns": [{"id": 2260, "date": "2025-03-17", "time": "14:08", "account": "Edge Credit Card", "description": "Saravana Kumar S", "amount": 40.0, "type": "expense"}]}, {"key": "ytmqr6iwbx4", "count": 1, "total": 40.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2756, "date": "2026-05-25", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/289431001456/pa- ytmqr6iwbx4@ptys/ Sent /5411", "amount": 40.0, "type": "expense"}]}, {"key": "magil super market", "count": 1, "total": 38.0, "accounts": ["Edge Credit Card"], "txns": [{"id": 2150, "date": "2025-08-28", "time": "10:37", "account": "Edge Credit Card", "description": "MAGIL SUPER MARKET", "amount": 38.0, "type": "expense"}]}, {"key": "upi transfer to s poornamary", "count": 1, "total": 35.0, "accounts": ["Federal Bank"], "txns": [{"id": 1698, "date": "2026-05-25", "time": "18:13", "account": "Federal Bank", "description": "UPI transfer to S POORNAMARY", "amount": 35.0, "type": "expense"}]}, {"key": "state bank of india - xx 9420 gami", "count": 1, "total": 30.0, "accounts": ["SBI Savings"], "txns": [{"id": 566, "date": "2025-07-17", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Gaming Gaming WDL TFR  UPI/DR/556423307533/ AGS GAME/KKBK/mswipe.25 0/", "amount": 30.0, "type": "expense"}]}, {"key": "playstore1.bd", "count": 1, "total": 30.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1103, "date": "2026-01-31", "time": "", "account": "Jupiter Savings", "description": "FEDERAL BANK - XX 3899 Entertainment Entertainment UPIOUT/603213055895/ playstore1.bd@axisbank /U/58", "amount": 30.0, "type": "expense"}]}, {"key": "upi transfer to ippopay merchan", "count": 1, "total": 30.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1361, "date": "2026-03-20", "time": "07:28:23", "account": "Jupiter Savings", "description": "UPI transfer to IPPOPAY MERCHAN", "amount": 30.0, "type": "expense"}]}, {"key": "upi payment to imran", "count": 1, "total": 30.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1788, "date": "2026-06-13", "time": "09:53", "account": "Jupiter Savings", "description": "UPI payment to IMRAN", "amount": 30.0, "type": "expense"}]}, {"key": "vraghu22", "count": 1, "total": 30.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2739, "date": "2026-05-21", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/433727211416/la- vraghu22@okaxis/Sent v/0000", "amount": 30.0, "type": "expense"}]}, {"key": "ranhasi5", "count": 1, "total": 30.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2785, "date": "2026-05-30", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/374010211506/em- ranhasi5@okicici/Sent /0000", "amount": 30.0, "type": "expense"}]}, {"key": "cgst-vps2710538977895-rate 9.0 -33", "count": 1, "total": 26.91, "accounts": ["HDFC Moneyback+ Credit Card"], "txns": [{"id": 2304, "date": "2026-04-14", "time": "00:00", "account": "HDFC Moneyback+ Credit Card", "description": "CGST-VPS2710538977895-RATE 9.0 -33 (Ref# 09999999980414013308402)", "amount": 26.91, "type": "expense"}]}, {"key": "debit of rs.20.00", "count": 1, "total": 20.0, "accounts": ["Edge Credit Card"], "txns": [{"id": 1678, "date": "2026-05-19", "time": "22:01", "account": "Edge Credit Card", "description": "Debit of Rs.20.00", "amount": 20.0, "type": "expense"}]}, {"key": "upi payment to mr muthamil sel", "count": 1, "total": 20.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1774, "date": "2026-06-10", "time": "00:29", "account": "Jupiter Savings", "description": "UPI payment to Mr Muthamil Sel", "amount": 20.0, "type": "expense"}]}, {"key": "90-", "count": 1, "total": 20.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1922, "date": "2026-06-09", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/616150215937/90-43403620@superyes/UPI/-0000", "amount": 20.0, "type": "expense"}]}, {"key": "matoorder1.gpay", "count": 1, "total": 20.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 3388, "date": "2026-05-31", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/615180280571/zo- matoorder1.gpay@okpaya- /5812", "amount": 20.0, "type": "expense"}]}, {"key": "upi payment to indmoney tech12", "count": 1, "total": 18.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1811, "date": "2026-06-14", "time": "21:42", "account": "Jupiter Savings", "description": "UPI payment to Indmoney Tech12", "amount": 18.0, "type": "expense"}]}, {"key": "[7777013817 3899] s31469172", "count": 1, "total": 6.0, "accounts": ["Unknown"], "txns": [{"id": 514, "date": "2025-06-27", "time": "", "account": "Unknown", "description": "[7777013817 3899] S31469172", "amount": 6.0, "type": "expense"}]}, {"key": "cgst-vps2712493160322-rate 9.0 -33", "count": 1, "total": 4.5, "accounts": ["HDFC Moneyback+ Credit Card"], "txns": [{"id": 2310, "date": "2026-05-03", "time": "00:00", "account": "HDFC Moneyback+ Credit Card", "description": "CGST-VPS2712493160322-RATE 9.0 -33 (Ref# ST261240084000011796580)", "amount": 4.5, "type": "expense"}]}, {"key": "delayed payment charges for june -", "count": 1, "total": 3.11, "accounts": ["Zerodha Wallet"], "txns": [{"id": 3056, "date": "2026-07-02", "time": "", "account": "Zerodha Wallet", "description": "Delayed payment charges for June - 2026", "amount": 3.11, "type": "expense"}]}, {"key": "state bank of india - xx 9420 refu", "count": 3, "total": 3.0, "accounts": ["SBI Savings"], "txns": [{"id": 645, "date": "2025-08-20", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Refund Txn Reversal CEMTEX DEP  UPI/REVERSAL/521754 095634/05082025/14", "amount": 1.0, "type": "expense"}, {"id": 556, "date": "2025-07-10", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Refund Txn Reversal CEMTEX DEP  UPI/REVERSAL/555594 399148/08072025/45", "amount": 1.0, "type": "expense"}, {"id": 169, "date": "2025-01-06", "time": "", "account": "SBI Savings", "description": "STATE BANK OF INDIA - XX 9420 Refund Txn Reversal CEMTEX DEP  UPI/REVERSAL/500338 688247/03012025/52", "amount": 1.0, "type": "expense"}]}, {"key": "delayed payment charges for may - ", "count": 2, "total": 2.83, "accounts": ["Zerodha Wallet"], "txns": [{"id": 3055, "date": "2026-06-04", "time": "", "account": "Zerodha Wallet", "description": "Delayed payment charges for May - 2026", "amount": 1.42, "type": "expense"}, {"id": 2190, "date": "2025-06-06", "time": "", "account": "Zerodha Wallet", "description": "Delayed payment charges for May - 2025", "amount": 1.41, "type": "expense"}]}, {"key": "delayed payment charges for septem", "count": 2, "total": 2.57, "accounts": ["Zerodha Wallet"], "txns": [{"id": 2063, "date": "2025-10-03", "time": "", "account": "Zerodha Wallet", "description": "Delayed payment charges for September - 2025", "amount": 1.24, "type": "expense"}, {"id": 2296, "date": "2024-10-04", "time": "", "account": "Zerodha Wallet", "description": "Delayed payment charges for September - 2024", "amount": 1.33, "type": "expense"}]}, {"key": "delayed payment charges for octobe", "count": 2, "total": 2.44, "accounts": ["Zerodha Wallet"], "txns": [{"id": 2066, "date": "2025-11-11", "time": "", "account": "Zerodha Wallet", "description": "Delayed payment charges for October - 2025", "amount": 1.08, "type": "expense"}, {"id": 2299, "date": "2024-11-21", "time": "", "account": "Zerodha Wallet", "description": "Delayed payment charges for October - 2024", "amount": 1.36, "type": "expense"}]}, {"key": "delayed payment charges for april ", "count": 1, "total": 2.44, "accounts": ["Zerodha Wallet"], "txns": [{"id": 2185, "date": "2025-05-09", "time": "", "account": "Zerodha Wallet", "description": "Delayed payment charges for April - 2025", "amount": 2.44, "type": "expense"}]}, {"key": "paxinnovationictserv in", "count": 1, "total": 2.0, "accounts": ["SBI BPCL Credit Card"], "txns": [{"id": 3162, "date": "2026-01-19", "time": "", "account": "SBI BPCL Credit Card", "description": "PAXINNOVATIONICTSERV IN", "amount": 2.0, "type": "expense"}]}, {"key": "delayed payment charges for novemb", "count": 1, "total": 1.44, "accounts": ["Zerodha Wallet"], "txns": [{"id": 2068, "date": "2025-12-05", "time": "", "account": "Zerodha Wallet", "description": "Delayed payment charges for November - 2025", "amount": 1.44, "type": "expense"}]}, {"key": "[7777013817 3899] s10848693", "count": 1, "total": 1.0, "accounts": ["Unknown"], "txns": [{"id": 727, "date": "2025-09-26", "time": "", "account": "Unknown", "description": "[7777013817 3899] S10848693", "amount": 1.0, "type": "expense"}]}, {"key": "federal bank - xx 3899 refund refu", "count": 1, "total": 1.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 1105, "date": "2026-02-01", "time": "", "account": "Jupiter Savings", "description": "FEDERAL BANK - XX 3899 Refund Refund UPI REFUND RRC 869001540096 S10681190", "amount": 1.0, "type": "income"}]}, {"key": "kwalletadd", "count": 1, "total": 1.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2421, "date": "2026-05-07", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/612712936892/mb- kwalletadd@kotakpay/ NA- /6540", "amount": 1.0, "type": "expense"}]}, {"key": "ac xfr from sol 5556 to 1834", "count": 1, "total": 1.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 2804, "date": "2026-05-21", "time": "", "account": "Jupiter Savings", "description": "Ac xfr from Sol 5556 to 1834", "amount": 1.0, "type": "expense"}]}, {"key": "rodha1", "count": 1, "total": 1.0, "accounts": ["Jupiter Savings"], "txns": [{"id": 3386, "date": "2026-05-29", "time": "", "account": "Jupiter Savings", "description": "UPIOUT/614993085794/ze- rodha1@kotak/Reverse P/7322", "amount": 1.0, "type": "expense"}]}, {"key": "delay payment charges for 03/07/20", "count": 1, "total": 0.35, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 3005, "date": "2025-07-03", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 03/07/2025 To 03/07/2025", "amount": 0.35, "type": "expense"}]}, {"key": "delay payment charges for 19/05/20", "count": 1, "total": 0.18, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2982, "date": "2025-05-19", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 19/05/2025 To 19/05/2025", "amount": 0.18, "type": "expense"}]}, {"key": "delay payment charges for 21/05/20", "count": 1, "total": 0.18, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2983, "date": "2025-05-21", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 21/05/2025 To 21/05/2025", "amount": 0.18, "type": "expense"}]}, {"key": "delay payment charges for 23/05/20", "count": 1, "total": 0.18, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2984, "date": "2025-05-23", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 23/05/2025 To 23/05/2025", "amount": 0.18, "type": "expense"}]}, {"key": "delay payment charges for 25/05/20", "count": 1, "total": 0.18, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2985, "date": "2025-05-25", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 25/05/2025 To 25/05/2025", "amount": 0.18, "type": "expense"}]}, {"key": "delay payment charges for 27/05/20", "count": 1, "total": 0.18, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2986, "date": "2025-05-27", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 27/05/2025 To 27/05/2025", "amount": 0.18, "type": "expense"}]}, {"key": "delay payment charges for 29/05/20", "count": 1, "total": 0.18, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2987, "date": "2025-05-29", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 29/05/2025 To 29/05/2025", "amount": 0.18, "type": "expense"}]}, {"key": "delay payment charges for 31/05/20", "count": 1, "total": 0.18, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2988, "date": "2025-05-31", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 31/05/2025 To 31/05/2025", "amount": 0.18, "type": "expense"}]}, {"key": "delay payment charges for 02/06/20", "count": 1, "total": 0.18, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2989, "date": "2025-06-02", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 02/06/2025 To 02/06/2025", "amount": 0.18, "type": "expense"}]}, {"key": "delay payment charges for 04/06/20", "count": 1, "total": 0.18, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2990, "date": "2025-06-04", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 04/06/2025 To 04/06/2025", "amount": 0.18, "type": "expense"}]}, {"key": "delay payment charges for 06/06/20", "count": 1, "total": 0.18, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2991, "date": "2025-06-06", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 06/06/2025 To 06/06/2025", "amount": 0.18, "type": "expense"}]}, {"key": "delay payment charges for 08/06/20", "count": 1, "total": 0.18, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2992, "date": "2025-06-08", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 08/06/2025 To 08/06/2025", "amount": 0.18, "type": "expense"}]}, {"key": "delay payment charges for 10/06/20", "count": 1, "total": 0.18, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2993, "date": "2025-06-10", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 10/06/2025 To 10/06/2025", "amount": 0.18, "type": "expense"}]}, {"key": "delay payment charges for 12/06/20", "count": 1, "total": 0.18, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2994, "date": "2025-06-12", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 12/06/2025 To 12/06/2025", "amount": 0.18, "type": "expense"}]}, {"key": "delay payment charges for 14/06/20", "count": 1, "total": 0.18, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2995, "date": "2025-06-14", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 14/06/2025 To 14/06/2025", "amount": 0.18, "type": "expense"}]}, {"key": "delay payment charges for 16/06/20", "count": 1, "total": 0.18, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2996, "date": "2025-06-16", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 16/06/2025 To 16/06/2025", "amount": 0.18, "type": "expense"}]}, {"key": "delay payment charges for 18/06/20", "count": 1, "total": 0.18, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2997, "date": "2025-06-18", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 18/06/2025 To 18/06/2025", "amount": 0.18, "type": "expense"}]}, {"key": "delay payment charges for 20/06/20", "count": 1, "total": 0.18, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2998, "date": "2025-06-20", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 20/06/2025 To 20/06/2025", "amount": 0.18, "type": "expense"}]}, {"key": "delay payment charges for 22/06/20", "count": 1, "total": 0.18, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2999, "date": "2025-06-22", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 22/06/2025 To 22/06/2025", "amount": 0.18, "type": "expense"}]}, {"key": "delay payment charges for 24/06/20", "count": 1, "total": 0.18, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 3000, "date": "2025-06-24", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 24/06/2025 To 24/06/2025", "amount": 0.18, "type": "expense"}]}, {"key": "delay payment charges for 26/06/20", "count": 1, "total": 0.18, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 3001, "date": "2025-06-26", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 26/06/2025 To 26/06/2025", "amount": 0.18, "type": "expense"}]}, {"key": "delay payment charges for 28/06/20", "count": 1, "total": 0.18, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 3002, "date": "2025-06-28", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 28/06/2025 To 28/06/2025", "amount": 0.18, "type": "expense"}]}, {"key": "delay payment charges for 30/06/20", "count": 1, "total": 0.18, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 3003, "date": "2025-06-30", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 30/06/2025 To 30/06/2025", "amount": 0.18, "type": "expense"}]}, {"key": "delay payment charges for 02/07/20", "count": 1, "total": 0.18, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 3004, "date": "2025-07-02", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 02/07/2025 To 02/07/2025", "amount": 0.18, "type": "expense"}]}, {"key": "delay payment charges for 03/04/20", "count": 1, "total": 0.17, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2959, "date": "2025-04-03", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 03/04/2025 To 03/04/2025", "amount": 0.17, "type": "expense"}]}, {"key": "delay payment charges for 05/04/20", "count": 1, "total": 0.17, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2960, "date": "2025-04-05", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 05/04/2025 To 05/04/2025", "amount": 0.17, "type": "expense"}]}, {"key": "delay payment charges for 07/04/20", "count": 1, "total": 0.17, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2961, "date": "2025-04-07", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 07/04/2025 To 07/04/2025", "amount": 0.17, "type": "expense"}]}, {"key": "delay payment charges for 09/04/20", "count": 1, "total": 0.17, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2962, "date": "2025-04-09", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 09/04/2025 To 09/04/2025", "amount": 0.17, "type": "expense"}]}, {"key": "delay payment charges for 11/04/20", "count": 1, "total": 0.17, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2963, "date": "2025-04-11", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 11/04/2025 To 11/04/2025", "amount": 0.17, "type": "expense"}]}, {"key": "delay payment charges for 13/04/20", "count": 1, "total": 0.17, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2964, "date": "2025-04-13", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 13/04/2025 To 13/04/2025", "amount": 0.17, "type": "expense"}]}, {"key": "delay payment charges for 15/04/20", "count": 1, "total": 0.17, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2965, "date": "2025-04-15", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 15/04/2025 To 15/04/2025", "amount": 0.17, "type": "expense"}]}, {"key": "delay payment charges for 17/04/20", "count": 1, "total": 0.17, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2966, "date": "2025-04-17", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 17/04/2025 To 17/04/2025", "amount": 0.17, "type": "expense"}]}, {"key": "delay payment charges for 19/04/20", "count": 1, "total": 0.17, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2967, "date": "2025-04-19", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 19/04/2025 To 19/04/2025", "amount": 0.17, "type": "expense"}]}, {"key": "delay payment charges for 21/04/20", "count": 1, "total": 0.17, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2968, "date": "2025-04-21", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 21/04/2025 To 21/04/2025", "amount": 0.17, "type": "expense"}]}, {"key": "delay payment charges for 23/04/20", "count": 1, "total": 0.17, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2969, "date": "2025-04-23", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 23/04/2025 To 23/04/2025", "amount": 0.17, "type": "expense"}]}, {"key": "delay payment charges for 25/04/20", "count": 1, "total": 0.17, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2970, "date": "2025-04-25", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 25/04/2025 To 25/04/2025", "amount": 0.17, "type": "expense"}]}, {"key": "delay payment charges for 27/04/20", "count": 1, "total": 0.17, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2971, "date": "2025-04-27", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 27/04/2025 To 27/04/2025", "amount": 0.17, "type": "expense"}]}, {"key": "delay payment charges for 29/04/20", "count": 1, "total": 0.17, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2972, "date": "2025-04-29", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 29/04/2025 To 29/04/2025", "amount": 0.17, "type": "expense"}]}, {"key": "delay payment charges for 01/05/20", "count": 1, "total": 0.17, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2973, "date": "2025-05-01", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 01/05/2025 To 01/05/2025", "amount": 0.17, "type": "expense"}]}, {"key": "delay payment charges for 03/05/20", "count": 1, "total": 0.17, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2974, "date": "2025-05-03", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 03/05/2025 To 03/05/2025", "amount": 0.17, "type": "expense"}]}, {"key": "delay payment charges for 05/05/20", "count": 1, "total": 0.17, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2975, "date": "2025-05-05", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 05/05/2025 To 05/05/2025", "amount": 0.17, "type": "expense"}]}, {"key": "delay payment charges for 07/05/20", "count": 1, "total": 0.17, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2976, "date": "2025-05-07", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 07/05/2025 To 07/05/2025", "amount": 0.17, "type": "expense"}]}, {"key": "delay payment charges for 09/05/20", "count": 1, "total": 0.17, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2977, "date": "2025-05-09", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 09/05/2025 To 09/05/2025", "amount": 0.17, "type": "expense"}]}, {"key": "delay payment charges for 11/05/20", "count": 1, "total": 0.17, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2978, "date": "2025-05-11", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 11/05/2025 To 11/05/2025", "amount": 0.17, "type": "expense"}]}, {"key": "delay payment charges for 13/05/20", "count": 1, "total": 0.17, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2979, "date": "2025-05-13", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 13/05/2025 To 13/05/2025", "amount": 0.17, "type": "expense"}]}, {"key": "delay payment charges for 15/05/20", "count": 1, "total": 0.17, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2980, "date": "2025-05-15", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 15/05/2025 To 15/05/2025", "amount": 0.17, "type": "expense"}]}, {"key": "delay payment charges for 17/05/20", "count": 1, "total": 0.17, "accounts": ["Mirae Asset (mstock)"], "txns": [{"id": 2981, "date": "2025-05-17", "time": "", "account": "Mirae Asset (mstock)", "description": "Delay Payment Charges For 17/05/2025 To 17/05/2025", "amount": 0.17, "type": "expense"}]}];
+    const CATEGORIES = ["Groceries", "Dining_out", "Snacks", "Phone", "Internet", "Electricity", "Subscriptions", "Entertainment", "Personal_care", "Clothing", "Health", "Professional", "Family", "Shopping", "Travel", "Insurance", "Misc", "Car_fuel", "Car_maintenance", "Emergency_fund", "War_chest", "US_investment", "Silver_SIP", "PPF", "EMI", "Investment", "Income", "Transfer", "Bills"];
+    const STORAGE_KEY = 'vpk_finance_review_assignments';
+
+    // Helper: Indian Currency Formatting
+    function formatINR(val) {
+      if (val === null || val === undefined || isNaN(val)) return '₹0.00';
+      return '₹' + Number(val).toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    // LocalStorage Operations
+    function loadAssignments() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        console.error('Failed to load assignments from localStorage', e);
+        return {};
+      }
+    }
+
+    function saveAssignments(assignments) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(assignments));
+      } catch (e) {
+        console.error('Failed to save assignments to localStorage', e);
+      }
+    }
+
+    // Populate Datalist
+    function setupDatalist() {
+      const dl = document.getElementById('category-datalist');
+      dl.innerHTML = CATEGORIES.map(c => `<option value="${c}"></option>`).join('');
+    }
+
+    // Toast notification
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    // Render all Merchant Groups
+    function renderGroups() {
+      const container = document.getElementById('groups-container');
+      const assignments = loadAssignments();
+
+      container.innerHTML = DATA.map((group, groupIdx) => {
+        const keyDisplay = group.key ? group.key : '<span class="group-key unlabeled">(unlabeled)</span>';
+        const sampleDesc = group.txns && group.txns.length > 0 ? group.txns[0].description : '';
+        const accountsStr = group.accounts ? group.accounts.join(', ') : '';
+
+        // Determine if all txns in this group share a single category/tags assignment
+        let commonCategory = null;
+        let commonTags = null;
+        let isCatUniform = true;
+        let isTagsUniform = true;
+
+        group.txns.forEach((txn, i) => {
+          const a = assignments[txn.id] || {};
+          const cat = a.category || '';
+          const tagsArr = Array.isArray(a.tags) ? a.tags : (a.tags ? a.tags.split(',').map(t=>t.trim()).filter(Boolean) : []);
+          const tagsStr = tagsArr.join(', ');
+
+          if (i === 0) {
+            commonCategory = cat;
+            commonTags = tagsStr;
+          } else {
+            if (cat !== commonCategory) isCatUniform = false;
+            if (tagsStr !== commonTags) isTagsUniform = false;
+          }
+        });
+
+        const groupCatValue = isCatUniform && commonCategory ? commonCategory : '';
+        const groupTagsValue = isTagsUniform && commonTags ? commonTags : '';
+
+        const rowsHtml = group.txns.map(txn => {
+          const a = assignments[txn.id] || {};
+          const txnCat = a.category || '';
+          const txnTagsArr = Array.isArray(a.tags) ? a.tags : (a.tags ? a.tags.split(',').map(t=>t.trim()).filter(Boolean) : []);
+          const txnTagsStr = txnTagsArr.join(', ');
+
+          return `
+            <tr>
+              <td class="cell-mono">${txn.id}</td>
+              <td class="cell-mono">${txn.date || ''}</td>
+              <td class="cell-mono">${txn.time || ''}</td>
+              <td>${txn.account || ''}</td>
+              <td class="cell-desc">${escapeHtml(txn.description || '')}</td>
+              <td class="cell-mono" style="font-weight: 600;">${formatINR(txn.amount)}</td>
+              <td><span class="badge">${txn.type || 'expense'}</span></td>
+              <td>
+                <div class="cell-inputs">
+                  <input type="text" 
+                         class="txn-cat-input" 
+                         list="category-datalist" 
+                         data-id="${txn.id}" 
+                         data-group-idx="${groupIdx}"
+                         placeholder="Category..." 
+                         value="${escapeHtml(txnCat)}"
+                         oninput="handleTxnInput(event, ${txn.id}, 'category', ${groupIdx})">
+                  <input type="text" 
+                         class="txn-tags-input" 
+                         data-id="${txn.id}" 
+                         data-group-idx="${groupIdx}"
+                         placeholder="Tags..." 
+                         value="${escapeHtml(txnTagsStr)}"
+                         oninput="handleTxnInput(event, ${txn.id}, 'tags', ${groupIdx})">
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        return `
+          <div class="group-card" id="group-card-${groupIdx}">
+            <div class="group-header" onclick="toggleGroupExpand(event, ${groupIdx})">
+              <div class="group-main-row">
+                <div class="group-title-area">
+                  <span class="toggle-icon">▶</span>
+                  <span class="group-key">${keyDisplay}</span>
+                  <span class="badge">${group.count} txn${group.count !== 1 ? 's' : ''}</span>
+                  ${accountsStr ? `<span class="badge">${escapeHtml(accountsStr)}</span>` : ''}
+                </div>
+                <div class="group-amount">${formatINR(group.total)}</div>
+              </div>
+              
+              <div class="sample-desc" title="${escapeHtml(sampleDesc)}">
+                Sample: ${escapeHtml(sampleDesc)}
+              </div>
+
+              <div class="group-inputs" onclick="event.stopPropagation()">
+                <div class="input-group">
+                  <span class="input-label">Bulk Category</span>
+                  <input type="text" 
+                         id="group-cat-${groupIdx}"
+                         list="category-datalist" 
+                         placeholder="Apply category to all ${group.count} txns..." 
+                         value="${escapeHtml(groupCatValue)}"
+                         oninput="handleGroupBulkInput(event, ${groupIdx}, 'category')">
+                </div>
+                <div class="input-group">
+                  <span class="input-label">Bulk Tags</span>
+                  <input type="text" 
+                         id="group-tags-${groupIdx}"
+                         placeholder="Apply tags to all ${group.count} txns (comma-separated)..." 
+                         value="${escapeHtml(groupTagsValue)}"
+                         oninput="handleGroupBulkInput(event, ${groupIdx}, 'tags')">
+                </div>
+              </div>
+            </div>
+
+            <div class="group-details">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Account</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th>Type</th>
+                    <th>Category & Tags</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${rowsHtml}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      applyFilter();
+      updateStats();
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Toggle Group Expand/Collapse
+    function toggleGroupExpand(event, groupIdx) {
+      const card = document.getElementById(`group-card-${groupIdx}`);
+      if (card) {
+        card.classList.toggle('expanded');
+      }
+    }
+
+    function expandAllGroups() {
+      document.querySelectorAll('.group-card').forEach(c => c.classList.add('expanded'));
+    }
+
+    function collapseAllGroups() {
+      document.querySelectorAll('.group-card').forEach(c => c.classList.remove('expanded'));
+    }
+
+    // Handle Bulk Inputs for a Group
+    function handleGroupBulkInput(event, groupIdx, type) {
+      const val = event.target.value;
+      const group = DATA[groupIdx];
+      if (!group) return;
+
+      const assignments = loadAssignments();
+
+      group.txns.forEach(txn => {
+        assignments[txn.id] = assignments[txn.id] || {};
+        if (type === 'category') {
+          assignments[txn.id].category = val.trim();
+          // Update child input row
+          const childInput = document.querySelector(`.txn-cat-input[data-id="${txn.id}"]`);
+          if (childInput) childInput.value = val;
+        } else if (type === 'tags') {
+          const tagsArr = val.split(',').map(t => t.trim()).filter(Boolean);
+          assignments[txn.id].tags = tagsArr;
+          // Update child input row
+          const childInput = document.querySelector(`.txn-tags-input[data-id="${txn.id}"]`);
+          if (childInput) childInput.value = val;
+        }
+      });
+
+      saveAssignments(assignments);
+      updateStats();
+    }
+
+    // Handle Individual Transaction Input
+    function handleTxnInput(event, txnId, type, groupIdx) {
+      const val = event.target.value;
+      const assignments = loadAssignments();
+      assignments[txnId] = assignments[txnId] || {};
+
+      if (type === 'category') {
+        assignments[txnId].category = val.trim();
+      } else if (type === 'tags') {
+        assignments[txnId].tags = val.split(',').map(t => t.trim()).filter(Boolean);
+      }
+
+      saveAssignments(assignments);
+
+      // Sync Group-level Bulk Input Box
+      const group = DATA[groupIdx];
+      if (group) {
+        let firstCat = null;
+        let firstTags = null;
+        let isCatUniform = true;
+        let isTagsUniform = true;
+
+        group.txns.forEach((t, i) => {
+          const a = assignments[t.id] || {};
+          const cat = a.category || '';
+          const tagsArr = Array.isArray(a.tags) ? a.tags : (a.tags ? a.tags.split(',').map(x=>x.trim()).filter(Boolean) : []);
+          const tagsStr = tagsArr.join(', ');
+
+          if (i === 0) {
+            firstCat = cat;
+            firstTags = tagsStr;
+          } else {
+            if (cat !== firstCat) isCatUniform = false;
+            if (tagsStr !== firstTags) isTagsUniform = false;
+          }
+        });
+
+        const grpCatEl = document.getElementById(`group-cat-${groupIdx}`);
+        const grpTagsEl = document.getElementById(`group-tags-${groupIdx}`);
+        if (grpCatEl && type === 'category') {
+          grpCatEl.value = isCatUniform ? firstCat : '';
+        }
+        if (grpTagsEl && type === 'tags') {
+          grpTagsEl.value = isTagsUniform ? firstTags : '';
+        }
+      }
+
+      updateStats();
+    }
+
+    // Filter Groups based on search input
+    function applyFilter() {
+      const query = document.getElementById('search-input').value.toLowerCase().trim();
+      let visibleGroupCount = 0;
+
+      DATA.forEach((group, index) => {
+        const cardEl = document.getElementById(`group-card-${index}`);
+        if (!cardEl) return;
+
+        if (!query) {
+          cardEl.style.display = '';
+          visibleGroupCount++;
+          return;
+        }
+
+        const keyMatch = (group.key || '').toLowerCase().includes(query);
+        const accountMatch = (group.accounts || []).some(acc => (acc || '').toLowerCase().includes(query));
+        const txnMatch = (group.txns || []).some(t => 
+          (t.description || '').toLowerCase().includes(query) ||
+          (t.account || '').toLowerCase().includes(query) ||
+          String(t.id).includes(query)
+        );
+
+        if (keyMatch || accountMatch || txnMatch) {
+          cardEl.style.display = '';
+          visibleGroupCount++;
+        } else {
+          cardEl.style.display = 'none';
+        }
+      });
+
+      document.getElementById('visible-count').textContent = `Showing ${visibleGroupCount} of ${DATA.length} merchant groups`;
+    }
+
+    // Update Stats Card Header
+    function updateStats() {
+      const assignments = loadAssignments();
+      let categorizedCount = 0;
+      let categorizedSum = 0;
+      let totalTxnCount = 0;
+
+      DATA.forEach(group => {
+        group.txns.forEach(txn => {
+          totalTxnCount++;
+          const assign = assignments[txn.id];
+          if (assign && assign.category && assign.category.trim() !== '') {
+            categorizedCount++;
+            categorizedSum += Number(txn.amount) || 0;
+          }
+        });
+      });
+
+      document.getElementById('stat-total-txns').textContent = totalTxnCount;
+      document.getElementById('stat-cat-txns').textContent = `${categorizedCount} / ${totalTxnCount}`;
+      document.getElementById('stat-cat-amount').textContent = formatINR(categorizedSum);
+
+      const pct = totalTxnCount > 0 ? ((categorizedCount / totalTxnCount) * 100).toFixed(1) : 0;
+      document.getElementById('progress-bar').style.width = `${pct}%`;
+      document.getElementById('stat-progress-pct').textContent = `${pct}%`;
+    }
+
+    // Copy Assignments to Clipboard
+    function copyAssignmentsToClipboard() {
+      const assignments = loadAssignments();
+      const exportList = [];
+      
+      for (const [idStr, data] of Object.entries(assignments)) {
+        const idNum = parseInt(idStr, 10);
+        const cat = (data.category || '').trim();
+        let tags = [];
+        if (Array.isArray(data.tags)) {
+          tags = data.tags.map(t => (t || '').trim()).filter(Boolean);
+        } else if (typeof data.tags === 'string') {
+          tags = data.tags.split(',').map(t => (t || '').trim()).filter(Boolean);
+        }
+
+        if (cat || tags.length > 0) {
+          const item = { id: idNum };
+          if (cat) item.category = cat;
+          if (tags.length > 0) item.tags = tags;
+          exportList.push(item);
+        }
+      }
+
+      exportList.sort((a, b) => a.id - b.id);
+
+      const jsonStr = JSON.stringify(exportList, null, 2);
+      if (exportList.length === 0) {
+        showToast('No transactions categorized or tagged yet.');
+        return;
+      }
+
+      navigator.clipboard.writeText(jsonStr).then(() => {
+        showToast(`Copied ${exportList.length} assigned transaction(s) to clipboard!`);
+      }).catch(err => {
+        const textarea = document.createElement('textarea');
+        textarea.value = jsonStr;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showToast(`Copied ${exportList.length} assigned transaction(s) to clipboard!`);
+      });
+    }
+
+    // Reset All Assignments
+    function resetAllAssignments() {
+      if (confirm('Are you sure you want to clear all saved category and tag assignments?')) {
+        localStorage.removeItem(STORAGE_KEY);
+        renderGroups();
+        showToast('All assignments have been cleared.');
+      }
+    }
+
+    // Initialize Page
+    document.addEventListener('DOMContentLoaded', () => {
+      setupDatalist();
+      renderGroups();
+    });
+  </script>
+</body>
+</html>

@@ -12,6 +12,7 @@ QBANK_DIR = '/home/ubuntu/vp/NEET_PG/QBank'
 DROPZONE_DIR = '/home/ubuntu/vp/NEET_PG/Dropzone'
 METRICS_FILE = '/home/ubuntu/vp/NEET_PG/study_metrics.json'
 REFERENCE_FILE = '/home/ubuntu/vp/NEET_PG/subject_topics_reference.json'
+BANK_TOTALS_FILE = '/home/ubuntu/vp/NEET_PG/cerebellum_bank_totals.json'
 
 ALL_19_SUBJECTS = [
     "Medicine", "Surgery", "Obstetrics & Gynecology", "Pediatrics", 
@@ -51,11 +52,14 @@ def scan_qbank_detailed():
                     topic_key = f"{subject}: {topic}"
                     topic_counts[topic_key] = topic_counts.get(topic_key, 0) + count
                     
-                    # Target floor 50 Qs per subtopic for 100% volume coverage
-                    coverage = min(round((count / 50.0) * 100, 1), 100.0)
+                    # Local QBank file depth vs a 50-Q/subtopic rotation floor (needed for
+                    # FSRS/SM-2 to have enough unique cards to avoid same-day repeats).
+                    # This is NOT subject mastery or exam-bank coverage -- real qbanks like
+                    # Cerebellum run ~15-20k+ Qs per subject, dwarfing this local floor.
+                    depth_pct = min(round((count / 50.0) * 100, 1), 100.0)
                     topic_mastery[topic_key] = {
                         "count": count,
-                        "mastery_percent": coverage,
+                        "depth_pct": depth_pct,
                         "status": "High Volume" if count >= 40 else ("Building Volume" if count >= 15 else "Starting Out")
                     }
 
@@ -157,6 +161,19 @@ def load_reference():
     ref.pop("_meta", None)
     return ref
 
+def load_bank_totals():
+    """Real per-subject question-bank totals (e.g. Cerebellum), sourced from
+    GoFullPage screenshots parsed by the gofullpage webhook -> gemini-service
+    pipeline. {} until at least one such screenshot has been ingested -- until
+    then compute_syllabus_insights() falls back to the old 50-Q/topic floor
+    estimate and flags it as such."""
+    if not os.path.exists(BANK_TOTALS_FILE):
+        return {}
+    with open(BANK_TOTALS_FILE, 'r') as f:
+        totals = json.load(f)
+    totals.pop("_meta", None)
+    return totals
+
 def get_fsrs_metrics_by_subject():
     """Queries metis.db for average FSRS stability and difficulty per subject."""
     metrics = {}
@@ -189,10 +206,11 @@ def get_fsrs_metrics_by_subject():
         print(f"Error reading FSRS metrics: {e}")
     return metrics
 
-def compute_syllabus_insights(subject_counts, topic_counts, reference):
+def compute_syllabus_insights(subject_counts, topic_counts, reference, bank_totals=None):
     """Algorithmic insights: Coverage %, Retention Mastery, and Predictive Yield."""
     subject_insights = {}
     fsrs_metrics = get_fsrs_metrics_by_subject()
+    bank_totals = bank_totals or {}
     
     # Target stability for "Mastered" before the exam
     TARGET_STABILITY = 21.0 
@@ -210,16 +228,27 @@ def compute_syllabus_insights(subject_counts, topic_counts, reference):
         canonical_set = set(canonical_topics)
         matched = attempted & canonical_set
         unmatched = attempted - canonical_set
-        
-        total_coverage = 0.0
-        for topic in canonical_topics:
-            topic_key = f"{subject}: {topic}"
-            count = topic_counts.get(topic_key, 0)
-            coverage = min((count / 50.0) * 100.0, 100.0)
-            total_coverage += coverage
-            
-        coverage_pct = round(total_coverage / len(canonical_topics), 1) if canonical_topics else 0.0
-        
+
+        real_total = bank_totals.get(subject)
+        questions_solved = subject_counts.get(subject, 0)
+        if real_total:
+            # Real denominator from an actual question-bank total (e.g. Cerebellum),
+            # parsed from a screenshot -- this is genuine subject coverage, not a guess.
+            coverage_pct = round(min(questions_solved / real_total * 100.0, 100.0), 2)
+            coverage_basis = "real_bank_total"
+        else:
+            # No real total known yet for this subject: fall back to the old
+            # placeholder heuristic (count vs an arbitrary 50-Q/topic floor).
+            # This number is NOT subject mastery or real coverage -- it's a stand-in
+            # until a real total gets ingested via the gofullpage bank-volume pipeline.
+            total_coverage = 0.0
+            for topic in canonical_topics:
+                topic_key = f"{subject}: {topic}"
+                count = topic_counts.get(topic_key, 0)
+                total_coverage += min((count / 50.0) * 100.0, 100.0)
+            coverage_pct = round(total_coverage / len(canonical_topics), 1) if canonical_topics else 0.0
+            coverage_basis = "estimated_floor"
+
         # Pull FSRS data
         subj_fsrs = fsrs_metrics.get(subject, {'avg_stability': 0.0, 'avg_difficulty': 5.0, 'card_count': 0})
         avg_stability = subj_fsrs['avg_stability']
@@ -251,10 +280,12 @@ def compute_syllabus_insights(subject_counts, topic_counts, reference):
             "topics_covered": sorted(matched),
             "topics_covered_count": len(matched),
             "coverage_pct": coverage_pct,
+            "coverage_basis": coverage_basis,
+            "real_bank_total": real_total,
             "mastery_pct": round(mastery_pct, 1),
             "avg_stability": round(avg_stability, 2),
             "avg_difficulty": round(avg_difficulty, 2),
-            "questions_solved": subject_counts.get(subject, 0),
+            "questions_solved": questions_solved,
             "unmatched_topic_folders": sorted(unmatched),
             "priority_score": priority_score,
             "estimated_yield_marks": estimated_yield_marks,
@@ -380,9 +411,9 @@ def update_daily_metrics():
                 total_seconds += (et - st).total_seconds()
             except Exception:
                 pass
-        hours = max(total_seconds / 3600.0, 0.5)
+        hours = total_seconds / 3600.0
         log["active_hours"] = round(hours, 2)
-        log["speed_q_per_hour"] = round(today_completed / hours, 1)
+        log["speed_q_per_hour"] = round(today_completed / hours, 1) if hours > 0 else 0
     else:
         est_hours = round(today_completed / 38.9, 2) if today_completed > 0 else 0
         log["active_hours"] = est_hours
@@ -394,7 +425,7 @@ def update_daily_metrics():
     log["endurance_score"] = min(endurance_score, 100)
 
     metrics["daily_logs"][today] = log
-    metrics["syllabus_insights"] = compute_syllabus_insights(subject_counts, topic_counts, load_reference())
+    metrics["syllabus_insights"] = compute_syllabus_insights(subject_counts, topic_counts, load_reference(), load_bank_totals())
     metrics["question_type_distribution"] = scan_qbank_question_types()
     metrics["dropzone_performance"] = scan_dropzone_companions()
 

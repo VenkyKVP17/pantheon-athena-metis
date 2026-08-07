@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="METIS">
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="metis_manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -65,6 +65,13 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+
+    /* Themed scrollbars — standard PANTHEON default, see [[feedback_pantheon_pwa_scrollbars]] */
+    * { scrollbar-width: thin; scrollbar-color: var(--cyan-accent) var(--inset-soft); }
+    *::-webkit-scrollbar { width: 10px; height: 10px; }
+    *::-webkit-scrollbar-track { background: var(--inset-soft); border-radius: 10px; }
+    *::-webkit-scrollbar-thumb { background: var(--cyan-accent); border-radius: 10px; border: 2px solid transparent; background-clip: padding-box; }
+    *::-webkit-scrollbar-thumb:hover { background: var(--purple-accent); }
 
     body {
       background: var(--bg-gradient);
@@ -158,6 +165,7 @@
     .flashcard-text { font-size: 22px; font-weight: 600; line-height: 1.5; max-width: 640px; }
     .flashcard-text strong { color: var(--gold-accent); }
     .flashcard-hint { font-size: 13px; color: var(--text-muted); }
+    .flashcard-qbank-id { font-size: 11px; font-weight: 600; letter-spacing: 0.3px; color: var(--text-muted); opacity: 0.6; margin-top: 10px; }
     .flashcard-divider { width: 60%; height: 1px; background: var(--card-border); }
 
     .rate-row { display: none; grid-template-columns: repeat(4, 1fr); gap: 10px; }
@@ -209,6 +217,9 @@
     .card-row .front { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .card-row .meta { font-size: 12px; color: var(--text-muted); }
     .card-row .row-actions { display: flex; gap: 6px; }
+    .tab-badge { display: inline-block; margin-left: 5px; min-width: 16px; padding: 0 5px; border-radius: 8px; background: var(--rose-accent, #e05a6b); color: #fff; font-size: 11px; font-weight: 700; line-height: 16px; text-align: center; }
+    .flag-reason { font-size: 13px; color: var(--text-main); margin-top: 4px; }
+    .flag-type-tag { font-size: 10px; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase; padding: 2px 7px; border-radius: 6px; background: var(--inset-soft); color: var(--text-muted); display: inline-block; margin-bottom: 4px; }
     .row-btn { background: var(--inset-strong); border: 1px solid var(--card-border); color: var(--text-main); border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer; }
     .row-btn:hover { border-color: var(--cyan-accent); }
 
@@ -366,6 +377,7 @@
         <button class="tab-btn active" onclick="switchTab('study')">📖 Study</button>
         <button class="tab-btn" onclick="switchTab('decks')">🗂️ Decks</button>
         <button class="tab-btn" onclick="switchTab('browse')">🔍 Browse</button>
+        <button class="tab-btn" onclick="switchTab('flags')">🚩 Review<span class="tab-badge" id="flagsBadge" style="display:none;"></span></button>
         <button class="tab-btn" onclick="switchTab('stats')">📊 Stats</button>
         <button class="tab-btn" onclick="switchTab('settings')">⚙️ Settings</button>
       </div>
@@ -387,6 +399,7 @@
             <div class="flashcard-text" id="cardFront"></div>
             <div class="flashcard-divider" id="cardDivider" style="display:none;"></div>
             <div class="flashcard-text" id="cardBack" style="display:none;"></div>
+            <div class="flashcard-qbank-id" id="cardQbankId" style="display:none;"></div>
             <div class="flashcard-hint" id="cardHint">Click or press Space to flip</div>
           </div>
           <div class="flip-col" id="flipCol">
@@ -428,6 +441,17 @@
             <select id="browseDeckFilter" onchange="loadBrowse()"><option value="">All decks</option></select>
           </div>
           <div class="card-table" id="cardTable"></div>
+        </div>
+      </div>
+
+      <!-- ---- Review Queue (auto-flagged duplicates / doubtful cards) ---- -->
+      <div class="panel" id="panel-flags">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <h2 style="font-size:17px;">Review queue</h2>
+            <div class="meta">Nightly auditor flags — nothing here is ever auto-deleted</div>
+          </div>
+          <div class="card-table" id="flagsTable"></div>
         </div>
       </div>
 
@@ -583,7 +607,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').catch(() => {});
+        navigator.serviceWorker.register('metis_sw.js', { scope: './metis_dashboard.html' }).catch(() => {});
       });
     }
 
@@ -665,6 +689,16 @@
       return s;
     }
 
+    // Cards imported from the QBank markdown vault carry a trailing
+    // "<!-- QBank ID: Qxxxxxxx -->" line in their answer text. Pull it out
+    // so it can be shown as a small muted tag instead of inline answer text.
+    function splitQbankId(text) {
+      if (!text) return { body: text, qbankId: null };
+      const m = text.match(/\n?\s*<!--\s*QBank ID:\s*(\S+)\s*-->\s*$/i);
+      if (!m) return { body: text, qbankId: null };
+      return { body: text.slice(0, m.index).trimEnd(), qbankId: m[1] };
+    }
+
     // ---------------- API ----------------
     async function api(path, opts) {
       const res = await fetch(path, Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts));
@@ -741,6 +775,7 @@
       document.getElementById('panel-' + name).classList.add('active');
       if (name === 'decks') loadDecks();
       if (name === 'browse') loadBrowse();
+      if (name === 'flags') loadFlags();
       if (name === 'stats') loadStats();
       if (name === 'settings') loadSettings();
       if (name === 'study') requestWakeLock(); else releaseWakeLock();
@@ -753,6 +788,7 @@
       populateSubjectSelect();
       loadDeckSelect();
       loadQueue();
+      refreshFlagsBadge();
     }
 
     function populateSubjectSelect() {
@@ -784,14 +820,50 @@
     let lastCaps = null;
     let kioskShowNew = false; // priority (due) cards first; new cards only once explicitly requested
 
+    // Cards render instantly off this in-memory buffer (up to 20 fetched at
+    // once) instead of round-tripping to the server on every single card —
+    // advanceQueue() just pops the next few already-fetched cards, and
+    // maybeRefillQueue() tops the buffer back up in the background before it
+    // runs low, so the fetch never sits on the critical path of showing a card.
+    const QUEUE_REFILL_THRESHOLD = 5;
+    let refillingQueue = false;
+
+    function queueUrl(deckId, dueOnly) {
+      return '/api/metis/queue?limit=20' + (deckId ? `&deck_id=${deckId}` : '') + (dueOnly ? '&due_only=1' : '');
+    }
+
     async function loadQueue(deckIdOverride) {
       const deckId = deckIdOverride !== undefined ? deckIdOverride : document.getElementById('studyDeckSelect').value;
       const dueOnly = KIOSK_MODE && !kioskShowNew;
-      const url = '/api/metis/queue?limit=20' + (deckId ? `&deck_id=${deckId}` : '') + (dueOnly ? '&due_only=1' : '');
-      const data = await apiGet(url);
+      const data = await apiGet(queueUrl(deckId, dueOnly));
       queue = data.cards;
       lastCaps = data.caps;
       showCurrentCard();
+      maybeRefillQueue();
+    }
+
+    function advanceQueue() {
+      queue.shift();
+      showCurrentCard();
+      maybeRefillQueue();
+    }
+
+    async function maybeRefillQueue() {
+      if (refillingQueue || queue.length > QUEUE_REFILL_THRESHOLD) return;
+      refillingQueue = true;
+      try {
+        const deckId = document.getElementById('studyDeckSelect').value;
+        const dueOnly = KIOSK_MODE && !kioskShowNew;
+        const data = await apiGet(queueUrl(deckId, dueOnly));
+        lastCaps = data.caps;
+        const seen = new Set(queue.map(c => c.id));
+        queue = queue.concat(data.cards.filter(c => !seen.has(c.id)));
+        if (!currentCard && queue.length) showCurrentCard();
+      } catch (e) {
+        // silent — the next card action retries this naturally
+      } finally {
+        refillingQueue = false;
+      }
     }
 
     function showCurrentCard() {
@@ -832,7 +904,12 @@
       cardShownAt = Date.now();
       document.getElementById('cardDeckLabel').innerText = `${currentCard.subject} — ${currentCard.topic}`;
       document.getElementById('cardFront').innerHTML = mdLite(currentCard.front);
-      document.getElementById('cardBack').innerHTML = mdLite(currentCard.back);
+      const { body: backBody, qbankId } = splitQbankId(currentCard.back);
+      document.getElementById('cardBack').innerHTML = mdLite(backBody);
+      const qbankEl = document.getElementById('cardQbankId');
+      qbankEl.innerText = qbankId || '';
+      qbankEl.dataset.has = qbankId ? '1' : '';
+      qbankEl.style.display = 'none';
       flipCol.classList.add('visible');
       document.getElementById('studyProgress').innerText = `${queue.length} card${queue.length === 1 ? '' : 's'} in this batch`;
 
@@ -849,6 +926,8 @@
       flipped = !flipped;
       document.getElementById('flashcard').classList.toggle('flipped', flipped);
       document.getElementById('cardBack').style.display = flipped ? 'block' : 'none';
+      const qbankEl = document.getElementById('cardQbankId');
+      qbankEl.style.display = (flipped && qbankEl.dataset.has) ? 'block' : 'none';
       document.getElementById('cardDivider').style.display = flipped ? 'block' : 'none';
       document.getElementById('cardHint').style.display = flipped ? 'none' : 'block';
       document.getElementById('rateRow').classList.toggle('visible', flipped);
@@ -864,23 +943,24 @@
       if (evt) evt.stopPropagation();
       if (!currentCard) return;
       const cardId = currentCard.id;
+      advanceQueue();
+      toast('Archived — won’t show again');
       try {
         await apiPost(`/api/metis/cards/${encodeURIComponent(cardId)}/archive`);
-        toast('Archived — won’t show again');
-        await loadQueue(document.getElementById('studyDeckSelect').value);
         loadDeckSelect();
-      } catch (e) { toast('Archive failed: ' + e.message); }
+      } catch (e) { toast('Archive failed to save — reload to retry: ' + e.message); }
     }
 
     async function rateCard(rating, evt) {
       if (evt) evt.stopPropagation();
       if (!currentCard || !flipped) return;
       const duration = Date.now() - cardShownAt;
+      const cardId = currentCard.id;
+      advanceQueue();
       try {
-        await apiPost('/api/metis/review', { card_id: currentCard.id, rating, duration_ms: duration });
-        await loadQueue(document.getElementById('studyDeckSelect').value);
+        await apiPost('/api/metis/review', { card_id: cardId, rating, duration_ms: duration });
         loadDeckSelect();
-      } catch (e) { toast('Review failed: ' + e.message); }
+      } catch (e) { toast('Review failed to save — reload to retry: ' + e.message); }
     }
 
     async function undoReview() {
@@ -956,6 +1036,52 @@
             <button class="row-btn" onclick="deleteCard('${c.id}')">Delete</button>
           </div>
         </div>`).join('');
+    }
+
+    // ---------------- Review queue (nightly auditor flags) ----------------
+    async function refreshFlagsBadge() {
+      try {
+        const data = await apiGet('/api/metis/flags');
+        const badge = document.getElementById('flagsBadge');
+        const n = data.flags.length;
+        badge.innerText = n;
+        badge.style.display = n ? 'inline-block' : 'none';
+      } catch (e) { /* non-critical */ }
+    }
+
+    async function loadFlags() {
+      const data = await apiGet('/api/metis/flags');
+      const table = document.getElementById('flagsTable');
+      if (!data.flags.length) { table.innerHTML = '<div class="empty-state">Nothing flagged — queue is clear.</div>'; return; }
+      table.innerHTML = data.flags.map(f => `
+        <div class="card-row" style="grid-template-columns: 1fr auto;">
+          <div>
+            <div class="flag-type-tag">${f.flag_type === 'duplicate' ? '🔁 Possible duplicate' : '⚠️ Doubtful accuracy'}</div>
+            <div class="meta">${escapeHtml(f.subject)} — ${escapeHtml(f.topic)}</div>
+            <div class="front">${escapeHtml(f.card_front)}</div>
+            ${f.related_front ? `<div class="meta">vs. related card: "${escapeHtml(f.related_front)}"</div>` : ''}
+            <div class="flag-reason">${escapeHtml(f.reason)}</div>
+          </div>
+          <div class="row-actions" style="flex-direction:column;">
+            <button class="row-btn" onclick='openCardModal(${JSON.stringify({id: f.card_id, front: f.card_front, back: f.card_back})})'>Edit card</button>
+            <button class="row-btn" onclick="resolveFlag(${f.id})">Mark resolved</button>
+            <button class="row-btn" onclick="dismissFlag(${f.id})">Dismiss</button>
+          </div>
+        </div>`).join('');
+    }
+
+    async function dismissFlag(id) {
+      await apiPost('/api/metis/flags/' + id + '/dismiss', {});
+      toast('Flag dismissed');
+      loadFlags();
+      refreshFlagsBadge();
+    }
+
+    async function resolveFlag(id) {
+      await apiPost('/api/metis/flags/' + id + '/resolve', {});
+      toast('Flag resolved');
+      loadFlags();
+      refreshFlagsBadge();
     }
 
     async function deleteCard(id) {

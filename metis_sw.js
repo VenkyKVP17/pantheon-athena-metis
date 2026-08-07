@@ -1,8 +1,8 @@
-const CACHE_NAME = 'metis-anki-v8';
+const CACHE_NAME = 'metis-anki-v9';
 const ASSETS_TO_CACHE = [
   './metis_dashboard.html',
   './athena_dashboard.html',
-  './manifest.json',
+  './metis_manifest.json',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap'
 ];
 

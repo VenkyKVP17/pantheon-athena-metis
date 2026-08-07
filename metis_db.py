@@ -111,8 +111,21 @@ CREATE TABLE IF NOT EXISTS card_archive (
     FOREIGN KEY(card_id) REFERENCES cards(id)
 );
 
+CREATE TABLE IF NOT EXISTS card_flags (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    card_id TEXT NOT NULL,
+    flag_type TEXT NOT NULL,
+    related_card_id TEXT,
+    reason TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'open',
+    created_at TEXT NOT NULL,
+    resolved_at TEXT,
+    FOREIGN KEY(card_id) REFERENCES cards(id)
+);
+
 CREATE INDEX IF NOT EXISTS idx_cards_deck ON cards(deck_id);
 CREATE INDEX IF NOT EXISTS idx_review_log_user_time ON review_log(user_id, reviewed_at);
+CREATE INDEX IF NOT EXISTS idx_card_flags_status ON card_flags(status);
 """
 
 DEFAULT_FSRS_PARAMETERS = list(fsrs.Scheduler().parameters)
@@ -125,12 +138,25 @@ _CARD_STATE_MIGRATIONS = [
     ("first_seen_at", "TEXT"),
 ]
 
+# The card auditor (metis_card_auditor.py) uses this to only fact-check cards
+# it hasn't already judged; reset to NULL on edit so a changed card gets
+# re-checked on the next nightly pass.
+_CARDS_MIGRATIONS = [
+    ("audited_at", "TEXT"),
+]
+
 
 def _migrate(conn):
     existing_cols = {row['name'] for row in conn.execute('PRAGMA table_info(card_state)').fetchall()}
     for col, decl in _CARD_STATE_MIGRATIONS:
         if col not in existing_cols:
             conn.execute(f'ALTER TABLE card_state ADD COLUMN {col} {decl}')
+
+    cards_cols = {row['name'] for row in conn.execute('PRAGMA table_info(cards)').fetchall()}
+    for col, decl in _CARDS_MIGRATIONS:
+        if col not in cards_cols:
+            conn.execute(f'ALTER TABLE cards ADD COLUMN {col} {decl}')
+
     conn.commit()
 
 
@@ -289,13 +315,17 @@ def update_card(card_id, front=None, back=None, tags=None):
         row = conn.execute('SELECT * FROM cards WHERE id = ?', (card_id,)).fetchone()
         if not row:
             return False
+        # A content edit invalidates any prior auditor fact-check, so it gets
+        # re-queued for the next nightly pass.
+        content_changed = (front is not None and front != row['front']) or (back is not None and back != row['back'])
         conn.execute(
-            'UPDATE cards SET front = ?, back = ?, tags = ?, updated_at = ? WHERE id = ?',
+            'UPDATE cards SET front = ?, back = ?, tags = ?, updated_at = ?, audited_at = ? WHERE id = ?',
             (
                 front if front is not None else row['front'],
                 back if back is not None else row['back'],
                 json.dumps(tags) if tags is not None else row['tags'],
                 now_iso(),
+                None if content_changed else row['audited_at'],
                 card_id
             )
         )
@@ -322,6 +352,116 @@ def archive_card(user_id, card_id):
     )
     conn.commit()
     conn.close()
+
+
+# ----------------------------------------------------------- Card flags ----
+# Written only by metis_card_auditor.py (nightly duplicate + fact-check
+# pass). Never auto-deletes/edits cards -- everything lands here as 'open'
+# for a human to review in the dashboard's Review Queue.
+
+def create_card_flag(card_id, flag_type, reason, related_card_id=None):
+    """Insert a flag unless an identical one (any status) already exists, so
+    a dismissed flag doesn't get silently re-raised on the next nightly scan.
+    For 'duplicate' flags, matches regardless of which card is A vs B."""
+    conn = get_conn()
+    try:
+        if related_card_id:
+            existing = conn.execute(
+                'SELECT id FROM card_flags WHERE flag_type = ? AND '
+                '((card_id = ? AND related_card_id = ?) OR (card_id = ? AND related_card_id = ?))',
+                (flag_type, card_id, related_card_id, related_card_id, card_id)
+            ).fetchone()
+        else:
+            existing = conn.execute(
+                'SELECT id FROM card_flags WHERE flag_type = ? AND card_id = ? AND related_card_id IS NULL',
+                (flag_type, card_id)
+            ).fetchone()
+        if existing:
+            return False
+        conn.execute(
+            'INSERT INTO card_flags (card_id, flag_type, related_card_id, reason, status, created_at) '
+            'VALUES (?, ?, ?, ?, ?, ?)',
+            (card_id, flag_type, related_card_id, reason, 'open', now_iso())
+        )
+        conn.commit()
+        return True
+    finally:
+        conn.close()
+
+
+def list_flags(status='open'):
+    conn = get_conn()
+    try:
+        rows = conn.execute(
+            'SELECT f.id, f.card_id, f.flag_type, f.related_card_id, f.reason, f.status, f.created_at, '
+            '       c.front AS card_front, c.back AS card_back, d.subject AS subject, d.topic AS topic, '
+            '       rc.front AS related_front '
+            'FROM card_flags f '
+            'JOIN cards c ON c.id = f.card_id '
+            'JOIN decks d ON d.id = c.deck_id '
+            'LEFT JOIN cards rc ON rc.id = f.related_card_id '
+            'WHERE f.status = ? ORDER BY f.created_at DESC',
+            (status,)
+        ).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def set_flag_status(flag_id, status):
+    conn = get_conn()
+    cur = conn.execute(
+        'UPDATE card_flags SET status = ?, resolved_at = ? WHERE id = ?',
+        (status, now_iso(), flag_id)
+    )
+    conn.commit()
+    ok = cur.rowcount > 0
+    conn.close()
+    return ok
+
+
+def get_unaudited_cards(limit=500):
+    conn = get_conn()
+    try:
+        rows = conn.execute(
+            'SELECT id, front, back FROM cards WHERE deleted = 0 AND audited_at IS NULL LIMIT ?',
+            (limit,)
+        ).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def mark_cards_audited(card_ids):
+    if not card_ids:
+        return
+    conn = get_conn()
+    ts = now_iso()
+    conn.executemany(
+        'UPDATE cards SET audited_at = ? WHERE id = ?',
+        [(ts, cid) for cid in card_ids]
+    )
+    conn.commit()
+    conn.close()
+
+
+def get_active_cards_by_deck():
+    """{(subject, topic): [{'id', 'front'}, ...]} for all non-deleted cards --
+    used by the duplicate scan, which only makes sense within a deck."""
+    conn = get_conn()
+    try:
+        rows = conn.execute(
+            'SELECT c.id, c.front, d.subject, d.topic FROM cards c '
+            'JOIN decks d ON d.id = c.deck_id WHERE c.deleted = 0 '
+            'ORDER BY d.subject, d.topic'
+        ).fetchall()
+        by_deck = {}
+        for r in rows:
+            key = (r['subject'], r['topic'])
+            by_deck.setdefault(key, []).append({'id': r['id'], 'front': r['front']})
+        return by_deck
+    finally:
+        conn.close()
 
 
 def list_decks_with_counts(user_id):

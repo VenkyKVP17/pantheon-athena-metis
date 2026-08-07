@@ -1,0 +1,20 @@
+{
+  "name": "PANTHEON | ATHENA Analytics",
+  "short_name": "Athena",
+  "description": "ATHENA — NEET PG QBank analytics, subject mastery tracking, and Pomodoro focus timer.",
+  "id": "/athena_dashboard.html",
+  "start_url": "./athena_dashboard.html",
+  "scope": "./athena_dashboard.html",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "background_color": "#030712",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "./homepage_icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

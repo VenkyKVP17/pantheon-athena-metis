@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>PANTHEON | Homepage</title>
+  <meta name="description" content="Personal homepage dashboard — clock, weather, exam countdown, today's tasks, METIS study stats, finance, wellness, service status.">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Home">
+  <link rel="manifest" href="homepage_manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 0%, #0f172a 0%, #0b0f1a 60%, #05070c 100%);
+      --card-bg: rgba(21, 28, 44, 0.8);
+      --card-border: rgba(148, 163, 184, 0.18);
+      --violet-accent: #a78bfa;
+      --gold-accent: #fbbf24;
+      --cyan-accent: #38bdf8;
+      --emerald-accent: #34d399;
+      --rose-accent: #fb7185;
+      --amber-accent: #fb923c;
+      --text-main: #f1f5f9;
+      --text-muted: #a3adc2;
+      --text-secondary: #cbd5e1;
+      --inset-soft: rgba(3, 7, 18, 0.35);
+      --modal-scrim: rgba(3, 6, 14, 0.72);
+    }
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme="dark"]) {
+        --bg-gradient: radial-gradient(circle at 50% 0%, #f8fafc 0%, #eef2f7 55%, #e2e8f0 100%);
+        --card-bg: rgba(255, 255, 255, 0.9);
+        --card-border: rgba(15, 23, 42, 0.12);
+        --violet-accent: #7c3aed;
+        --gold-accent: #b45309;
+        --cyan-accent: #0369a1;
+        --emerald-accent: #047857;
+        --rose-accent: #be123c;
+        --amber-accent: #c2410c;
+        --text-main: #0f172a;
+        --text-muted: #52606d;
+        --text-secondary: #334155;
+        --inset-soft: rgba(15, 23, 42, 0.045);
+        --modal-scrim: rgba(15, 23, 42, 0.45);
+      }
+    }
+    :root[data-theme="light"] {
+      --bg-gradient: radial-gradient(circle at 50% 0%, #f8fafc 0%, #eef2f7 55%, #e2e8f0 100%);
+      --card-bg: rgba(255, 255, 255, 0.9);
+      --card-border: rgba(15, 23, 42, 0.12);
+      --violet-accent: #7c3aed;
+      --gold-accent: #b45309;
+      --cyan-accent: #0369a1;
+      --emerald-accent: #047857;
+      --rose-accent: #be123c;
+      --amber-accent: #c2410c;
+      --text-main: #0f172a;
+      --text-muted: #52606d;
+      --text-secondary: #334155;
+      --inset-soft: rgba(15, 23, 42, 0.045);
+      --modal-scrim: rgba(15, 23, 42, 0.45);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+
+    /* Themed scrollbars — standard PANTHEON default, see [[feedback_pantheon_pwa_scrollbars]] */
+    * { scrollbar-width: thin; scrollbar-color: var(--violet-accent) var(--inset-soft); }
+    *::-webkit-scrollbar { width: 10px; height: 10px; }
+    *::-webkit-scrollbar-track { background: var(--inset-soft); border-radius: 10px; }
+    *::-webkit-scrollbar-thumb { background: var(--violet-accent); border-radius: 10px; border: 2px solid transparent; background-clip: padding-box; }
+    *::-webkit-scrollbar-thumb:hover { background: var(--cyan-accent); }
+
+    html { height: 100%; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-gradient); color: var(--text-main); font-size: 16px; line-height: 1.45;
+      height: 100vh; height: 100dvh; overflow: hidden; margin: 0; padding: 0;
+    }
+    .page {
+      height: 100vh; height: 100dvh; display: flex; flex-direction: column; gap: 10px;
+      padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right))
+               max(10px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+      box-sizing: border-box;
+    }
+
+    a { color: var(--cyan-accent); text-decoration: none; }
+
+    .top-bar { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+    .icon-btn { width: 36px; height: 36px; border-radius: 12px; background: var(--inset-soft); color: var(--text-main); font-size: 15px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--card-border); cursor: pointer; }
+
+    .clock-wrap { text-align: center; flex-shrink: 0; }
+    .clock-time { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 24px; letter-spacing: 0.5px; }
+    .clock-date { color: var(--text-muted); font-size: 12px; margin-top: 1px; }
+
+    /* Phone landscape has ~380-450px of height after browser chrome — not enough
+       room for the full-size clock plus every card row, so trim the fixed header
+       and let the bento grid (min-height 96px/row, overflow-y: auto) absorb the rest. */
+    @media (orientation: landscape) and (max-height: 560px) {
+      .page { gap: 6px; }
+      .clock-time { font-size: 16px; }
+      .card { padding: 10px 12px; }
+      .card h2 { margin-bottom: 5px; }
+    }
+
+    /* ---------------- Bento grid ---------------- */
+    .bento {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-auto-rows: minmax(96px, 1fr);
+      grid-auto-flow: dense;
+      gap: 10px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+    @media (max-width: 600px) {
+      .bento { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* min-height/min-width: 0 here is load-bearing — without it a grid item's
+       "automatic minimum size" is its content's natural (unscrolled) size, so
+       a long task list silently grows the whole row instead of scrolling
+       inside .card-body, pushing every tile below it down and off-screen. */
+    .tile { grid-column: span 1; grid-row: span 1; display: flex; min-height: 0; min-width: 0; }
+    .tile-wide { grid-column: span 4; }
+    .tile-half { grid-column: span 2; }
+    @media (max-width: 600px) {
+      .tile-wide, .tile-half { grid-column: span 2; }
+    }
+    .tile-tall { grid-row: span 2; }
+
+    .card {
+      flex: 1; min-width: 0;
+      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 18px;
+      padding: 14px 16px; display: flex; flex-direction: column; min-height: 0; overflow: hidden;
+    }
+    .card h2 {
+      font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 700;
+      margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-shrink: 0;
+    }
+    .card h2 .h2-label { display: flex; align-items: center; gap: 6px; }
+    .expand-btn {
+      background: var(--inset-soft); border: 1px solid var(--card-border); color: var(--text-muted);
+      width: 22px; height: 22px; border-radius: 7px; font-size: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer;
+    }
+    .card-body { flex: 1; min-height: 0; overflow-y: auto; }
+
+    .big-stat { font-size: 26px; font-weight: 800; line-height: 1.1; }
+    .big-stat small { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-left: 4px; }
+    .stat-sub { font-size: 12.5px; color: var(--text-secondary); margin-top: 3px; }
+
+    /* ---------------- Quick add ---------------- */
+    .quickadd-row { display: flex; gap: 8px; flex-shrink: 0; }
+    .quickadd-input {
+      flex: 1; background: var(--inset-soft); border: 1px solid var(--card-border); border-radius: 12px;
+      padding: 10px 12px; font-size: 14.5px; color: var(--text-main); outline: none;
+    }
+    .quickadd-input::placeholder { color: var(--text-muted); }
+    .quickadd-submit {
+      background: var(--violet-accent); color: #0b0f1a; border: none; border-radius: 12px; padding: 0 16px;
+      font-weight: 700; font-size: 14px; cursor: pointer; flex-shrink: 0;
+    }
+    .quickadd-submit:disabled { opacity: 0.6; }
+    .quickadd-hint { font-size: 11.5px; color: var(--text-muted); margin-top: 6px; }
+
+    /* ---------------- Duty ---------------- */
+    .duty-tile { background: linear-gradient(135deg, rgba(167,139,250,0.16), rgba(56,189,248,0.10)); }
+    .duty-line { font-size: 13.5px; font-weight: 700; color: var(--violet-accent); display: flex; align-items: center; gap: 6px; margin-bottom: 2px; }
+
+    /* ---------------- Status dots ---------------- */
+    .status-dots { display: flex; flex-wrap: wrap; gap: 6px; }
+    .dot-chip { display: flex; align-items: center; gap: 6px; background: var(--inset-soft); border-radius: 999px; padding: 4px 9px; font-size: 11.5px; font-weight: 600; color: var(--text-secondary); }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); flex-shrink: 0; }
+    .dot.up { background: var(--emerald-accent); }
+    .dot.down { background: var(--rose-accent); }
+    .warn-chip { background: rgba(251, 113, 133, 0.15); color: var(--rose-accent); border: 1px solid rgba(251, 113, 133, 0.35); }
+    .status-group-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 700; margin: 8px 0 5px; }
+    .status-list { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 12px; }
+    @media (max-width: 600px) { .status-list { grid-template-columns: 1fr; } }
+    .status-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-secondary); padding: 2px 0; }
+    .status-row .dot { width: 7px; height: 7px; }
+    .dot.stopped { background: #64748b; }
+    .dot-chip .dot.stopped { background: #64748b; }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 0;
+        height: 100dvh;
+        overflow: hidden;
+      }
+      .page {
+        padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+                 max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+        gap: 8px;
+        height: 100%;
+      }
+      .bento {
+        gap: 8px;
+        flex: 1;
+        min-height: 0;
+      }
+    }
+
+    /* ---------------- Tasks ---------------- */
+    .duty-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; flex-shrink: 0; }
+    .duty-chip { background: rgba(167, 139, 250, 0.15); color: var(--violet-accent); border: 1px solid rgba(167, 139, 250, 0.35); border-radius: 999px; padding: 3px 10px; font-size: 11.5px; font-weight: 700; }
+
+    .task-list { display: flex; flex-direction: column; gap: 1px; }
+    .task-row { display: flex; align-items: flex-start; gap: 9px; padding: 7px 5px; border-radius: 10px; cursor: pointer; }
+    .task-row:active { background: var(--inset-soft); }
+    .task-box { width: 19px; height: 19px; border-radius: 6px; border: 1.5px solid var(--card-border); flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; }
+    .task-box.checked { background: var(--emerald-accent); border-color: var(--emerald-accent); }
+    .task-box.vk { border-color: var(--cyan-accent); }
+    .task-box.vk.checked { background: var(--cyan-accent); border-color: var(--cyan-accent); }
+    .task-text { font-size: 14px; color: var(--text-main); overflow-wrap: anywhere; }
+    .task-row.done .task-text { color: var(--text-muted); text-decoration: line-through; }
+    .task-tag { font-size: 10.5px; color: var(--cyan-accent); margin-left: 6px; }
+    .task-src { font-size: 10px; color: var(--text-muted); margin-left: 6px; vertical-align: middle; }
+    .empty-note { color: var(--text-muted); font-size: 13px; padding: 4px; }
+
+    .today-footer { flex-shrink: 0; display: flex; justify-content: flex-end; margin-top: 8px; }
+    .upcoming-btn {
+      font-size: 12.5px; font-weight: 700; color: var(--cyan-accent); background: var(--inset-soft);
+      border: 1px solid var(--card-border); border-radius: 999px; padding: 6px 12px; display: inline-block;
+    }
+
+    /* ---------------- Reminder-style list (wellness) ---------------- */
+    .reminder-row { display: flex; align-items: flex-start; gap: 8px; padding: 4px 0; font-size: 13px; color: var(--text-secondary); }
+    .reminder-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 6px; background: var(--amber-accent); flex-shrink: 0; }
+    .reminder-dot.overdue { background: var(--rose-accent); }
+    .reminder-row.overdue { color: var(--rose-accent); font-weight: 600; }
+
+    .link-out { font-size: 12.5px; font-weight: 700; margin-top: 6px; display: inline-block; }
+    .muted { color: var(--text-muted); font-size: 12.5px; }
+    .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 10px 18px; font-size: 13px; color: var(--text-main); opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 50; max-width: 90vw; text-align: center; }
+    .toast.show { opacity: 1; }
+    .toast.error { color: var(--rose-accent); }
+
+    /* ---------------- Modal ---------------- */
+    .modal-overlay {
+      position: fixed; inset: 0; background: var(--modal-scrim); z-index: 100;
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+      opacity: 0; pointer-events: none; transition: opacity 0.18s;
+    }
+    .modal-overlay.show { opacity: 1; pointer-events: auto; }
+    .modal-sheet {
+      width: 100%; max-width: 640px; max-height: min(78dvh, 640px); background: var(--card-bg);
+      border: 1px solid var(--card-border); border-radius: 20px; padding: 18px 20px;
+      display: flex; flex-direction: column; transform: scale(0.96); transition: transform 0.18s;
+    }
+    .modal-overlay.show .modal-sheet { transform: scale(1); }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; margin-bottom: 10px; }
+    .modal-header h3 { font-size: 15px; font-weight: 800; }
+    .modal-close { background: var(--inset-soft); border: 1px solid var(--card-border); color: var(--text-main); width: 30px; height: 30px; border-radius: 10px; font-size: 15px; cursor: pointer; }
+    .modal-body { overflow-y: auto; min-height: 0; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="top-bar">
+      <div class="clock-date" id="clockDateSmall" style="text-align:left;"></div>
+      <div style="display: flex; gap: 8px;">
+        <a href="https://cb.katthan.in" target="_blank" class="icon-btn" title="Clipboard">📋</a>
+        <button class="icon-btn" id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark theme">🌙</button>
+      </div>
+    </div>
+    <div class="clock-wrap">
+      <div class="clock-time" id="clockTime">--:--:--</div>
+    </div>
+
+    <div class="bento" id="bento">
+      <div class="tile tile-wide">
+        <div class="card">
+          <div class="quickadd-row">
+            <input class="quickadd-input" id="quickaddInput" type="text" placeholder="e.g. meeting with Dr. Mohamed at 2pm wednesday" autocomplete="off">
+            <button class="quickadd-submit" id="quickaddSubmit" onclick="submitQuickAdd()">Add</button>
+          </div>
+          <div class="quickadd-hint">Parsed by Gemini → creates a Vikunja task + a line on that day's note</div>
+        </div>
+      </div>
+
+      <div class="tile tile-half" id="dutyTile" style="display:none;">
+        <div class="card duty-tile">
+          <h2><span class="h2-label">🏥 On Duty</span></h2>
+          <div class="card-body" id="dutyBody"></div>
+        </div>
+      </div>
+
+      <div class="tile" id="examTile">
+        <div class="card">
+          <h2><span class="h2-label">🎯 Exam</span></h2>
+          <div class="big-stat" id="examDays">—</div>
+          <div class="stat-sub" id="examLabel">&nbsp;</div>
+        </div>
+      </div>
+
+      <div class="tile">
+        <div class="card">
+          <h2><span class="h2-label">🌤️ Weather</span></h2>
+          <div id="weatherBody">
+            <div class="big-stat" id="weatherTemp">—</div>
+            <div class="stat-sub" id="weatherDesc">Loading…</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tile">
+        <div class="card">
+          <h2><span class="h2-label">🧠 METIS</span></h2>
+          <div id="metisBody">
+            <div class="muted">Loading…</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tile tile-half tile-tall">
+        <div class="card">
+          <h2>
+            <span class="h2-label">📋 Today</span>
+            <button class="expand-btn" onclick="expandToday()" title="Expand">⤢</button>
+          </h2>
+          <div class="duty-row" id="dutyRow"></div>
+          <div class="card-body">
+            <div class="task-list" id="taskList">
+              <div class="empty-note">Loading…</div>
+            </div>
+          </div>
+          <div class="today-footer">
+            <a class="upcoming-btn" href="https://tasks-nyx.katthan.in/upcoming" target="_blank" rel="noopener">Upcoming →</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="tile">
+        <div class="card">
+          <h2>
+            <span class="h2-label">💰 Finance</span>
+            <button class="expand-btn" onclick="expandFinance()" title="Expand">⤢</button>
+          </h2>
+          <div id="financeBody"><div class="muted">Loading…</div></div>
+        </div>
+      </div>
+
+      <div class="tile">
+        <div class="card">
+          <h2>
+            <span class="h2-label">🪒 Wellness</span>
+            <button class="expand-btn" onclick="expandWellness()" title="Expand">⤢</button>
+          </h2>
+          <div id="wellnessBody"><div class="muted">Loading…</div></div>
+        </div>
+      </div>
+
+      <div class="tile tile-wide tile-tall">
+        <div class="card">
+          <h2>
+            <span class="h2-label">🩺 Services</span>
+            <button class="expand-btn" onclick="expandServices()" title="Expand">⤢</button>
+          </h2>
+          <div class="card-body" style="display: flex; flex-direction: column; gap: 10px; overflow-y: auto;">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <div class="status-group-label" style="margin: 0; font-size: 10px;">Systemd</div>
+              <div class="status-dots" id="statusSystemd">
+                <div class="muted">Loading…</div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <div class="status-group-label" style="margin: 0; font-size: 10px;">PM2 Processes</div>
+              <div class="status-dots" id="statusPm2">
+                <div class="muted">Loading…</div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <div class="status-group-label" style="margin: 0; font-size: 10px;">Docker Containers</div>
+              <div class="status-dots" id="statusDocker">
+                <div class="muted">Loading…</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this) closeModal()">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3 id="modalTitle"></h3>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    // ---------------- Theme ----------------
+    (function () {
+      const saved = localStorage.getItem('homepage_theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+    })();
+    function effectiveTheme() {
+      const explicit = document.documentElement.getAttribute('data-theme');
+      if (explicit) return explicit;
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    }
+    function updateThemeButton() {
+      document.getElementById('themeToggle').innerText = effectiveTheme() === 'light' ? '☀️' : '🌙';
+    }
+    function toggleTheme() {
+      const next = effectiveTheme() === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('homepage_theme', next);
+      updateThemeButton();
+    }
+    updateThemeButton();
+
+    // ---------------- Clock ----------------
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clockTime').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const dateStr = now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+      document.getElementById('clockDateSmall').textContent = dateStr;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // ---------------- Helpers ----------------
+    async function api(path, opts) {
+      const res = await fetch(path, Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts));
+      let data = null;
+      try { data = await res.json(); } catch (e) { /* no body */ }
+      if (!res.ok) throw Object.assign(new Error((data && data.error) || `HTTP ${res.status}`), { status: res.status });
+      return data;
+    }
+    function showToast(msg, isError) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.toggle('error', !!isError);
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3200);
+    }
+
+    // ---------------- Modal ----------------
+    function openModal(title, buildFn) {
+      document.getElementById('modalTitle').textContent = title;
+      const body = document.getElementById('modalBody');
+      body.innerHTML = '';
+      buildFn(body);
+      document.getElementById('modalOverlay').classList.add('show');
+    }
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('show');
+    }
+
+    // ---------------- Weather (server-side: last GPS fix from the Tasker pipeline) ----------------
+    const WMO = {
+      0: ['☀️', 'Clear sky'], 1: ['🌤️', 'Mostly clear'], 2: ['⛅', 'Partly cloudy'], 3: ['☁️', 'Overcast'],
+      45: ['🌫️', 'Fog'], 48: ['🌫️', 'Fog'],
+      51: ['🌦️', 'Light drizzle'], 53: ['🌦️', 'Drizzle'], 55: ['🌦️', 'Dense drizzle'],
+      61: ['🌧️', 'Light rain'], 63: ['🌧️', 'Rain'], 65: ['🌧️', 'Heavy rain'],
+      71: ['🌨️', 'Light snow'], 73: ['🌨️', 'Snow'], 75: ['🌨️', 'Heavy snow'],
+      80: ['🌦️', 'Rain showers'], 81: ['🌦️', 'Rain showers'], 82: ['⛈️', 'Violent showers'],
+      95: ['⛈️', 'Thunderstorm'], 96: ['⛈️', 'Thunderstorm + hail'], 99: ['⛈️', 'Thunderstorm + hail'],
+    };
+
+    function ageLabel(seconds) {
+      const mins = Math.round(seconds / 60);
+      if (mins < 60) return `${mins}m ago`;
+      const hours = Math.round(mins / 60);
+      if (hours < 24) return `${hours}h ago`;
+      return `${Math.round(hours / 24)}d ago`;
+    }
+
+    async function loadWeather() {
+      try {
+        const data = await api('/api/homepage/weather');
+        if (data.error === 'no_location') {
+          document.getElementById('weatherDesc').textContent = 'Waiting for phone location…';
+          return;
+        }
+        if (data.error) {
+          document.getElementById('weatherDesc').textContent = 'Weather unavailable';
+          return;
+        }
+        const [emoji, label] = WMO[data.weather_code] || ['🌡️', 'Weather'];
+        document.getElementById('weatherTemp').textContent = `${emoji} ${Math.round(data.temperature_c)}°C`;
+        const hi = Math.round(data.high_c), lo = Math.round(data.low_c);
+        const staleness = data.location_age_seconds > 6 * 3600 ? ` · loc ${ageLabel(data.location_age_seconds)}` : '';
+        document.getElementById('weatherDesc').textContent = `${label} · H${hi}° L${lo}°${staleness}`;
+      } catch (e) {
+        document.getElementById('weatherDesc').textContent = 'Weather unavailable';
+      }
+    }
+
+    // ---------------- Quick add ----------------
+    async function submitQuickAdd() {
+      const input = document.getElementById('quickaddInput');
+      const btn = document.getElementById('quickaddSubmit');
+      const text = input.value.trim();
+      if (!text) return;
+      btn.disabled = true;
+      btn.textContent = '…';
+      try {
+        const result = await api('/api/homepage/quickadd', { method: 'POST', body: JSON.stringify({ text }) });
+        input.value = '';
+        const title = (result.vikunja_task && result.vikunja_task.title) || text;
+        showToast(`✓ "${title}" → Vikunja + ${result.daily_note_date}`);
+        loadToday();
+      } catch (e) {
+        showToast(e.message || 'Could not add task', true);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Add';
+      }
+    }
+    document.getElementById('quickaddInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') submitQuickAdd();
+    });
+
+    // ---------------- Today: exam countdown + tasks (merged Obsidian + Vikunja) ----------------
+    let todayCache = null;
+
+    function renderDuty(duties) {
+      const tile = document.getElementById('dutyTile');
+      const body = document.getElementById('dutyBody');
+      const row = document.getElementById('dutyRow');
+      row.innerHTML = '';
+      if (!duties || !duties.length) {
+        tile.style.display = 'none';
+        return;
+      }
+      tile.style.display = '';
+      body.innerHTML = '';
+      duties.forEach((d) => {
+        const line = document.createElement('div');
+        line.className = 'duty-line';
+        line.textContent = '🏥 ' + d;
+        body.appendChild(line);
+        const chip = document.createElement('span');
+        chip.className = 'duty-chip';
+        chip.textContent = '🏥 ' + d;
+        row.appendChild(chip);
+      });
+    }
+
+    function renderToday(data) {
+      todayCache = data;
+
+      if (data.exam_days_left != null) {
+        document.getElementById('examDays').textContent = data.exam_days_left >= 0 ? data.exam_days_left : 0;
+        document.getElementById('examLabel').textContent = data.exam_days_left >= 0
+          ? `days until ${data.exam_date}` : `${data.exam_date} has passed`;
+      } else {
+        document.getElementById('examDays').textContent = '—';
+        document.getElementById('examLabel').textContent = 'No exam date set';
+      }
+
+      renderDuty(data.duties);
+      renderTaskList(document.getElementById('taskList'), data.tasks, !data.note_exists && !data.tasks.length);
+    }
+
+    function renderTaskList(container, tasks, noteMissing) {
+      container.innerHTML = '';
+      if (noteMissing) {
+        container.innerHTML = '<div class="empty-note">No daily note for today yet.</div>';
+        return;
+      }
+      if (!tasks || !tasks.length) {
+        container.innerHTML = '<div class="empty-note">No tasks logged today.</div>';
+        return;
+      }
+      tasks.forEach((task) => container.appendChild(renderTaskRow(task)));
+    }
+
+    function renderTaskRow(task) {
+      const row = document.createElement('div');
+      row.className = 'task-row' + (task.done ? ' done' : '');
+      const box = document.createElement('div');
+      box.className = 'task-box' + (task.source === 'vikunja' ? ' vk' : '') + (task.done ? ' checked' : '');
+      box.textContent = task.done ? '✓' : '';
+      const text = document.createElement('div');
+      text.className = 'task-text';
+      text.textContent = task.text;
+      (task.tags || []).forEach((tag) => {
+        const t = document.createElement('span');
+        t.className = 'task-tag';
+        t.textContent = '#' + tag;
+        text.appendChild(t);
+      });
+      if (task.source === 'vikunja') {
+        const s = document.createElement('span');
+        s.className = 'task-src';
+        s.textContent = 'vikunja';
+        text.appendChild(s);
+      }
+      row.appendChild(box);
+      row.appendChild(text);
+      row.addEventListener('click', () => toggleTask(task, row, box));
+      return row;
+    }
+
+    async function toggleTask(task, row, box) {
+      const newDone = !task.done;
+      row.classList.toggle('done', newDone);
+      box.classList.toggle('checked', newDone);
+      box.textContent = newDone ? '✓' : '';
+      try {
+        if (task.source === 'vikunja') {
+          await api('/api/homepage/vikunja/toggle', {
+            method: 'POST',
+            body: JSON.stringify({ id: task.id, done: newDone }),
+          });
+        } else {
+          await api('/api/homepage/task/toggle', {
+            method: 'POST',
+            body: JSON.stringify({ date: todayCache.date, line_no: task.line_no, text: task.text, done: newDone }),
+          });
+        }
+        task.done = newDone;
+      } catch (e) {
+        row.classList.toggle('done', task.done);
+        box.classList.toggle('checked', task.done);
+        box.textContent = task.done ? '✓' : '';
+        showToast(e.status === 409 ? 'Note changed elsewhere — refreshing' : 'Could not save — try again', true);
+        if (e.status === 409) loadToday();
+      }
+    }
+
+    async function loadToday() {
+      try {
+        renderToday(await api('/api/homepage/today'));
+      } catch (e) {
+        document.getElementById('taskList').innerHTML = '<div class="empty-note">Could not load today’s note.</div>';
+      }
+    }
+
+    function expandToday() {
+      openModal('Today — all tasks', (body) => {
+        const list = document.createElement('div');
+        list.className = 'task-list';
+        body.appendChild(list);
+        renderTaskList(list, todayCache ? todayCache.tasks : [], todayCache && !todayCache.note_exists && !todayCache.tasks.length);
+      });
+    }
+
+    // ---------------- METIS ----------------
+    function computeStreak(activity) {
+      if (!activity) return 0;
+      let streak = 0;
+      let d = new Date();
+      for (;;) {
+        const key = d.toISOString().slice(0, 10);
+        if ((activity[key] || 0) > 0) {
+          streak++;
+          d.setDate(d.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+      return streak;
+    }
+
+    async function loadMetis() {
+      const body = document.getElementById('metisBody');
+      try {
+        const me = await api('/api/metis/me');
+        if (!me.user) {
+          body.innerHTML = '<div class="muted">Not logged in.</div><a class="link-out" href="metis_dashboard.html">Log in on METIS →</a>';
+          return;
+        }
+        const [stats, queue] = await Promise.all([
+          api('/api/metis/stats'),
+          api('/api/metis/queue?due_only=1&limit=200'),
+        ]);
+        const streak = computeStreak(stats.activity_last_30_days);
+        body.innerHTML = `
+          <div class="big-stat">${queue.cards.length}<small>due today</small></div>
+          <div class="stat-sub">${streak} day streak · ${stats.mastered_count}/${stats.total_cards} mastered</div>
+          <a class="link-out" href="metis_dashboard.html?kiosk=1">Study now →</a>`;
+      } catch (e) {
+        body.innerHTML = '<div class="muted">Not logged in.</div><a class="link-out" href="metis_dashboard.html">Log in on METIS →</a>';
+      }
+    }
+
+    // ---------------- Finance ----------------
+    let financeCache = null;
+    const inr = (n) => '₹' + Math.round(n).toLocaleString('en-IN');
+
+    async function loadFinance() {
+      const body = document.getElementById('financeBody');
+      try {
+        const data = await api('/api/homepage/finance');
+        if (data.error) throw new Error(data.error);
+        financeCache = data;
+        const over = data.remaining < 0;
+        body.innerHTML = `
+          <div class="big-stat" style="${over ? 'color:var(--rose-accent)' : ''}">${inr(data.spent_total)}<small>/ ${inr(data.budget_total)}</small></div>
+          <div class="stat-sub">${over ? inr(-data.remaining) + ' over' : inr(data.remaining) + ' left'} · ${data.days_left_in_month}d left in month</div>`;
+      } catch (e) {
+        body.innerHTML = '<div class="muted">Finance data unavailable</div>';
+      }
+    }
+
+    function expandFinance() {
+      openModal('Finance — this month', (body) => {
+        if (!financeCache || financeCache.error) {
+          body.innerHTML = '<div class="empty-note">Finance data unavailable.</div>';
+          return;
+        }
+        const list = document.createElement('div');
+        (financeCache.top_categories || []).forEach((c) => {
+          const row = document.createElement('div');
+          row.className = 'reminder-row' + (c.ratio && c.ratio > 1 ? ' overdue' : '');
+          const dot = document.createElement('span');
+          dot.className = 'reminder-dot' + (c.ratio && c.ratio > 1 ? ' overdue' : '');
+          const label = document.createElement('div');
+          label.textContent = c.limit
+            ? `${c.category}: ${inr(c.spent)} / ${inr(c.limit)} (${Math.round(c.ratio * 100)}%)`
+            : `${c.category}: ${inr(c.spent)} (no budget set)`;
+          row.appendChild(dot);
+          row.appendChild(label);
+          list.appendChild(row);
+        });
+        body.appendChild(list);
+      });
+    }
+
+    // ---------------- Wellness ----------------
+    let wellnessCache = null;
+
+    async function loadWellness() {
+      const body = document.getElementById('wellnessBody');
+      try {
+        const data = await api('/api/homepage/wellness');
+        wellnessCache = data;
+        if (!data.items || !data.items.length) {
+          body.innerHTML = '<div class="muted">All caught up</div>';
+          return;
+        }
+        body.innerHTML = '';
+        data.items.forEach((item) => {
+          const row = document.createElement('div');
+          row.className = 'reminder-row' + (item.urgency >= 90 ? ' overdue' : '');
+          const dot = document.createElement('span');
+          dot.className = 'reminder-dot' + (item.urgency >= 90 ? ' overdue' : '');
+          const label = document.createElement('div');
+          label.textContent = item.status;
+          row.appendChild(dot);
+          row.appendChild(label);
+          body.appendChild(row);
+        });
+      } catch (e) {
+        body.innerHTML = '<div class="muted">Wellness data unavailable</div>';
+      }
+    }
+
+    function expandWellness() {
+      openModal('Wellness & Admin', (body) => {
+        const items = (wellnessCache && wellnessCache.all_items) || [];
+        if (!items.length) {
+          body.innerHTML = '<div class="empty-note">All caught up.</div>';
+          return;
+        }
+        items.forEach((item) => {
+          const row = document.createElement('div');
+          row.className = 'reminder-row' + (item.urgency >= 90 ? ' overdue' : '');
+          const dot = document.createElement('span');
+          dot.className = 'reminder-dot' + (item.urgency >= 90 ? ' overdue' : '');
+          const label = document.createElement('div');
+          label.textContent = item.status;
+          row.appendChild(dot);
+          row.appendChild(label);
+          body.appendChild(row);
+        });
+      });
+    }
+
+    // ---------------- Service status ----------------
+    let statusCache = null;
+
+    function statusRow(name, up) {
+      const row = document.createElement('div');
+      row.className = 'status-row';
+      const dot = document.createElement('span');
+      dot.className = 'dot ' + (up === true ? 'up' : up === false ? 'down' : '');
+      row.appendChild(dot);
+      row.appendChild(document.createTextNode(name));
+      return row;
+    }
+
+    async function loadStatus() {
+      const elSystemd = document.getElementById('statusSystemd');
+      const elPm2 = document.getElementById('statusPm2');
+      const elDocker = document.getElementById('statusDocker');
+      try {
+        const data = await api('/api/homepage/status');
+        statusCache = data;
+
+        const populateDots = (container, items, type) => {
+          container.innerHTML = '';
+          if (!items || !items.length) {
+            container.innerHTML = '<div class="muted">None active</div>';
+            return;
+          }
+          items.forEach((item) => {
+            const chip = document.createElement('div');
+            chip.className = 'dot-chip';
+            const dot = document.createElement('span');
+            
+            let statusClass = 'stopped';
+            if (item.up === true) {
+              statusClass = 'up';
+            } else if (item.status === 'errored' || item.status === 'crashed' || (type === 'systemd' && item.up === false)) {
+              statusClass = 'down';
+            }
+            
+            dot.className = 'dot ' + statusClass;
+            chip.appendChild(dot);
+            chip.appendChild(document.createTextNode(item.name));
+            container.appendChild(chip);
+          });
+        };
+
+        // Render systemd
+        const systemdItems = Object.entries(data.systemd || {}).map(([name, up]) => ({ name, up }));
+        populateDots(elSystemd, systemdItems, 'systemd');
+
+        // Render PM2
+        const pm2Items = (data.pm2 || []).map(p => ({ name: p.name, up: p.up, status: p.status }));
+        populateDots(elPm2, pm2Items, 'pm2');
+
+        // Render Docker
+        const dockerItems = (data.docker || []).map(d => ({ name: d.name, up: d.up, status: d.status }));
+        populateDots(elDocker, dockerItems, 'docker');
+
+      } catch (e) {
+        if (elSystemd) elSystemd.innerHTML = '<div class="muted">Status unavailable</div>';
+        if (elPm2) elPm2.innerHTML = '';
+        if (elDocker) elDocker.innerHTML = '';
+      }
+    }
+
+    function expandServices() {
+      openModal('Services — Docker & PM2', (body) => {
+        if (!statusCache) {
+          body.innerHTML = '<div class="empty-note">Status unavailable.</div>';
+          return;
+        }
+        const label = document.createElement('div');
+        label.className = 'status-group-label';
+        label.textContent = 'Docker & PM2';
+        body.appendChild(label);
+        const list = document.createElement('div');
+        list.className = 'status-list';
+        (statusCache.docker || []).forEach((c) => list.appendChild(statusRow(c.name, c.up)));
+        (statusCache.pm2 || []).forEach((p) => list.appendChild(statusRow(p.name, p.up)));
+        if (!list.children.length) list.innerHTML = '<div class="muted">No docker/pm2 processes found</div>';
+        body.appendChild(list);
+      });
+    }
+
+    // ---------------- Init ----------------
+    loadWeather();
+    loadToday();
+    loadMetis();
+    loadFinance();
+    loadWellness();
+    loadStatus();
+    setInterval(loadStatus, 120000);
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        // Explicit narrow scope — this directory also serves METIS's own PWA
+        // (metis_dashboard.html + sw.js) at the default root scope. Without
+        // this, both service workers fight over scope "/" and Chrome/Android
+        // can end up treating the two installed PWAs as one app.
+        navigator.serviceWorker.register('homepage_sw.js', { scope: './homepage.html' }).catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>

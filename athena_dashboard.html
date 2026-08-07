@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="ATHENA">
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="athena_manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -95,6 +95,13 @@
       padding: 0;
       font-family: 'Inter', sans-serif;
     }
+
+    /* Themed scrollbars — standard PANTHEON default, see [[feedback_pantheon_pwa_scrollbars]] */
+    * { scrollbar-width: thin; scrollbar-color: var(--cyan-accent) var(--inset-soft); }
+    *::-webkit-scrollbar { width: 10px; height: 10px; }
+    *::-webkit-scrollbar-track { background: var(--inset-soft); border-radius: 10px; }
+    *::-webkit-scrollbar-thumb { background: var(--cyan-accent); border-radius: 10px; border: 2px solid transparent; background-clip: padding-box; }
+    *::-webkit-scrollbar-thumb:hover { background: var(--purple-accent); }
 
     body {
       background: var(--bg-gradient);
@@ -812,6 +819,7 @@
       <div class="card two-third-card">
         <div class="section-title">
           <span>🎯 Topic QBank Volume & Pacing</span>
+          <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">— your local write-up depth vs a 50Q/topic rotation floor, not subject mastery or exam-bank coverage</span>
         </div>
         <div class="topic-grid" id="topicGrid"></div>
       </div>
@@ -1040,7 +1048,11 @@
       const el = document.getElementById('sessionLog');
       if (!sessions || !sessions.length) { el.innerHTML = ''; return; }
       el.innerHTML = sessions.slice().reverse().slice(0, 8).map(s => {
-        const mins = s.planned_minutes ? `${s.planned_minutes}m` : '';
+        let mins = s.planned_minutes ? `${s.planned_minutes}m` : '';
+        if (s.completed === false && s.start_time && s.end_time) {
+          const actualMin = Math.round((new Date(s.end_time) - new Date(s.start_time)) / 60000);
+          mins = `${actualMin}m`;
+        }
         const type = s.session_type === 'break' ? '☕' : '🍅';
         const status = s.completed === false ? ' (stopped)' : '';
         const label = (s.task || 'session').slice(0, 28);
@@ -1073,7 +1085,10 @@
         const active = s.questions_solved > 0;
         const tier = s.mastery_pct >= 50 ? '#34d399' : s.mastery_pct >= 20 ? '#c084fc' : active ? '#fbbf24' : null;
         const style = tier ? `background: rgba(${tier === '#34d399' ? '52,211,153' : tier === '#c084fc' ? '192,132,252' : '251,191,36'}, 0.1); border-color: ${tier};` : '';
-        const title = `${name}: ${s.questions_solved} Qs solved · ${s.mastery_pct}% Mastery (${s.coverage_pct}% cov, ${s.avg_stability} FSRS) · ~${s.weightage_pct_approx}% of exam`;
+        const covLabel = s.coverage_basis === 'real_bank_total'
+          ? `${s.coverage_pct}% cov of ${s.real_bank_total.toLocaleString()} real Qs`
+          : `${s.coverage_pct}% cov (est., no real bank total yet)`;
+        const title = `${name}: ${s.questions_solved} Qs solved · ${s.mastery_pct}% Mastery (${covLabel}, ${s.avg_stability} FSRS) · ~${s.weightage_pct_approx}% of exam`;
         return `<div class="matrix-cell${active ? ' active' : ''}" style="${style}" title="${title}"><span>${label}</span><span>${s.mastery_pct}% mast</span></div>`;
       }).join('');
     }
@@ -1135,10 +1150,10 @@
         <div class="topic-row">
           <div class="topic-meta">
             <span class="topic-name">${name} (${m.count} Qs)</span>
-            <span class="topic-badge ${badgeClass(m.status)}">${m.mastery_percent}% • ${m.status}</span>
+            <span class="topic-badge ${badgeClass(m.status)}">${m.status} (${m.count}/50)</span>
           </div>
           <div class="topic-progress-bar">
-            <div class="topic-progress-fill" style="width: ${m.mastery_percent}%; background: ${barColor(m.status)};"></div>
+            <div class="topic-progress-fill" style="width: ${m.depth_pct}%; background: ${barColor(m.status)};"></div>
           </div>
         </div>`).join('');
     }

@@ -76,3 +76,11 @@ What nerve injury causes inability to make the "OK" sign following a supracondyl
 **Anterior interosseous nerve (AIN)** (deep branch of median nerve). It supplies **flexor pollicis longus (FPL)** (thumb IP flexion) and **flexor digitorum profundus (FDP, lateral half)** (index finger DIP flexion).
 tags: #flashcards/anatomy/upper_limb #neet-pg
 ---
+
+What nerve roots are damaged in Erb's palsy, and what is the characteristic limb deformity?
+?
+**C5 and C6** (upper trunk brachial plexus). Deformity is **"Waiter's tip" (Policeman's tip)**: shoulder adducted & internally rotated, elbow extended, forearm pronated.
+<!-- QBank ID: Q4859201 -->
+tags: #flashcards/anatomy/upper_limb #neet-pg
+---
+
